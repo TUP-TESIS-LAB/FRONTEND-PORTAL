@@ -110,51 +110,193 @@ Donde `brandLogoUrl` viene de un `BrandService` que lee la config del tenant.
 
 ---
 
-## Sidebar (desktop admin)
+## Sidebar (desktop, admin y paciente)
+
+El sidebar es el mismo componente para ambos portales. Solo cambia la configuración de `navGroups` y la información del footer.
+
+```typescript
+// model
+interface NavGroup {
+  label: string;       // 'Principal', 'Cuenta'
+  items: NavItem[];
+}
+interface NavItem {
+  id: string;
+  icon: string;        // 'pi-home', 'pi-calendar'
+  label: string;
+  route: string;
+  badge?: number;      // notificaciones / contadores
+}
+```
 
 ```html
-<nav class="ui-sidebar ui-show-desktop">
-  <div class="ui-sidebar__logo">
-    <span class="ui-tenant-logo ui-tenant-logo--white"></span>
+<nav class="ui-sidebar">
+  <!-- Header: marca + identidad del portal -->
+  <div class="ui-sidebar__header">
+    <div class="ui-sidebar__logo-mark">{{ tenantInitials }}</div>
+    <div class="ui-sidebar__logo-text">
+      <strong>{{ tenantName }}</strong>
+      <span>{{ portalName }}</span>
+    </div>
   </div>
-  <div class="ui-sidebar__nav">
-    @for (item of navItems; track item.route) {
-      <a class="ui-nav-item" [routerLink]="item.route" routerLinkActive="active">
-        <i [class]="'pi ' + item.icon"></i>
-        <span>{{ item.label }}</span>
-      </a>
+
+  <!-- Nav: grupos con label + items -->
+  <div class="ui-sidebar__nav" aria-label="Navegación principal">
+    @for (group of navGroups; track group.label) {
+      <div class="ui-sidebar__group-label">{{ group.label }}</div>
+      @for (item of group.items; track item.id) {
+        <a class="ui-nav-item"
+           [routerLink]="item.route"
+           routerLinkActive="active"
+           [attr.aria-current]="isActive(item) ? 'page' : null">
+          <i [class]="'pi ' + item.icon"></i>
+          <span>{{ item.label }}</span>
+          @if (item.badge) {
+            <span class="ui-nav-item__badge">{{ item.badge }}</span>
+          }
+        </a>
+      }
     }
   </div>
+
+  <!-- Footer: usuario logueado + acción de salir -->
   <div class="ui-sidebar__footer">
-    <a class="ui-nav-item" (click)="logout()">
+    <div class="ui-sidebar__footer-avatar">{{ user.iniciales }}</div>
+    <div class="ui-sidebar__footer-name">
+      <strong>{{ user.nombre }} {{ user.apellido }}</strong>
+      <span>{{ user.dni }}</span>
+    </div>
+    <button type="button" class="ui-sidebar__footer-action"
+            (click)="logout()" aria-label="Cerrar sesión">
       <i class="pi pi-sign-out"></i>
-      <span>Cerrar sesión</span>
-    </a>
+    </button>
   </div>
 </nav>
 ```
 
+```scss
+// Estilos clave (extender los ya definidos en tokens.md para .ui-sidebar)
+.ui-sidebar {
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-5) var(--space-5) var(--space-4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  &__logo-mark {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--ds-radius-sm);
+    background: var(--brand-secondary);
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    min-width: 0;
+    strong { font-size: 14px; color: white; }
+    span   { font-size: 11px; color: rgba(255,255,255,0.65);
+             text-transform: uppercase; letter-spacing: 0.5px; }
+  }
+
+  &__group-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: rgba(255, 255, 255, 0.45);
+    padding: var(--space-4) var(--space-5) var(--space-2);
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-5);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  &__footer-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--brand-secondary);
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__footer-name {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    strong { font-size: 13px; color: white; }
+    span   { font-size: 11px; color: rgba(255,255,255,0.55); }
+  }
+
+  &__footer-action {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    width: 32px;
+    height: 32px;
+    border-radius: var(--ds-radius-sm);
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(255,255,255,0.08);
+      color: white;
+    }
+  }
+}
+
+.ui-nav-item {
+  position: relative;
+
+  &__badge {
+    margin-left: auto;
+    background: var(--brand-secondary);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    min-width: 22px;
+    text-align: center;
+  }
+}
+```
+
+**Reglas:**
+- Los grupos son opcionales: si solo hay un grupo lógico, podés tener un único `NavGroup` sin label visible.
+- Cuando el sidebar se renderiza dentro del `p-drawer` (mobile/tablet en admin, o como menú secundario), tiene exactamente la misma estructura — no se hace una versión mobile distinta.
+- En el portal paciente con bottom nav activo, el footer puede ocultar el botón de salir (queda en otra parte de la UI).
+
 ---
 
-## Drawer (mobile/tablet admin)
+## Drawer (mobile/tablet)
 
 ```html
 <p-drawer [(visible)]="drawerOpen" position="left" styleClass="ui-drawer">
   <ng-template pTemplate="headless">
-    <div class="ui-sidebar">
-      <div class="ui-sidebar__logo">
-        <span class="ui-tenant-logo ui-tenant-logo--white"></span>
-      </div>
-      <div class="ui-sidebar__nav">
-        @for (item of navItems; track item.route) {
-          <a class="ui-nav-item" [routerLink]="item.route"
-             routerLinkActive="active" (click)="drawerOpen = false">
-            <i [class]="'pi ' + item.icon"></i>
-            <span>{{ item.label }}</span>
-          </a>
-        }
-      </div>
-    </div>
+    <ui-sidebar [navGroups]="navGroups" [user]="user"
+                (itemClick)="drawerOpen = false" />
   </ng-template>
 </p-drawer>
 ```
@@ -995,3 +1137,353 @@ Patrón genérico para mostrar una entidad con identidad visual (avatar/iniciale
 **Diferencia con `ui-list-card`:**
 - `ui-list-card`: lista densa, item entero clickeable (navega), sin acciones inline.
 - `ui-entity-card`: card más espaciosa, con acciones inline, no navega como un todo.
+
+---
+
+## Wizard multi-paso (con stepper visual)
+
+Patrón para procesos guiados de N pasos. Aplica a cualquier flujo con selecciones secuenciales: reserva de turno (4 pasos), alta de familiar, configuración inicial, etc. La skill define la estructura visual y de Reactive Forms; el contenido de cada paso depende del feature.
+
+### Estructura visual
+
+**Tres regiones fijas:**
+1. **Stepper header:** indicador horizontal de pasos. Cada paso muestra un círculo con número (o check si está completado) y un label debajo. Los pasos están conectados por una línea (gris cuando no se llegó, primary cuando se completó).
+2. **Step content:** contenido del paso actual. Una sección por paso, mutuamente excluyentes.
+3. **Footer fijo:** botón "Volver/Cancelar" a la izquierda, "Continuar/Confirmar" a la derecha. El botón principal se deshabilita si el paso actual no es válido.
+
+### Comportamiento responsive
+
+- **Desktop:** stepper horizontal con todos los pasos visibles, número + label.
+- **Mobile:** stepper compacto (solo círculos con número + label del paso actual destacado), o tipografía reducida. Footer siempre full-width.
+
+### Modelo del componente
+
+```typescript
+import { Component, inject, signal, computed } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+
+interface WizardStep {
+  id: string;
+  label: string;
+  formGroup: FormGroup;
+}
+
+@Component({
+  selector: 'ui-turno-wizard',
+  standalone: true,
+  imports: [ReactiveFormsModule /* + módulos PrimeNG necesarios */],
+  templateUrl: './turno-wizard.component.html',
+  styleUrl: './turno-wizard.component.scss',
+})
+export class TurnoWizardComponent {
+  private fb = inject(FormBuilder);
+
+  currentStep = signal(0);
+
+  // Un FormGroup por paso, validables independientemente
+  form = this.fb.group({
+    paso1: this.fb.group({
+      tipoAnalisisIds: [[] as string[],
+        [Validators.required, Validators.minLength(1)]],
+    }),
+    paso2: this.fb.group({
+      sedeId: [null as string | null, Validators.required],
+    }),
+    paso3: this.fb.group({
+      fecha: [null as Date | null, Validators.required],
+      hora:  [null as string | null, Validators.required],
+    }),
+    paso4: this.fb.group({
+      // confirmación: no tiene controles, solo se muestra el resumen
+    }),
+  });
+
+  steps: WizardStep[] = [
+    { id: 'analisis',  label: 'Tipo de análisis', formGroup: this.f('paso1') },
+    { id: 'sede',      label: 'Sede',             formGroup: this.f('paso2') },
+    { id: 'fechaHora', label: 'Fecha y hora',     formGroup: this.f('paso3') },
+    { id: 'confirmar', label: 'Confirmar',        formGroup: this.f('paso4') },
+  ];
+
+  isLastStep = computed(() => this.currentStep() === this.steps.length - 1);
+
+  canProceed = computed(() => {
+    const idx = this.currentStep();
+    return this.steps[idx].formGroup.valid;
+  });
+
+  isStepCompleted(idx: number): boolean {
+    return idx < this.currentStep() && this.steps[idx].formGroup.valid;
+  }
+
+  next() {
+    const fg = this.steps[this.currentStep()].formGroup;
+    if (fg.invalid) {
+      fg.markAllAsTouched();
+      return;
+    }
+    if (this.isLastStep()) {
+      this.confirm();
+    } else {
+      this.currentStep.update(s => s + 1);
+    }
+  }
+
+  back() {
+    if (this.currentStep() === 0) {
+      this.cancel();
+    } else {
+      this.currentStep.update(s => s - 1);
+    }
+  }
+
+  confirm() {
+    // Emitir el FormGroup raíz al servicio
+    // this.confirmed.emit(this.form.getRawValue());
+  }
+
+  cancel() { /* emit close */ }
+
+  private f(key: string) { return this.form.get(key) as FormGroup; }
+}
+```
+
+### Template
+
+```html
+<div class="ui-wizard" [formGroup]="form">
+
+  <!-- Stepper header -->
+  <div class="ui-wizard__stepper">
+    @for (step of steps; track step.id; let i = $index) {
+      <div class="ui-wizard__step"
+           [class.ui-wizard__step--active]="currentStep() === i"
+           [class.ui-wizard__step--done]="isStepCompleted(i)">
+        <div class="ui-wizard__step-circle">
+          @if (isStepCompleted(i)) {
+            <i class="pi pi-check"></i>
+          } @else {
+            {{ i + 1 }}
+          }
+        </div>
+        <div class="ui-wizard__step-label">{{ step.label }}</div>
+      </div>
+
+      @if (i < steps.length - 1) {
+        <div class="ui-wizard__connector"
+             [class.ui-wizard__connector--done]="isStepCompleted(i)"></div>
+      }
+    }
+  </div>
+
+  <!-- Step content -->
+  <div class="ui-wizard__content">
+    @switch (currentStep()) {
+      @case (0) {
+        <section formGroupName="paso1">
+          <h3>Seleccioná el tipo de análisis</h3>
+          <p class="ui-text-muted">Podés elegir uno o más estudios.</p>
+          <!-- Grid de cards de tipos de análisis con multi-select -->
+          <!-- Cada card es un toggle: agrega/quita id al array tipoAnalisisIds -->
+        </section>
+      }
+      @case (1) {
+        <section formGroupName="paso2">
+          <h3>Elegí la sede</h3>
+          <!-- Lista de sedes (ui-list-card o radio cards) -->
+          <!-- Setear sedeId al hacer click -->
+        </section>
+      }
+      @case (2) {
+        <section formGroupName="paso3">
+          <h3>Fecha y horario</h3>
+          <p-datePicker formControlName="fecha"
+                        [inline]="true" [minDate]="today" />
+          <h4>Horarios disponibles</h4>
+          <!-- Grilla de slots de hora; los tomados se renderizan disabled -->
+        </section>
+      }
+      @case (3) {
+        <section>
+          <h3>Confirmá tu turno</h3>
+          <!-- Resumen de selección de los pasos anteriores -->
+          <!-- Mostrar tipos seleccionados, sede elegida, fecha y hora -->
+          <!-- Avisos de preparación (ej: "Requiere ayuno de 8 hs") -->
+        </section>
+      }
+    }
+  </div>
+
+  <!-- Footer fijo -->
+  <footer class="ui-wizard__footer">
+    <p-button [label]="currentStep() === 0 ? 'Cancelar' : 'Volver'"
+              icon="pi pi-arrow-left"
+              severity="text"
+              type="button"
+              (onClick)="back()" />
+    <p-button [label]="isLastStep() ? 'Confirmar turno' : 'Continuar'"
+              [icon]="isLastStep() ? 'pi pi-check' : 'pi pi-arrow-right'"
+              iconPos="right"
+              severity="primary"
+              type="button"
+              [disabled]="!canProceed()"
+              (onClick)="next()" />
+  </footer>
+</div>
+```
+
+### Estilos
+
+```scss
+.ui-wizard {
+  display: flex;
+  flex-direction: column;
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-sm);
+  overflow: hidden;
+
+  // ─── Stepper header ─────────────────────
+  &__stepper {
+    display: flex;
+    align-items: flex-start;
+    padding: var(--space-5) var(--space-6);
+    background: var(--ds-bg);
+    border-bottom: 1px solid var(--ds-surface-dark);
+    gap: var(--space-2);
+
+    @include mobile-only {
+      padding: var(--space-4);
+      gap: var(--space-1);
+    }
+  }
+
+  &__step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+    min-width: 80px;
+
+    @include mobile-only {
+      min-width: 56px;
+    }
+  }
+
+  &__step-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--ds-surface-dark);
+    color: var(--ds-text-muted);
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+
+    @include mobile-only {
+      width: 30px;
+      height: 30px;
+      font-size: 12px;
+    }
+  }
+
+  &__step-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ds-text-muted);
+    text-align: center;
+    line-height: 1.2;
+
+    @include mobile-only {
+      font-size: 10px;
+    }
+  }
+
+  // Estado: paso activo
+  &__step--active {
+    .ui-wizard__step-circle {
+      background: var(--brand-primary);
+      color: white;
+      box-shadow: 0 0 0 4px var(--brand-primary-light);
+    }
+    .ui-wizard__step-label {
+      color: var(--brand-primary);
+      font-weight: 600;
+    }
+  }
+
+  // Estado: paso completado
+  &__step--done {
+    .ui-wizard__step-circle {
+      background: var(--ds-success);
+      color: white;
+    }
+  }
+
+  // Línea conectora entre pasos
+  &__connector {
+    flex: 1;
+    height: 2px;
+    background: var(--ds-surface-dark);
+    margin-top: 17px; // alinea con el centro del círculo (36/2 - 1)
+    min-width: 16px;
+    transition: background 0.2s;
+
+    @include mobile-only {
+      margin-top: 14px;
+    }
+
+    &--done {
+      background: var(--ds-success);
+    }
+  }
+
+  // ─── Step content ───────────────────────
+  &__content {
+    flex: 1;
+    padding: var(--space-6);
+    min-height: 320px;
+
+    @include mobile-only {
+      padding: var(--space-4);
+    }
+
+    section {
+      h3 { margin-top: 0; }
+      h4 { margin-top: var(--space-5); }
+    }
+  }
+
+  // ─── Footer fijo ────────────────────────
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--ds-surface-dark);
+    background: var(--ds-white);
+
+    @include mobile-only {
+      padding: var(--space-3) var(--space-4)
+               calc(var(--space-3) + var(--ds-safe-bottom));
+
+      flex-direction: row;
+      .p-button { flex: 1; }
+    }
+  }
+}
+```
+
+### Reglas
+
+- **Cuándo usarlo:** procesos secuenciales con 3+ pasos donde la respuesta a un paso puede afectar las opciones del siguiente.
+- **Cuándo NO usarlo:** formularios de 2-3 campos sin dependencia entre sí — usar dialog único.
+- Para reservar turno, **siempre** usar este wizard de 4 pasos: `Tipo de análisis → Sede → Fecha y hora → Confirmar`. No alterar el orden.
+- En desktop puede embeberse en un `p-dialog` ancho (≥720px). En mobile va full-screen vía `ui-dialog-fullscreen-mobile` o como ruta propia.
+- Validar SIEMPRE solo el FormGroup del paso actual antes de avanzar — nunca todo el form.
+- El paso de confirmación **no tiene controles editables**: muestra un resumen y permite volver para corregir.

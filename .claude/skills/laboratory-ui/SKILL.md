@@ -117,9 +117,11 @@ Los valores default son neutros y solo existen para que la app no se rompa si ar
 - Layout mobile: topbar con hamburguesa que abre `p-drawer` lateral + content full
 
 ### Portal Paciente
-- Módulos típicos: Inicio, Mis Turnos, Mis Estudios, Mi Perfil
-- Layout desktop: topbar + content centrado (max-width 1200px) + nav horizontal en topbar
-- Layout mobile: topbar mínimo + content full + **bottom navigation bar** con 4 ítems
+- Módulos típicos: Inicio, Mis Turnos, Mis Estudios, Mi Perfil, Mi Familia
+- Layout desktop: **sidebar fija oscura + topbar con título de página + content centrado** (max-width 1200px)
+- Layout mobile: topbar mínimo + content full + **bottom navigation bar** con 4-5 ítems
+
+**Nota:** Tanto el portal admin como el portal paciente usan el mismo patrón de sidebar en desktop. La diferencia entre ambos es el contenido de los nav items y, en mobile, que paciente tiene bottom nav (app-like) mientras admin usa drawer desde topbar.
 
 ---
 
@@ -157,13 +159,27 @@ La skill no cubre el setup técnico de PWA (eso es decisión arquitectónica), p
 
 ```html
 <ui-patient-shell>
-  <ui-patient-topbar />
-  <main class="ui-patient-content">
-    <router-outlet />
-  </main>
+  <!-- Desktop: sidebar fija oscura -->
+  <ui-patient-sidebar class="ui-show-desktop" />
+
+  <!-- Mobile/tablet: drawer con el mismo sidebar -->
+  <p-drawer [(visible)]="drawerOpen" position="left">
+    <ui-patient-sidebar (itemClick)="drawerOpen = false" />
+  </p-drawer>
+
+  <div class="ui-patient-shell__main">
+    <ui-patient-topbar (menuToggle)="drawerOpen = !drawerOpen" />
+    <main class="ui-patient-content">
+      <router-outlet />
+    </main>
+  </div>
+
+  <!-- Mobile: bottom nav (app-like) -->
   <ui-bottom-nav class="ui-show-mobile" />
 </ui-patient-shell>
 ```
+
+El bottom nav y el drawer **no son excluyentes**: el drawer se usa cuando el usuario abre menúes secundarios desde la topbar; el bottom nav siempre está visible para las 4-5 secciones principales.
 
 ---
 
