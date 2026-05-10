@@ -56,13 +56,9 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--ds-bg);
-
-  @include desktop-up {
-    background: linear-gradient(135deg,
-      var(--brand-primary-light) 0%,
-      var(--ds-bg) 100%);
-  }
+  // El background lo inyecta TenantService.authPageBg() como [style.background]
+  // directo en el template para evitar dependencia de color-mix() + CSS vars en runtime
+  background: var(--ds-bg); // fallback si el signal no cargó aún
 }
 
 .ui-auth-page__content {

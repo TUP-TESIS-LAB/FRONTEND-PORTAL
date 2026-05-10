@@ -13,6 +13,21 @@ export class TenantService {
   readonly config   = this._config.asReadonly();
   readonly isLoaded = computed(() => this._config() !== null);
 
+  // Degradé para la pantalla de auth derivado del color primario del tenant.
+  // Se calcula como computed para que el template lo use con binding directo
+  // y no dependa de color-mix() ni de variables CSS en runtime.
+  readonly authPageBg = computed(() => {
+    const hex = this._config()?.colors.primary ?? '#2563EB';
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const hex2 = this._config()?.colors.secondary ?? '#0EA5A4';
+    const r2 = parseInt(hex2.slice(1, 3), 16);
+    const g2 = parseInt(hex2.slice(3, 5), 16);
+    const b2 = parseInt(hex2.slice(5, 7), 16);
+    return `linear-gradient(135deg, rgba(${r},${g},${b},0.55) 0%, rgba(${r2},${g2},${b2},0.40) 100%)`;
+  });
+
   async loadTenant(tenantId: string): Promise<void> {
     // En desarrollo: lee desde public/assets.
     // TODO: en producción reemplazar por GET /api/tenants/${tenantId}/config

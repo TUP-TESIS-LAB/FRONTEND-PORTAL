@@ -1,0 +1,119 @@
+.tenant-switcher {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: var(--z-toast);
+  font-family: var(--ds-font);
+}
+
+// Botón trigger — pequeño y disimulado
+.tenant-switcher__trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 7px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--ds-font);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+  box-shadow: var(--ds-shadow-sm);
+  transition: box-shadow 0.15s, border-color 0.15s;
+  letter-spacing: 0.3px;
+
+  &:hover {
+    box-shadow: var(--ds-shadow-md);
+    border-color: var(--brand-primary);
+    color: var(--ds-text);
+  }
+
+  .pi {
+    font-size: 10px;
+    transition: transform 0.2s;
+  }
+}
+
+// Flecha rotada cuando está abierto
+.tenant-switcher__arrow--open {
+  transform: rotate(180deg);
+}
+
+// Punto de color del tenant
+.tenant-switcher__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tenant-switcher__label {
+  color: var(--ds-text);
+}
+
+// Panel desplegable
+.tenant-switcher__panel {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-md);
+  padding: var(--space-2) var(--space-2);
+  min-width: 180px;
+  animation: switcher-in 0.15s ease;
+}
+
+@keyframes switcher-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.tenant-switcher__panel-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: var(--space-1) var(--space-2) var(--space-2);
+  margin: 0;
+  border-bottom: 1px solid var(--ds-surface);
+  margin-bottom: var(--space-1);
+}
+
+.tenant-switcher__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-2);
+  border: none;
+  background: transparent;
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+  font-family: var(--ds-font);
+  font-size: 13px;
+  color: var(--ds-text);
+  text-align: left;
+  transition: background 0.1s;
+
+  &:hover {
+    background: var(--ds-surface);
+  }
+
+  &--active {
+    font-weight: 600;
+    color: var(--brand-primary);
+  }
+}
+
+.tenant-switcher__check {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--brand-primary);
+}

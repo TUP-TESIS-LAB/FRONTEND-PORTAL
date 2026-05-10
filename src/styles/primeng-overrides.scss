@@ -1,0 +1,257 @@
+@use 'breakpoints' as *;
+
+// ═══════════════════════════════════════════════════════
+// PrimeNG overrides — inputs y formularios
+// Necesario porque Tailwind v4 resetea los estilos de
+// elementos de formulario y el layer de PrimeNG no
+// siempre los pisa correctamente.
+// Todos los valores usan tokens del DS.
+// ═══════════════════════════════════════════════════════
+
+// ─── Input base ──────────────────────────────────────
+.p-inputtext {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--ds-white);
+  border: 1.5px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-text);
+  font-family: var(--ds-font);
+  font-size: 14px;
+  line-height: 1.5;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  appearance: none;
+  -webkit-appearance: none;
+
+  &::placeholder {
+    color: var(--ds-text-muted);
+    opacity: 1;
+  }
+
+  &:hover:not(:focus):not(:disabled) {
+    border-color: var(--brand-secondary);
+  }
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px var(--brand-primary-light);
+  }
+
+  &:disabled {
+    background: var(--ds-surface);
+    color: var(--ds-text-disabled);
+    cursor: not-allowed;
+  }
+
+  // Estado de error — se aplica por Angular (ng-invalid + ng-touched/dirty)
+  &.ng-invalid.ng-touched,
+  &.ng-invalid.ng-dirty {
+    border-color: var(--ds-danger);
+
+    &:focus {
+      box-shadow: 0 0 0 3px var(--ds-danger-light);
+    }
+  }
+
+  @include mobile-only {
+    min-height: var(--ds-touch-target);
+  }
+}
+
+// ─── Float label ─────────────────────────────────────
+// PrimeNG FloatLabel maneja la clase activa vía JS.
+// Solo necesitamos asegurar la estructura visual.
+.p-floatlabel {
+  display: block;
+  position: relative;
+  width: 100%;
+
+  // Label en estado default: dentro del campo, centrado
+  > label {
+    position: absolute;
+    top: 50%;
+    left: 1rem; // 16px — alineado con el padding del input
+    transform: translateY(-50%);
+    color: var(--ds-text-muted);
+    font-size: 14px;
+    font-family: var(--ds-font);
+    pointer-events: none;
+    transition: top 0.15s ease, font-size 0.15s ease,
+                color 0.15s ease, padding 0.15s ease;
+    background: transparent;
+    padding: 0;
+    line-height: 1;
+    z-index: 1;
+    white-space: nowrap;
+  }
+
+  // Label flotado: cuando PrimeNG agrega .p-floatlabel-active,
+  // o cuando el input tiene foco, o vía :has() como fallback
+  &.p-floatlabel-active > label,
+  &:focus-within > label,
+  &:has(input:not(:placeholder-shown)) > label,
+  &:has(.p-filled) > label {
+    top: 0;
+    transform: translateY(-50%);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--brand-primary);
+    background: var(--ds-white);
+    padding: 0 4px;
+  }
+
+  // En modo error
+  &:has(input.ng-invalid.ng-touched) > label,
+  &:has(input.ng-invalid.ng-dirty) > label {
+    color: var(--ds-danger);
+  }
+
+  // El input ocupa todo el ancho del wrapper
+  .p-inputtext { width: 100%; }
+}
+
+// ─── Password component ───────────────────────────────
+.p-password {
+  display: block;
+  position: relative;
+  width: 100%;
+
+  // El input interno recibe padding-right para el ícono de toggle
+  > .p-inputtext,
+  .p-password-input {
+    width: 100%;
+    padding-right: 3rem;
+  }
+
+  // Ícono de mostrar/ocultar contraseña
+  .p-password-toggle-mask-icon,
+  .p-icon-wrapper {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--ds-text-muted);
+    display: flex;
+    align-items: center;
+
+    &:hover { color: var(--brand-primary); }
+  }
+
+  // Error en el wrapper del password
+  &.ng-invalid.ng-touched > .p-inputtext,
+  &.ng-invalid.ng-dirty > .p-inputtext {
+    border-color: var(--ds-danger);
+
+    &:focus {
+      box-shadow: 0 0 0 3px var(--ds-danger-light);
+    }
+  }
+}
+
+// ─── Checkbox ────────────────────────────────────────
+// Cubre las distintas variantes de clase que PrimeNG 21 puede usar
+// según la versión exacta del componente y el preset de tema.
+.p-checkbox {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+
+  // Input real — oculto detrás del box visual
+  .p-checkbox-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    z-index: 1;
+  }
+
+  // Box visual
+  .p-checkbox-box {
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid var(--ds-surface-dark);
+    border-radius: var(--ds-radius-sm);
+    background: var(--ds-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    pointer-events: none; // el input real captura el click
+    flex-shrink: 0;
+  }
+
+  // Hover (detectado por el input real debajo)
+  &:hover .p-checkbox-box {
+    border-color: var(--brand-primary);
+  }
+
+  // Focus ring via input
+  .p-checkbox-input:focus-visible ~ .p-checkbox-box {
+    box-shadow: 0 0 0 3px var(--brand-primary-light);
+    border-color: var(--brand-primary);
+  }
+
+  // ── Estado marcado — múltiples selectores para cubrir PrimeNG 21 ──
+
+  // Clase legacy (PrimeNG < 17 + algunos builds de v21)
+  &.p-highlight .p-checkbox-box,
+  .p-checkbox-box.p-highlight,
+  .p-checkbox-box[data-p-highlight="true"] {
+    background: var(--brand-primary);
+    border-color: var(--brand-primary);
+  }
+
+  // Clase canónica PrimeNG 17+ / 21
+  &.p-checked .p-checkbox-box,
+  &[data-p-checked="true"] .p-checkbox-box {
+    background: var(--brand-primary);
+    border-color: var(--brand-primary);
+  }
+
+  // Input checked (fallback nativo)
+  .p-checkbox-input:checked ~ .p-checkbox-box {
+    background: var(--brand-primary);
+    border-color: var(--brand-primary);
+  }
+
+  // Ícono del check (SVG o icono PrimeIcons)
+  .p-checkbox-icon {
+    color: var(--ds-white);
+    font-size: 11px;
+    width: 12px;
+    height: 12px;
+  }
+}
+
+// ─── Botón: hover con color del tenant ───────────────
+// brightness() funciona con cualquier color de tenant sin necesitar
+// variables dark calculadas en runtime.
+.p-button {
+  transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+
+  &:not(:disabled):hover {
+    filter: brightness(0.88);
+  }
+
+  &:not(:disabled):active {
+    filter: brightness(0.80);
+    transform: scale(0.98);
+  }
+}
+
+// ─── p-button: full-width cuando styleClass="w-full" ─
+.p-button.w-full {
+  width: 100%;
+  justify-content: center;
+}

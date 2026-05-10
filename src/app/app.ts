@@ -1,14 +1,17 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TenantService } from './core/tenant/tenant.service';
+import { TenantSwitcherComponent } from './shared/ui/tenant-switcher/tenant-switcher.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  template: `<router-outlet />`,
+  imports: [RouterOutlet, TenantSwitcherComponent],
+  template: `
+    <router-outlet />
+    <app-tenant-switcher />
+  `,
 })
 export class App {
-  // Inyectado para que esté disponible en el árbol de DI desde la raíz
   readonly tenant = inject(TenantService);
 }
