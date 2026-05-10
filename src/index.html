@@ -1,13 +1,68 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>TUPTESISLABPORTAL</title>
+  <title>Portal</title>
   <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1F6E70">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <!-- Montserrat — cargado antes del primer render para evitar FOUT -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
 </head>
 <body>
   <app-root></app-root>
+
+  <!--
+    Splash visible mientras Angular carga el tenant y arranca.
+    Se oculta automáticamente cuando app-root tiene contenido.
+  -->
+  <div id="splash" aria-hidden="true">
+    <div class="splash__mark">LCC</div>
+    <div class="splash__spinner"></div>
+  </div>
+
+  <style>
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: #1F6E70;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      z-index: 9999;
+    }
+
+    .splash__mark {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 4px;
+    }
+
+    .splash__spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: splash-spin 0.8s linear infinite;
+    }
+
+    @keyframes splash-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* El splash desaparece cuando app-root tiene contenido renderizado */
+    app-root:not(:empty) ~ #splash {
+      display: none;
+    }
+  </style>
 </body>
 </html>

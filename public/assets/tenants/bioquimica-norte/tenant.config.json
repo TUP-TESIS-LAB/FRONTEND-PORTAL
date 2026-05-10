@@ -1,0 +1,20 @@
+{
+  "id": "bioquimica-norte",
+  "shortName": "BN",
+  "fullName": "Bioquímica del Norte",
+  "tagline": "Tu salud, nuestra prioridad",
+  "logo": {
+    "color": "/assets/tenants/bioquimica-norte/logo.svg",
+    "white": "/assets/tenants/bioquimica-norte/logo-white.svg",
+    "mark":  "/assets/tenants/bioquimica-norte/logo-mark.svg"
+  },
+  "colors": {
+    "primary":   "#1D4ED8",
+    "secondary": "#0EA5E9",
+    "accent":    "#F59E0B"
+  },
+  "contact": {
+    "helpPhone": "0800-444-BION",
+    "address": "Belgrano 1120, Rosario"
+  }
+}

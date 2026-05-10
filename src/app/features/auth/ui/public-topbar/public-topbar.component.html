@@ -1,0 +1,12 @@
+<header class="ui-topbar">
+  <div class="ui-topbar__left">
+    <img
+      class="ui-tenant-logo"
+      [src]="tenant.config()?.logo?.color"
+      [alt]="tenant.config()?.fullName"
+    />
+    <span class="public-topbar__name ui-show-desktop">
+      {{ tenant.config()?.fullName }}
+    </span>
+  </div>
+</header>
