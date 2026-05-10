@@ -1,10 +1,14 @@
-import { Component } from '@angular/core';
-import { Button } from 'primeng/button';
+import { Component, inject } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { TenantService } from './core/tenant/tenant.service';
 
 @Component({
   selector: 'app-root',
-  imports: [Button],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  standalone: true,
+  imports: [RouterOutlet],
+  template: `<router-outlet />`,
 })
-export class App {}
+export class App {
+  // Inyectado para que esté disponible en el árbol de DI desde la raíz
+  readonly tenant = inject(TenantService);
+}
