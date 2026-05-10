@@ -25,7 +25,7 @@ export class TenantService {
     const r2 = parseInt(hex2.slice(1, 3), 16);
     const g2 = parseInt(hex2.slice(3, 5), 16);
     const b2 = parseInt(hex2.slice(5, 7), 16);
-    return `linear-gradient(135deg, rgba(${r},${g},${b},0.55) 0%, rgba(${r2},${g2},${b2},0.40) 100%)`;
+    return `linear-gradient(135deg, rgba(${r},${g},${b},0.18) 0%, rgba(${r2},${g2},${b2},0.12) 100%)`;
   });
 
   async loadTenant(tenantId: string): Promise<void> {
