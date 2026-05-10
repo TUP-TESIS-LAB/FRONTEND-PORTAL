@@ -1,0 +1,53 @@
+@use 'breakpoints' as *;
+
+// ═══════════════════════════════════════════════════════
+// Globals — estilos base aplicados a toda la app
+// ═══════════════════════════════════════════════════════
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--ds-font);
+  font-size: 14px;
+  color: var(--ds-text);
+  background: var(--ds-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  overscroll-behavior-y: contain;
+}
+
+// Tipografía fluida
+h1 { font-size: clamp(22px, 4vw, 28px); font-weight: 700; margin: 0 0 var(--space-3); }
+h2 { font-size: clamp(18px, 3vw, 22px); font-weight: 600; margin: 0 0 var(--space-3); }
+h3 { font-size: 18px; font-weight: 600; margin: 0 0 var(--space-2); }
+h4 { font-size: 16px; font-weight: 600; margin: 0 0 var(--space-2); }
+
+p  { margin: 0 0 var(--space-3); line-height: 1.5; }
+
+a  { color: var(--brand-primary); text-decoration: none; }
+
+// Touch targets mínimos en mobile
+@include mobile-only {
+  button,
+  .p-button,
+  a[role="button"],
+  .ui-clickable {
+    min-height: var(--ds-touch-target);
+    min-width:  var(--ds-touch-target);
+  }
+}
+
+// Scroll suave para contenedores internos
+.ui-scroll-y {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
