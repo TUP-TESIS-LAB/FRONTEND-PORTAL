@@ -433,6 +433,8 @@ Mismo data, dos vistas controladas por CSS. Es uno de los patrones más importan
 
 ## Filtros adaptativos (toolbar / drawer)
 
+> **⚠️ PrimeNG v17+:** `p-dropdown` fue renombrado a `p-select`. Módulo: `import { Select } from 'primeng/select'`, selector en template: `p-select`. Misma API, solo cambia el nombre. Los ejemplos de esta sección aún muestran `p-dropdown` como referencia histórica — usar `p-select` al implementar.
+
 ```html
 <!-- Desktop -->
 <p-toolbar styleClass="ui-show-desktop mb-4">
@@ -2259,3 +2261,193 @@ import { TurnoResumenComponent } from '../../../shared/ui/components/turno-resum
 ### Patrón completo del wizard
 
 Ver `SacarTurnoComponent` en `src/app/features/main/turnos/sacar/` para el ejemplo de integración de los 4 componentes con `ui-wizard`, `SacarTurnoService` y el patrón adaptativo dialog/drawer.
+
+---
+
+## ui-person-chips
+
+Selector horizontal de personas con avatares de color. Permite filtrar cualquier lista multi-persona (estudios, turnos, familia). Aparece en la pantalla `/estudios` y puede reutilizarse en cualquier feature con contexto de grupo familiar.
+
+### Cuándo usarlo
+
+- Pantalla que muestra ítems de múltiples personas y necesita un filtro rápido por persona.
+- El primer chip siempre es "Todos" (id `null`), los siguientes son personas reales.
+
+### API
+
+```typescript
+// Modelo
+export interface PersonaChip {
+  id: number | null;       // null = "Todos"
+  nombre: string;
+  iniciales: string;
+  avatarColor: 'primary' | 'secondary' | 'accent' | 'warning' | 'neutral';
+}
+
+// Inputs
+@Input({ required: true }) personas!: PersonaChip[];
+@Input() selectedId: number | null = null;   // null = "Todos" seleccionado
+
+// Outputs
+@Output() selectionChange = new EventEmitter<number | null>();
+```
+
+### Uso
+
+```html
+<ui-person-chips
+  [personas]="personas()"
+  [selectedId]="selectedPersonaId()"
+  (selectionChange)="selectedPersonaId.set($event)" />
+```
+
+```typescript
+// Datos (normalmente vienen del servicio)
+const PERSONAS: PersonaChip[] = [
+  { id: null, nombre: 'Todos',      iniciales: '·', avatarColor: 'neutral'   },
+  { id: 1,    nombre: 'María (yo)', iniciales: 'M', avatarColor: 'secondary' },
+  { id: 2,    nombre: 'Lucía',      iniciales: 'L', avatarColor: 'accent'    },
+];
+selectedPersonaId = signal<number | null>(null);
+```
+
+### Estructura visual
+
+```
+[ · Todos ] [ M María (yo) ] [ L Lucía ] [ T Tomás ] [ M Mamá ]
+  ↑ seleccionado: borde 2px del color del avatar + fondo suave
+```
+
+- Layout horizontal con scroll-x en mobile (sin scrollbar visible).
+- Cada chip: height 40px, pill (border-radius 999px), border 1.5px `--ds-surface-dark`.
+- Avatar circular 24px con iniciales blancas.
+- `avatarColor` mapea a: `primary → --brand-primary`, `secondary → --brand-secondary`, `accent → --brand-accent`, `warning → --ds-warning`, `neutral → --ds-text-muted`.
+- Estado seleccionado: `border-width: 2px` + borde y fondo del color del avatar.
+
+### Importación
+
+```typescript
+import { PersonChipsComponent } from '../../../shared/ui/components/person-chips/person-chips.component';
+```
+
+---
+
+## ui-filters-aside
+
+Panel de filtros reutilizable para listas con criterios múltiples. En desktop va en el aside derecho de la pantalla; en mobile se embebe dentro de un `p-drawer` bottom sheet.
+
+### Cuándo usarlo
+
+- Cualquier pantalla con una lista filtrable por rango de fechas, tipo/categoría y estado.
+- El mismo componente sirve para desktop (filtros live) y mobile (con `[mobileMode]="true"` activa los botones Aplicar/Limpiar en el footer).
+
+### API
+
+```typescript
+// Interfaces
+export interface EstudiosFiltros {
+  rangoFechas: { desde: Date; hasta: Date } | null;
+  tipos: CategoriaEstudio[];
+  estados: EstadoEstudio[];
+}
+
+// Inputs
+@Input() filtros: EstudiosFiltros = { rangoFechas: null, tipos: [], estados: [] };
+@Input() countsByTipo: Record<string, number> = {};
+@Input() countsByEstado: Record<EstadoEstudio, number> = {} as any;
+@Input() mobileMode = false;   // muestra botones Aplicar/Limpiar en el footer
+
+// Outputs
+@Output() filtrosChange = new EventEmitter<EstudiosFiltros>();  // cambio live (desktop)
+@Output() limpiar       = new EventEmitter<void>();
+@Output() aplicar       = new EventEmitter<EstudiosFiltros>(); // solo se emite desde mobile
+```
+
+### Uso — Desktop (aside)
+
+```html
+<aside class="ui-show-desktop">
+  <ui-filters-aside
+    [filtros]="filtros()"
+    [countsByTipo]="countsByTipo()"
+    [countsByEstado]="countsByEstado()"
+    (filtrosChange)="filtros.set($event)"
+    (limpiar)="onLimpiarFiltros()" />
+</aside>
+```
+
+### Uso — Mobile (bottom sheet)
+
+```html
+<p-drawer
+  [visible]="mobileFiltersOpen()"
+  (visibleChange)="mobileFiltersOpen.set($event)"
+  position="bottom"
+  styleClass="ui-bottom-sheet-drawer ui-filters-sheet">
+  <ng-template pTemplate="headless">
+    <ui-filters-aside
+      [mobileMode]="true"
+      [filtros]="filtros()"
+      [countsByTipo]="countsByTipo()"
+      [countsByEstado]="countsByEstado()"
+      (aplicar)="onFiltrosApplyMobile($event)"
+      (limpiar)="onLimpiarFiltros()" />
+  </ng-template>
+</p-drawer>
+```
+
+### Computed para contadores (en el componente padre)
+
+```typescript
+countsByTipo = computed<Record<string, number>>(() => {
+  const counts: Record<string, number> = {};
+  for (const e of this.estudios()) {
+    counts[e.categoria] = (counts[e.categoria] ?? 0) + 1;
+  }
+  return counts;
+});
+
+countsByEstado = computed<Record<EstadoEstudio, number>>(() => {
+  const counts = { 'disponible': 0, 'en-proceso': 0, 'pendiente': 0 };
+  for (const e of this.estudios()) {
+    counts[e.estado] = (counts[e.estado] ?? 0) + 1;
+  }
+  return counts;
+});
+```
+
+### Estructura visual
+
+```
+┌─────────────────────────────────┐
+│  Filtros                Limpiar │
+├─────────────────────────────────┤
+│  RANGO DE FECHAS                │
+│  [Último mes][3 meses][6m][Año] │
+│  Desde [__/__/__] Hasta [__/..] │
+├─────────────────────────────────┤
+│  TIPO DE ESTUDIO                │
+│  □ Hematología              3   │
+│  □ Bioquímica               5   │
+│  □ Hormonas                 2   │
+│  □ Orina                    1   │
+│  □ Coagulación              1   │
+├─────────────────────────────────┤
+│  ESTADO                         │
+│  □ 🟢 Disponible            8   │
+│  □ 🔵 En proceso            2   │
+│  □ 🟡 Pendiente             2   │
+└─────────────────────────────────┘
+```
+
+### Comportamiento
+
+- Desktop (`mobileMode = false`): cada cambio de checkbox o fecha emite `filtrosChange` de inmediato (filtrado live).
+- Mobile (`mobileMode = true`): los cambios son internos hasta que el usuario toca "Aplicar filtros", que emite `aplicar` con los filtros actualizados. El padre cierra el drawer al recibirlo.
+- Los chips de rango rápido (Último mes, 3 meses, 6 meses, Año) son toggleables: tocando el mismo chip activo lo desactiva y limpia las fechas.
+
+### Importación
+
+```typescript
+import { FiltersAsideComponent } from '../../../shared/ui/components/filters-aside/filters-aside.component';
+```

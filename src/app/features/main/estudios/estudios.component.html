@@ -1,0 +1,208 @@
+<p-toast [position]="bp.isMobile() ? 'top-center' : 'top-right'" />
+
+<ui-page-header
+  title="Mis estudios"
+  subtitle="Resultados disponibles para descargar." />
+
+<!-- Selector de persona -->
+@if (personas().length > 0) {
+  <ui-person-chips
+    [personas]="personas()"
+    [selectedId]="selectedPersonaId()"
+    (selectionChange)="onPersonaChange($event)" />
+}
+
+<!-- Barra de búsqueda + sort + filtros mobile -->
+<div class="ui-estudios-toolbar">
+  <p-iconField iconPosition="left" styleClass="ui-search-input">
+    <p-inputIcon styleClass="pi pi-search" />
+    <input
+      pInputText
+      [ngModel]="searchTerm()"
+      (ngModelChange)="searchTerm.set($event)"
+      placeholder="Buscar por nombre, fecha o persona..." />
+  </p-iconField>
+
+  <p-select
+    [options]="sortOptions"
+    optionLabel="label"
+    optionValue="value"
+    placeholder="Ordenar por"
+    appendTo="body"
+    [ngModel]="sortBy()"
+    (ngModelChange)="onSortChange($event)"
+    styleClass="ui-show-desktop ui-sort-select" />
+
+  <p-button
+    icon="pi pi-filter"
+    [rounded]="true"
+    [text]="true"
+    styleClass="ui-show-mobile"
+    [badge]="activeFiltersCount() > 0 ? activeFiltersCount().toString() : undefined"
+    ariaLabel="Filtros"
+    (onClick)="mobileFiltersOpen.set(true)" />
+</div>
+
+<!-- Layout principal -->
+<div class="ui-estudios-layout">
+
+  <!-- Sección: lista / tabla -->
+  <section class="ui-estudios-list">
+
+    @if (loadingEstudios()) {
+      <!-- Skeletons de carga -->
+      @for (i of [1,2,3,4,5]; track i) {
+        <p-skeleton height="56px" styleClass="mb-2" />
+      }
+
+    } @else if (estudios().length === 0) {
+      <!-- Sin estudios en absoluto -->
+      <ui-empty-state
+        icon="pi-file"
+        heading="Aún no tenés estudios"
+        message="Cuando tengás resultados disponibles van a aparecer acá." />
+
+    } @else if (estudiosFiltrados().length === 0) {
+      <!-- Filtros sin resultados -->
+      <ui-empty-state
+        icon="pi-filter-slash"
+        heading="No hay estudios con los filtros aplicados"
+        message="Probá ajustar los filtros o limpiarlos para ver todos los estudios.">
+        <p-button
+          label="Limpiar filtros"
+          [text]="true"
+          (onClick)="onLimpiarFiltros()" />
+      </ui-empty-state>
+
+    } @else {
+
+      <!-- Desktop: tabla -->
+      <div class="ui-show-desktop ui-table-wrapper">
+        <p-table
+          [value]="estudiosFiltrados()"
+          [paginator]="true"
+          [rows]="10"
+          [stripedRows]="true"
+          styleClass="p-datatable-sm">
+          <ng-template pTemplate="caption">
+            <span class="visually-hidden">Listado de estudios</span>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Estudio</th>
+              <th>Fecha</th>
+              <th>Persona</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-e>
+            <tr>
+              <td>
+                <div class="ui-estudio-nombre">
+                  <span class="ui-categoria-icon ui-categoria-{{ e.categoria }}">
+                    <i [class]="getIconForCategoria(e.categoria)"></i>
+                  </span>
+                  <span>{{ e.nombre }}</span>
+                  @if (e.esNuevo) {
+                    <span class="ui-badge-nuevo">NUEVO</span>
+                  }
+                </div>
+              </td>
+              <td>{{ e.fecha }}</td>
+              <td>
+                <div class="ui-persona-cell">
+                  <span class="ui-avatar-mini ui-avatar-{{ getAvatarColor(e.personaId) }}">
+                    {{ e.personaIniciales }}
+                  </span>
+                  <span>{{ e.personaNombre }}</span>
+                </div>
+              </td>
+              <td>
+                <p-tag
+                  [value]="e.estadoLabel"
+                  [styleClass]="'ui-tag-' + e.estado" />
+              </td>
+              <td>
+                <p-button
+                  icon="pi pi-download"
+                  [rounded]="true"
+                  [text]="true"
+                  ariaLabel="Descargar"
+                  pTooltip="Descargar"
+                  [disabled]="e.estado !== 'disponible'"
+                  (onClick)="onDescargar(e)" />
+                <p-button
+                  icon="pi pi-eye"
+                  [rounded]="true"
+                  [text]="true"
+                  ariaLabel="Ver estudio"
+                  pTooltip="Ver"
+                  [disabled]="e.estado !== 'disponible'"
+                  (onClick)="onVerEstudio(e)" />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+      <!-- Mobile: cards -->
+      <div class="ui-show-mobile ui-estudios-cards">
+        @for (e of estudiosFiltrados(); track e.id) {
+          <div
+            class="ui-list-card"
+            [class.ui-list-card--disabled]="e.estado !== 'disponible'"
+            (click)="onVerEstudio(e)"
+            role="button"
+            [attr.tabindex]="e.estado === 'disponible' ? 0 : -1"
+            [attr.aria-label]="e.nombre">
+            <span class="ui-avatar-mini ui-avatar-{{ getAvatarColor(e.personaId) }}">
+              {{ e.personaIniciales }}
+            </span>
+            <div class="ui-list-card__info">
+              <strong>
+                {{ e.nombre }}
+                @if (e.esNuevo) {
+                  <span class="ui-badge-nuevo">NUEVO</span>
+                }
+              </strong>
+              <span class="ui-text-muted">{{ e.fecha }} · {{ e.personaNombre }}</span>
+            </div>
+            <p-tag
+              [value]="e.estadoLabel"
+              [styleClass]="'ui-tag-' + e.estado" />
+          </div>
+        }
+      </div>
+
+    }
+  </section>
+
+  <!-- Aside desktop: filtros -->
+  <aside class="ui-estudios-aside ui-show-desktop">
+    <ui-filters-aside
+      [filtros]="filtros()"
+      [countsByTipo]="countsByTipo()"
+      [countsByEstado]="countsByEstado()"
+      (filtrosChange)="onFiltrosChange($event)"
+      (limpiar)="onLimpiarFiltros()" />
+  </aside>
+
+</div>
+
+<!-- Bottom sheet mobile: filtros -->
+<p-drawer
+  [visible]="mobileFiltersOpen()"
+  (visibleChange)="mobileFiltersOpen.set($event)"
+  position="bottom"
+  styleClass="ui-bottom-sheet-drawer ui-filters-sheet">
+  <ng-template pTemplate="headless">
+    <ui-filters-aside
+      [mobileMode]="true"
+      [filtros]="filtros()"
+      [countsByTipo]="countsByTipo()"
+      [countsByEstado]="countsByEstado()"
+      (aplicar)="onFiltrosApplyMobile($event)"
+      (limpiar)="onLimpiarFiltros()" />
+  </ng-template>
+</p-drawer>

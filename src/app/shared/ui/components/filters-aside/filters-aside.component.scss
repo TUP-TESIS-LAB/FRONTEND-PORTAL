@@ -1,0 +1,148 @@
+@use 'breakpoints' as *;
+
+.ui-filters-aside {
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-4) var(--space-3);
+    border-bottom: 1px solid var(--ds-surface);
+  }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ds-text);
+  }
+
+  &__limpiar-link {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--ds-font);
+    font-size: 13px;
+    color: var(--ds-text-muted);
+    padding: 0;
+
+    &:hover { color: var(--brand-primary); }
+  }
+
+  &__section {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--ds-surface);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+
+    &:last-of-type { border-bottom: none; }
+  }
+
+  &__section-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--ds-text-muted);
+    margin-bottom: var(--space-1);
+  }
+
+  // Chips de rango rápido
+  &__rangos-rapidos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  &__rango-chip {
+    padding: var(--space-1) var(--space-2);
+    border-radius: 999px;
+    border: 1px solid var(--ds-surface-dark);
+    background: var(--ds-bg);
+    font-family: var(--ds-font);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ds-text-muted);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+
+    &:hover { border-color: var(--brand-primary); color: var(--brand-primary); }
+
+    &--active {
+      background: var(--brand-primary-light);
+      border-color: var(--brand-primary);
+      color: var(--brand-primary);
+      font-weight: 600;
+    }
+  }
+
+  // Inputs de fecha
+  &__fechas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+    margin-top: var(--space-1);
+  }
+
+  &__fecha-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__fecha-label {
+    font-size: 11px;
+    color: var(--ds-text-muted);
+    font-weight: 500;
+  }
+
+  // Fila de checkbox
+  &__check-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 32px;
+  }
+
+  &__check-label {
+    flex: 1;
+    font-size: 13px;
+    color: var(--ds-text);
+    cursor: pointer;
+  }
+
+  &__estado-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__count {
+    font-size: 12px;
+    color: var(--ds-text-muted);
+    font-weight: 600;
+    min-width: 20px;
+    text-align: right;
+  }
+
+  // Footer (solo mobile)
+  &__footer {
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding-bottom: calc(var(--space-4) + var(--ds-safe-bottom));
+  }
+}
+
+// Override: datepicker más compacto dentro del aside
+::ng-deep .ui-datepicker-sm {
+  .p-datepicker-input { font-size: 13px; }
+}

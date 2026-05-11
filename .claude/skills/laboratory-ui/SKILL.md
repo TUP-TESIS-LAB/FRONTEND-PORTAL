@@ -464,6 +464,8 @@ Reglas estrictas que evitan inconsistencia y rompen el DS si se ignoran:
 - ❌ Crear modales propios → ✅ usar `p-dialog` con `ui-dialog-fullscreen-mobile`
 - ❌ Renderizar tablas tal cual en mobile → ✅ patrón "tabla adaptativa" (cards en mobile)
 - ❌ Usar prefijos de tenant en clases (`.lcc-card`) → ✅ siempre `.ui-*`
+- ❌ `import { DropdownModule } from 'primeng/dropdown'` → ✅ `import { Select } from 'primeng/select'` + selector `p-select` (renombrado en v17+)
+- ❌ `[badge]="condicion ? valor : null"` en `p-button` → ✅ `[badge]="condicion ? valor : undefined"` (`[badge]` acepta `string | undefined`, no acepta `null`)
 
 **Accesibilidad**
 - ❌ `p-button` con solo ícono sin `ariaLabel` → ✅ siempre con label accesible

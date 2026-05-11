@@ -1,0 +1,64 @@
+@use 'breakpoints' as *;
+
+.ui-person-chips {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: var(--space-1); // evita que el borde del chip quede cortado
+  margin-bottom: var(--space-4);
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.ui-person-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 40px;
+  padding: 0 var(--space-3);
+  border-radius: 999px;
+  border: 1.5px solid var(--ds-surface-dark);
+  background: var(--ds-white);
+  color: var(--ds-text);
+  font-family: var(--ds-font);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover { border-color: var(--brand-primary); }
+  &:active { transform: scale(0.97); }
+
+  // Estado seleccionado — fondo y borde en el color del avatar
+  &--selected {
+    border-width: 2px;
+  }
+  &--selected-primary   { border-color: var(--brand-primary);   background: var(--brand-primary-light);   }
+  &--selected-secondary { border-color: var(--brand-secondary); background: var(--brand-secondary-light); }
+  &--selected-accent    { border-color: var(--brand-accent);    background: var(--brand-accent-light);    }
+  &--selected-warning   { border-color: var(--ds-warning);      background: var(--ds-warning-light);      }
+  &--selected-neutral   { border-color: var(--ds-text-muted);   background: var(--ds-surface);            }
+
+  &__avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+
+    &--primary   { background: var(--brand-primary);   }
+    &--secondary { background: var(--brand-secondary); }
+    &--accent    { background: var(--brand-accent);    }
+    &--warning   { background: var(--ds-warning);      }
+    &--neutral   { background: var(--ds-text-muted);   }
+  }
+}

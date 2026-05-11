@@ -1,0 +1,164 @@
+@use 'breakpoints' as *;
+
+// ── Toolbar de búsqueda ──────────────────────────────────
+.ui-estudios-toolbar {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin-bottom: var(--space-4);
+
+  @include mobile-only {
+    position: sticky;
+    top: var(--ds-topbar-h);
+    background: var(--ds-bg);
+    z-index: var(--z-sticky);
+    padding: var(--space-2) 0;
+  }
+
+  .ui-search-input { flex: 1; }
+
+  .ui-sort-select { min-width: 180px; }
+}
+
+// ── Layout principal ─────────────────────────────────────
+.ui-estudios-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  align-items: start;
+
+  @include desktop-up {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: var(--space-6);
+  }
+}
+
+.ui-estudios-list {
+  min-width: 0;
+}
+
+.ui-estudios-aside {
+  position: sticky;
+  top: calc(var(--ds-topbar-h) + var(--space-4));
+}
+
+// ── Tabla: nombre de estudio ─────────────────────────────
+.ui-estudio-nombre {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+// ── Ícono de categoría ───────────────────────────────────
+.ui-categoria-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--ds-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 13px;
+
+  &.ui-categoria-hematologia { background: rgba(226, 58, 71, 0.12);    color: var(--ds-danger);   }
+  &.ui-categoria-bioquimica  { background: rgba(34, 197, 94, 0.12);    color: var(--ds-success);  }
+  &.ui-categoria-hormonas    { background: rgba(245, 158, 11, 0.12);   color: var(--ds-warning);  }
+  &.ui-categoria-orina       { background: rgba(245, 158, 11, 0.10);   color: var(--ds-warning);  }
+  &.ui-categoria-coagulacion { background: rgba(59, 130, 246, 0.12);   color: var(--ds-info);     }
+}
+
+// ── Badge NUEVO ──────────────────────────────────────────
+.ui-badge-nuevo {
+  background: var(--brand-accent);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--ds-radius-sm);
+  flex-shrink: 0;
+}
+
+// ── Celda persona (tabla) ────────────────────────────────
+.ui-persona-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+// ── Avatar mini ──────────────────────────────────────────
+.ui-avatar-mini {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+
+  &.ui-avatar-primary   { background: var(--brand-primary);   }
+  &.ui-avatar-secondary { background: var(--brand-secondary); }
+  &.ui-avatar-accent    { background: var(--brand-accent);    }
+  &.ui-avatar-warning   { background: var(--ds-warning);      }
+  &.ui-avatar-neutral   { background: var(--ds-text-muted);   }
+}
+
+// ── Tags de estado (estudios) ────────────────────────────
+::ng-deep {
+  .ui-tag-disponible  { background: var(--ds-success-light) !important; color: var(--ds-success) !important; }
+  .ui-tag-en-proceso  { background: var(--ds-info-light)    !important; color: var(--ds-info)    !important; }
+  .ui-tag-pendiente   { background: var(--ds-warning-light) !important; color: var(--ds-warning) !important; }
+}
+
+// ── Cards mobile ─────────────────────────────────────────
+.ui-estudios-cards {
+  @include mobile-only {
+    display: flex;
+  }
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ui-list-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-sm);
+  min-height: var(--ds-touch-target);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:active { transform: scale(0.98); }
+
+  &--disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong { font-size: 13px; display: flex; align-items: center; gap: var(--space-1); flex-wrap: wrap; }
+    span   { font-size: 12px; color: var(--ds-text-muted); }
+  }
+}
+
+// ── Visually hidden (accesibilidad) ─────────────────────
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}

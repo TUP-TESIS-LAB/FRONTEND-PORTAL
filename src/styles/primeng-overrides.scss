@@ -414,6 +414,120 @@
   padding: 0;
 }
 
+// ─── Tabla: celdas ───────────────────────────────────
+// Tailwind v4 resetea padding de td/th a 0; PrimeNG @layer no gana.
+.p-datatable {
+  .p-datatable-thead > tr > th {
+    padding: var(--space-3) var(--space-4);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ds-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    background: var(--ds-white);
+    border-bottom: 2px solid var(--ds-surface-dark);
+    white-space: nowrap;
+    text-align: left;
+  }
+
+  .p-datatable-tbody > tr > td {
+    padding: var(--space-3) var(--space-4);
+    font-size: 14px;
+    color: var(--ds-text);
+    border-bottom: 1px solid var(--ds-surface-dark);
+    vertical-align: middle;
+  }
+
+  // Filas alternas (stripedRows)
+  .p-datatable-tbody > tr:nth-child(even) > td {
+    background: var(--ds-surface);
+  }
+
+  // Hover en filas
+  .p-datatable-tbody > tr:hover > td {
+    background: var(--brand-primary-light);
+  }
+
+  // Variante sm: padding reducido
+  &.p-datatable-sm {
+    .p-datatable-thead > tr > th { padding: var(--space-2) var(--space-3); }
+    .p-datatable-tbody > tr > td { padding: var(--space-2) var(--space-3); }
+  }
+}
+
+// ─── Paginador de tabla ───────────────────────────────
+.p-paginator,
+.p-datatable-paginator-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--ds-surface-dark);
+  background: var(--ds-white);
+  flex-wrap: wrap;
+}
+
+.p-paginator-first,
+.p-paginator-prev,
+.p-paginator-next,
+.p-paginator-last {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--ds-radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ds-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+
+  &:hover:not(:disabled) { background: var(--ds-surface); color: var(--ds-text); }
+  &:disabled { opacity: 0.4; cursor: default; }
+}
+
+.p-paginator-pages {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.p-paginator-page {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 var(--space-2);
+  border-radius: var(--ds-radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ds-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: background 0.15s;
+
+  &:hover:not(.p-paginator-page-selected) {
+    background: var(--ds-surface);
+    color: var(--ds-text);
+  }
+
+  &.p-paginator-page-selected,
+  &[data-p-active="true"] {
+    background: var(--brand-primary);
+    color: var(--ds-white);
+    font-weight: 600;
+  }
+}
+
+.p-paginator-current {
+  font-size: 13px;
+  color: var(--ds-text-muted);
+  padding: 0 var(--space-2);
+}
+
 // ─── Toast ───────────────────────────────────────────
 .p-toast {
   .p-toast-message {
