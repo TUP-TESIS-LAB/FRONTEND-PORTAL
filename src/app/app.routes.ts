@@ -45,6 +45,13 @@ export const routes: Routes = [
             m => m.PerfilComponent,
           ),
       },
+      {
+        path: 'turnos',
+        loadComponent: () =>
+          import('./features/main/turnos/turnos.component').then(
+            m => m.TurnosComponent,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

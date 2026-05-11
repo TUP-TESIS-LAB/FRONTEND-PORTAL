@@ -286,6 +286,24 @@
   }
 }
 
+// ─── Bottom sheet de detalle de turno ────────────────
+// Variante del bottom sheet para ui-turno-detail: altura automática,
+// sin padding propio (el componente interno gestiona su espaciado).
+.ui-turno-detail-sheet {
+  height: auto !important;
+  max-height: 92dvh !important;
+  border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+
+  .p-drawer-content {
+    padding: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
+
 // ─── Tabs ────────────────────────────────────────────
 // Aura pone los estilos de tabs dentro de @layer primeng.
 // Las siguientes reglas son unlayered → ganan en cascada sin !important.

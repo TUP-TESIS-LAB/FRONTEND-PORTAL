@@ -1648,6 +1648,221 @@ export class TurnoWizardComponent {
 
 ---
 
+## ui-placeholder-card
+
+Slot visual vacío con borde dashed. Indica que un área (aside, panel lateral) está esperando contenido. **No es clickeable** — a diferencia de `ui-add-family-card`, no tiene acción propia.
+
+### Cuándo usarlo
+
+- Aside de "Mis turnos" en desktop cuando no hay turno seleccionado.
+- Cualquier panel lateral o widget que aún no tenga contenido y donde se quiera comunicar visualmente que ahí va a ir algo.
+
+### API
+
+```typescript
+// Inputs
+@Input({ required: true }) icon!: string;       // PrimeIcons con prefijo 'pi ': 'pi pi-calendar'
+@Input({ required: true }) title!: string;
+@Input() description?: string;
+```
+
+### Uso
+
+```html
+<ui-placeholder-card
+  icon="pi-calendar"
+  title="Seleccioná un turno"
+  description="Hacé clic en un turno de la lista para ver su detalle." />
+```
+
+### Estructura visual
+
+```
+┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+                                            
+           🗓  (ícono 2.5rem gris)          
+                                            
+        Seleccioná un turno                 
+      (16px 600 --ds-text-muted)           
+                                            
+   Hacé clic en un turno de la lista       
+    para ver su detalle. (14px muted)      
+                                            
+└ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+  border: 2px dashed --ds-surface-dark
+  border-radius: --ds-radius-lg
+  min-height: 280px
+```
+
+### SCSS clave
+
+```scss
+.ui-placeholder-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  border: 2px dashed var(--ds-surface-dark);
+  border-radius: var(--ds-radius-lg);
+  background: transparent;
+  text-align: center;
+  min-height: 280px;
+
+  .pi { font-size: 2.5rem; color: var(--ds-text-disabled); }
+  &__title { font-size: 16px; font-weight: 600; color: var(--ds-text-muted); }
+  &__desc   { font-size: 14px; color: var(--ds-text-muted); max-width: 280px; line-height: 1.5; }
+}
+```
+
+### Importación
+
+```typescript
+import { PlaceholderCardComponent } from '../../../shared/ui/components/placeholder-card/placeholder-card.component';
+```
+
+---
+
+## ui-prep-warning
+
+Caja de advertencia amarilla con instrucciones de preparación para un turno o estudio. Semanticamente equivale a un banner de tipo `warning` estructurado como lista.
+
+### Cuándo usarlo
+
+- Panel de detalle de un turno (`ui-turno-detail`).
+- Paso de confirmación del wizard de reservar turno.
+- Cualquier lugar donde haya instrucciones previas obligatorias.
+
+### API
+
+```typescript
+@Input({ required: true }) instructions!: string[];
+@Input() title = 'Preparación';    // label superior, personalizable
+```
+
+### Uso
+
+```html
+<ui-prep-warning
+  [instructions]="['8 horas de ayuno', 'Llevar orden médica firmada']" />
+
+<!-- Con título personalizado -->
+<ui-prep-warning
+  title="Antes del turno"
+  [instructions]="turno.preparacion" />
+```
+
+### Estructura visual
+
+```
+┌──────────────────────────────────────┐  background: --ds-warning-light
+│  ⓘ  PREPARACIÓN                      │  header: 11px uppercase --ds-warning
+├──────────────────────────────────────┤
+│  • 8 horas de ayuno (puede tomar     │  lista: ul padding-left, 14px --ds-text
+│    agua)                             │
+│  • Evitar actividad física intensa   │
+│  • Llevar orden médica firmada       │
+└──────────────────────────────────────┘
+```
+
+### Importación
+
+```typescript
+import { PrepWarningComponent } from '../../../shared/ui/components/prep-warning/prep-warning.component';
+```
+
+---
+
+## ui-turno-detail
+
+Panel de detalle de un turno. Reutilizable: en desktop va en el aside sticky de "Mis turnos"; en mobile se embebe dentro del bottom sheet (drawer desde abajo).
+
+### Cuándo usarlo
+
+- Aside de "Mis turnos" (desktop).
+- Bottom sheet de "Mis turnos" (mobile).
+- Paso 4 "Confirmar" del wizard de reservar turno (modo solo-lectura, sin botones de acción).
+
+### API
+
+```typescript
+@Input({ required: true }) turno!: Turno;
+
+@Output() reprogramar = new EventEmitter<Turno>();
+@Output() cancelar    = new EventEmitter<Turno>();
+@Output() close       = new EventEmitter<void>();  // usado en bottom sheet mobile
+```
+
+### Uso
+
+```html
+<!-- Desktop: aside -->
+<ui-turno-detail
+  [turno]="selectedTurno()!"
+  (reprogramar)="onReprogramar($event)"
+  (cancelar)="onCancelar($event)" />
+
+<!-- Mobile: dentro del bottom sheet -->
+<p-drawer
+  [visible]="mobileDetailOpen()"
+  (visibleChange)="mobileDetailOpen.set($event)"
+  position="bottom"
+  styleClass="ui-bottom-sheet-drawer ui-turno-detail-sheet">
+  <ng-template pTemplate="headless">
+    <ui-turno-detail
+      [turno]="selectedTurno()!"
+      (reprogramar)="onReprogramar($event)"
+      (cancelar)="onCancelar($event)"
+      (close)="mobileDetailOpen.set(false)" />
+  </ng-template>
+</p-drawer>
+```
+
+### Estructura visual
+
+```
+┌──────────────────────────────────────┐
+│  [brand-primary bg]                  │
+│  TU PRÓXIMO TURNO (uppercase 11px)   │
+│  Martes 19 de mayo de 2026  (h3)     │
+│  08:30 hs · Llegá 10 min antes       │
+├──────────────────────────────────────┤
+│  [mapa placeholder — gris 160px]     │
+│                                      │
+│  SEDE                                │
+│  Sede Centro                         │
+│  Av. Colón 450, Córdoba              │
+│  📞 (0351)...  🕐 L-V 7:00 a 19:00   │
+│  ────────────────────────────        │
+│  ESTUDIOS                            │
+│  [chip teal] Hemoglobina  [chip teal]│
+│  ────────────────────────────        │
+│  [ui-prep-warning]                   │
+│  ────────────────────────────        │
+│  [Reprogramar]  [Cancelar turno]     │
+└──────────────────────────────────────┘
+```
+
+### Botón de cierre (mobile)
+
+El componente tiene un `__close` button que por defecto está `display: none`. Se vuelve visible cuando el padre tiene la clase `ui-turno-detail-sheet` en el drawer container. El override global en `primeng-overrides.scss` maneja esto porque el drawer se renderiza como portal al `<body>`.
+
+```scss
+// En primeng-overrides.scss (ya presente)
+.ui-turno-detail-sheet ui-turno-detail .ui-turno-detail__close {
+  display: flex;
+}
+```
+
+### Importación
+
+```typescript
+import { TurnoDetailComponent } from '../../../shared/ui/components/turno-detail/turno-detail.component';
+```
+
+---
+
 ## Bottom sheet (mobile)
 
 **Solo mobile.** Para acciones secundarias que no entran en el bottom-nav. No usar para navegación primaria ni para formularios — esos van en el bottom-nav y en `p-dialog` respectivamente.

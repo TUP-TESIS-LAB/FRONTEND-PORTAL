@@ -1,0 +1,47 @@
+@use 'breakpoints' as *;
+
+// ─── Layout principal ────────────────────────────────────
+.ui-turnos-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+
+  @include desktop-up {
+    grid-template-columns: 1fr 400px;
+    align-items: start;
+  }
+}
+
+// ─── Aside sticky ────────────────────────────────────────
+.ui-turnos-aside {
+  position: sticky;
+  top: var(--space-5);
+  height: fit-content;
+}
+
+// ─── Badge de conteo en los tabs ─────────────────────────
+.ui-tab-badge {
+  display: inline-block;
+  background: var(--ds-surface);
+  color: var(--ds-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: var(--space-2);
+  vertical-align: middle;
+}
+
+// ─── Card seleccionada en desktop ────────────────────────
+::ng-deep .ui-card-selected .ui-event-card {
+  border-left: 4px solid var(--brand-primary);
+  background: var(--brand-primary-light);
+}
+
+// ─── Override: quitar padding del panel de tabs ──────────
+// El padding global de .p-tabs-panel no aplica aquí porque
+// las cards ya tienen su propio espaciado (margin-bottom).
+::ng-deep .p-tabs-panel {
+  padding-left: 0;
+  padding-right: 0;
+}

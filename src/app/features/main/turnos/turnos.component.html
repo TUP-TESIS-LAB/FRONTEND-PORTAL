@@ -1,0 +1,134 @@
+<p-toast [position]="bp.isMobile() ? 'top-center' : 'top-right'" />
+<p-confirmDialog />
+
+<ui-page-header
+  title="Mis turnos"
+  subtitle="Próximos turnos y tu historial reciente.">
+  <p-button
+    label="Sacar turno"
+    icon="pi pi-plus"
+    severity="primary"
+    (onClick)="onSacarTurno()" />
+</ui-page-header>
+
+<div class="ui-turnos-layout">
+
+  <!-- ─── Lista con tabs ─────────────────────────────── -->
+  <section class="ui-turnos-list">
+    <p-tabs
+      [value]="activeTab()"
+      (valueChange)="onTabChange($event)">
+
+      <p-tablist>
+        <p-tab value="proximos">
+          Próximos
+          <span class="ui-tab-badge">{{ proximosTurnos().length }}</span>
+        </p-tab>
+        <p-tab value="anteriores">
+          Anteriores
+          <span class="ui-tab-badge">{{ anterioresTurnos().length }}</span>
+        </p-tab>
+      </p-tablist>
+
+      <p-tabpanels>
+
+        <!-- Tab: Próximos -->
+        <p-tabpanel value="proximos">
+          @if (cargando()) {
+            @for (i of [1, 2, 3]; track i) {
+              <p-skeleton height="80px" styleClass="mb-3" />
+            }
+          } @else if (proximosTurnos().length === 0) {
+            <ui-empty-state
+              icon="pi-calendar"
+              heading="No tenés turnos próximos"
+              message="Cuando saques un turno va a aparecer acá." />
+          } @else {
+            @for (turno of proximosTurnos(); track turno.id) {
+              <ui-event-card
+                [day]="turno.dia"
+                [month]="turno.mes"
+                [title]="turno.tipo"
+                [details]="[
+                  { icon: 'pi-clock',      text: turno.hora + ' hs' },
+                  { icon: 'pi-map-marker', text: turno.sede.nombre }
+                ]"
+                [statusKey]="turno.estado"
+                [statusLabel]="turno.estadoLabel"
+                [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"
+                [class.ui-card-selected]="selectedTurno()?.id === turno.id"
+                (click)="onTurnoClick(turno)"
+                style="cursor: pointer" />
+            }
+          }
+        </p-tabpanel>
+
+        <!-- Tab: Anteriores -->
+        <p-tabpanel value="anteriores">
+          @if (cargando()) {
+            @for (i of [1, 2, 3]; track i) {
+              <p-skeleton height="80px" styleClass="mb-3" />
+            }
+          } @else if (anterioresTurnos().length === 0) {
+            <ui-empty-state
+              icon="pi-history"
+              heading="No tenés turnos anteriores"
+              message="Tus turnos pasados van a aparecer acá." />
+          } @else {
+            @for (turno of anterioresTurnos(); track turno.id) {
+              <ui-event-card
+                [day]="turno.dia"
+                [month]="turno.mes"
+                [title]="turno.tipo"
+                [details]="[
+                  { icon: 'pi-clock',      text: turno.hora + ' hs' },
+                  { icon: 'pi-map-marker', text: turno.sede.nombre }
+                ]"
+                [statusKey]="turno.estado"
+                [statusLabel]="turno.estadoLabel"
+                [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"
+                (click)="onTurnoClick(turno)"
+                style="cursor: pointer" />
+            }
+          }
+        </p-tabpanel>
+
+      </p-tabpanels>
+    </p-tabs>
+  </section>
+
+  <!-- ─── Aside desktop ─────────────────────────────── -->
+  <aside class="ui-turnos-aside ui-show-desktop">
+    @if (cargando()) {
+      <p-skeleton height="480px" />
+    } @else if (selectedTurno()) {
+      <ui-turno-detail
+        [turno]="selectedTurno()!"
+        (reprogramar)="onReprogramar($event)"
+        (cancelar)="onCancelar($event)" />
+    } @else {
+      <ui-placeholder-card
+        icon="pi-calendar"
+        title="Seleccioná un turno"
+        description="Hacé clic en un turno de la lista para ver su detalle." />
+    }
+  </aside>
+
+</div>
+
+<!-- ─── Bottom sheet mobile ───────────────────────── -->
+<p-drawer
+  [visible]="mobileDetailOpen()"
+  (visibleChange)="mobileDetailOpen.set($event)"
+  position="bottom"
+  styleClass="ui-bottom-sheet-drawer ui-turno-detail-sheet">
+  <ng-template pTemplate="headless">
+    @if (selectedTurno()) {
+      <ui-turno-detail
+        [turno]="selectedTurno()!"
+        (reprogramar)="onReprogramar($event)"
+        (cancelar)="onCancelar($event)"
+        (close)="mobileDetailOpen.set(false)" />
+    }
+  </ng-template>
+</p-drawer>

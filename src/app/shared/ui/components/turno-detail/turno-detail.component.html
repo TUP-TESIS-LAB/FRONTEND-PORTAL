@@ -1,0 +1,80 @@
+<div class="ui-turno-detail">
+
+  <!-- Header con fondo de marca -->
+  <div class="ui-turno-detail__header">
+    <button
+      class="ui-turno-detail__close"
+      type="button"
+      aria-label="Cerrar detalle"
+      (click)="close.emit()">
+      <i class="pi pi-times"></i>
+    </button>
+    <span class="ui-turno-detail__header-label">TU PRÓXIMO TURNO</span>
+    <h3 class="ui-turno-detail__header-fecha">{{ turno.fechaCompleta }}</h3>
+    <p class="ui-turno-detail__header-hora">
+      {{ turno.hora }} hs
+      <span class="ui-turno-detail__header-llegar">
+        · Llegá {{ turno.llegarMinAntes }} min antes
+      </span>
+    </p>
+  </div>
+
+  <!-- Body -->
+  <div class="ui-turno-detail__body">
+
+    <!-- Mapa placeholder -->
+    <div class="ui-turno-detail__map" aria-hidden="true">
+      <i class="pi pi-map-marker"></i>
+    </div>
+
+    <!-- Datos de la sede -->
+    <div class="ui-turno-detail__sede">
+      <span class="ui-turno-detail__section-label">SEDE</span>
+      <strong class="ui-turno-detail__sede-nombre">{{ turno.sede.nombre }}</strong>
+      <span class="ui-turno-detail__sede-dir">{{ turno.sede.direccion }}</span>
+      @if (turno.sede.telefono || turno.sede.horario) {
+        <span class="ui-turno-detail__sede-meta">
+          @if (turno.sede.telefono) { <i class="pi pi-phone" aria-hidden="true"></i> {{ turno.sede.telefono }} }
+          @if (turno.sede.telefono && turno.sede.horario) { &nbsp;·&nbsp; }
+          @if (turno.sede.horario) { <i class="pi pi-clock" aria-hidden="true"></i> {{ turno.sede.horario }} }
+        </span>
+      }
+    </div>
+
+    <hr class="ui-turno-detail__sep" />
+
+    <!-- Estudios -->
+    <div class="ui-turno-detail__estudios">
+      <span class="ui-turno-detail__section-label">ESTUDIOS</span>
+      <div class="ui-turno-detail__chips">
+        @for (estudio of turno.estudios; track $index) {
+          <span class="ui-turno-detail__chip">{{ estudio }}</span>
+        }
+      </div>
+    </div>
+
+    @if (turno.preparacion.length > 0) {
+      <hr class="ui-turno-detail__sep" />
+
+      <!-- Preparación -->
+      <ui-prep-warning [instructions]="turno.preparacion" />
+    }
+
+    <hr class="ui-turno-detail__sep" />
+
+    <!-- Acciones -->
+    <div class="ui-turno-detail__actions">
+      <p-button
+        label="Reprogramar"
+        [outlined]="true"
+        severity="secondary"
+        (onClick)="reprogramar.emit(turno)" />
+      <p-button
+        label="Cancelar turno"
+        [text]="true"
+        styleClass="ui-text-danger"
+        (onClick)="cancelar.emit(turno)" />
+    </div>
+
+  </div>
+</div>

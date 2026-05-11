@@ -1,0 +1,33 @@
+@use 'breakpoints' as *;
+
+.ui-placeholder-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  border: 2px dashed var(--ds-surface-dark);
+  border-radius: var(--ds-radius-lg);
+  background: transparent;
+  text-align: center;
+  min-height: 280px;
+
+  .pi {
+    font-size: 2.5rem;
+    color: var(--ds-text-disabled);
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ds-text-muted);
+  }
+
+  &__desc {
+    font-size: 14px;
+    color: var(--ds-text-muted);
+    max-width: 280px;
+    line-height: 1.5;
+  }
+}
