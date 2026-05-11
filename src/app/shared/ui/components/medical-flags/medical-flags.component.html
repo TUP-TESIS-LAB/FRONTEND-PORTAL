@@ -1,0 +1,27 @@
+<div class="ui-medical-flags">
+  <span class="ui-medical-flags__label">DATOS CRÍTICOS</span>
+
+  <div class="ui-medical-flags__row">
+    <span class="ui-medical-flags__key">Grupo sanguíneo</span>
+    <span class="ui-medical-flags__chip ui-medical-flags__chip--danger">
+      {{ datosMedicos.grupoSanguineo }}
+    </span>
+  </div>
+
+  @if (datosMedicos.alergias.length > 0) {
+    <div class="ui-medical-flags__row ui-medical-flags__row--wrap">
+      <span class="ui-medical-flags__key">Alergias</span>
+      <div class="ui-medical-flags__chips">
+        @for (alergia of datosMedicos.alergias; track alergia) {
+          <span class="ui-medical-flags__chip ui-medical-flags__chip--warning">
+            {{ alergia }}
+          </span>
+        }
+      </div>
+    </div>
+  }
+
+  <p class="ui-medical-flags__disclaimer">
+    Esta info es visible para el bioquímico cuando es relevante.
+  </p>
+</div>

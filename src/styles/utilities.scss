@@ -40,6 +40,17 @@
   white-space: nowrap;
 }
 
+// Contenedor de un grupo de ui-data-field
+.ui-field-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+
+  // Permite mezclar titulos de sección dentro del listado
+  .ui-grupo-titulo { margin-bottom: 0; }
+}
+
 .ui-grupo-titulo {
   font-size: 13px;
   font-weight: 600;

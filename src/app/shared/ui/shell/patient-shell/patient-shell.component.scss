@@ -6,13 +6,21 @@
 
 .ui-patient-layout {
   display: flex;
-  min-height: 100vh;
+  // Altura fija en viewport: el sidebar queda fijo y __main scrollea.
+  // min-height causaba que ambos crecieran juntos al tener contenido largo.
+  height: 100dvh;
+  overflow: hidden;
 
   &__main {
     flex: 1;
     display: flex;
     flex-direction: column;
     min-width: 0;
+    // Este es el scroll container: todo el contenido de la app scrollea acá,
+    // no en window. El sidebar queda fijo porque no está dentro de este overflow.
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 }
 

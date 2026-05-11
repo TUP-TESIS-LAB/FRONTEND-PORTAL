@@ -1140,6 +1140,164 @@ Patrón genérico para mostrar una entidad con identidad visual (avatar/iniciale
 
 ---
 
+## Campo de dato con ícono (`ui-data-field`)
+
+Muestra un único par etiqueta/valor de forma destacada, con ícono a la izquierda y botón lápiz opcional. Ideal para pantallas de perfil o detalle de entidad donde cada campo merece peso visual propio.
+
+**Cuándo usar `ui-data-field` vs `ui-data-list`:**
+- `ui-data-field`: campos individuales destacados con ícono (perfil, detalle de contacto, cobertura). Uso cuando cada campo es importante por sí solo.
+- `ui-data-list`: lista densa tabular (`<dl>` con grid label/valor). Uso cuando hay muchos pares compactos y el ícono no agrega valor.
+
+### API
+
+```typescript
+// Inputs
+@Input({ required: true }) icon!: string;    // PrimeIcons sin 'pi ': 'pi-envelope'
+@Input({ required: true }) label!: string;   // 'EMAIL'
+@Input({ required: true }) value!: string;   // 'maria@email.com'
+@Input() editable = false;                   // muestra botón lápiz
+@Input() multiline = false;                  // value con white-space: pre-line
+
+// Outputs
+@Output() edit = new EventEmitter<void>();   // clic en el botón lápiz
+```
+
+Si `value` está vacío o es solo espacios, el componente muestra "—" en `--ds-text-disabled`.
+
+### Estructura visual
+
+```
+┌──────────────────────────────────────────────────┐
+│  [📧]  EMAIL                              [✏️]  │
+│        maria.fernandez@email.com                 │
+└──────────────────────────────────────────────────┘
+
+[📧] = cuadrado 40×40, bg --ds-surface, icono 18px --ds-text-muted
+EMAIL = 11px uppercase 600 --ds-text-muted
+valor = 14px 500 --ds-text
+[✏️] = p-button [text]="true" severity="primary" 36×36
+```
+
+### Uso básico
+
+```html
+<!-- Solo lectura -->
+<ui-data-field icon="pi-user" label="Nombre completo" [value]="user.nombre" />
+
+<!-- Editable -->
+<ui-data-field
+  icon="pi-envelope"
+  label="Email"
+  [value]="user.email"
+  [editable]="true"
+  (edit)="onEditCampo('email')" />
+
+<!-- Con valor vacío (muestra "—") -->
+<ui-data-field icon="pi-map" label="Dirección" [value]="user.direccion || ''" [editable]="true" />
+
+<!-- Valor multilinea -->
+<ui-data-field icon="pi-map" label="Dirección" [value]="user.direccion" [multiline]="true" />
+```
+
+### Contenedor recomendado: `.ui-field-list`
+
+Agrupa varios `ui-data-field` verticalmente con gap uniforme:
+
+```html
+<div class="ui-field-list">
+  <ui-data-field icon="pi-envelope" label="Email" [value]="user.email" [editable]="true" (edit)="..." />
+  <ui-data-field icon="pi-phone"    label="Teléfono" [value]="user.telefono" [editable]="true" (edit)="..." />
+
+  <h4 class="ui-grupo-titulo">Contacto de emergencia</h4>
+  <ui-data-field icon="pi-user" label="Nombre" [value]="user.contactoEmergencia?.nombre || ''" />
+</div>
+```
+
+### Importación
+
+```typescript
+import { DataFieldComponent } from '../../../shared/ui/components/data-field/data-field.component';
+```
+
+---
+
+## Tabs (`p-tabs`) — API de selectores
+
+> **⚠️ Trampa frecuente:** los selectores internos de `p-tabs` son **todos lowercase**. La documentación oficial y otros recursos los muestran en camelCase, pero el compilador Angular los rechaza. Usar siempre los nombres en minúsculas.
+
+### Selectores correctos
+
+| Componente  | Selector correcto | ❌ No usar    |
+|-------------|-------------------|---------------|
+| Tabs        | `p-tabs`          | —             |
+| TabList     | `p-tablist`       | `p-tabList`   |
+| Tab         | `p-tab`           | —             |
+| TabPanels   | `p-tabpanels`     | `p-tabPanels` |
+| TabPanel    | `p-tabpanel`      | `p-tabPanel`  |
+
+### Módulo a importar
+
+```typescript
+import { TabsModule } from 'primeng/tabs';
+// TabsModule exporta: Tabs, TabList, Tab, TabPanels, TabPanel
+```
+
+### Uso básico con valor inicial estático
+
+```html
+<p-tabs value="primer-tab">
+  <p-tablist>
+    <p-tab value="primer-tab">Primer tab</p-tab>
+    <p-tab value="segundo-tab">Segundo tab</p-tab>
+  </p-tablist>
+
+  <p-tabpanels>
+    <p-tabpanel value="primer-tab">
+      Contenido del primer tab
+    </p-tabpanel>
+    <p-tabpanel value="segundo-tab">
+      Contenido del segundo tab
+    </p-tabpanel>
+  </p-tabpanels>
+</p-tabs>
+```
+
+### Binding reactivo (tab activo controlado por el componente)
+
+El input `value` de `p-tabs` es un **model signal** de Angular 17. Para enlazarlo a un signal del componente usar la sintaxis explícita de signal:
+
+```typescript
+// En el componente
+activeTab = signal('primer-tab');
+```
+
+```html
+<!-- En el template: leer con () y escribir con .set() -->
+<p-tabs [value]="activeTab()" (valueChange)="activeTab.set($event)">
+  ...
+</p-tabs>
+```
+
+> **Nota:** `[(value)]="activeTab"` (two-way binding Angular clásico) **no funciona** con `WritableSignal` — Angular intenta asignar el signal completo, no llamar a `.set()`. Usar siempre la forma explícita `[value]="activeTab()" (valueChange)="activeTab.set($event)"`.
+
+### Responsive — tabs scrolleables en mobile
+
+Cuando los tabs no entran en pantalla, habilitar scroll horizontal con estos estilos:
+
+```scss
+// En el componente que usa p-tabs
+::ng-deep .p-tablist {
+  @include mobile-only {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+}
+```
+
+---
+
 ## Wizard multi-paso (con stepper visual)
 
 Patrón para procesos guiados de N pasos. Aplica a cualquier flujo con selecciones secuenciales: reserva de turno (4 pasos), alta de familiar, configuración inicial, etc. La skill define la estructura visual y de Reactive Forms; el contenido de cada paso depende del feature.

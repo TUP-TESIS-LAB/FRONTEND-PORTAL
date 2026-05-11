@@ -286,6 +286,75 @@
   }
 }
 
+// ─── Tabs ────────────────────────────────────────────
+// Aura pone los estilos de tabs dentro de @layer primeng.
+// Las siguientes reglas son unlayered → ganan en cascada sin !important.
+
+// Barra de tabs: línea separadora inferior
+.p-tablist {
+  border-bottom: 2px solid var(--ds-surface-dark);
+  background: var(--ds-white);
+}
+
+// Contenedor de los botones de tab
+.p-tablist-tab-list {
+  display: flex;
+  gap: 0;
+  position: relative;
+  padding: 0 var(--space-4);
+}
+
+// Botón individual de tab
+.p-tab {
+  padding: var(--space-3) var(--space-4);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--ds-font);
+  color: var(--ds-text-muted);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s ease;
+  white-space: nowrap;
+  user-select: none;
+
+  &:hover {
+    color: var(--ds-text);
+  }
+
+  // Tab activo
+  &[data-p-active="true"] {
+    color: var(--brand-primary);
+    font-weight: 600;
+  }
+}
+
+// Barra deslizante que indica el tab activo
+.p-tablist-active-bar {
+  background: var(--brand-primary);
+  height: 2px;
+  position: absolute;
+  bottom: -2px;
+  transition: left 0.2s ease, width 0.2s ease;
+}
+
+// Contenedor de los paneles
+.p-tabpanels {
+  background: var(--ds-white);
+}
+
+// p-tabs-panel es la clase CSS que PrimeNG aplica al host de p-tabpanel
+// (no confundir con el selector HTML p-tabpanel).
+.p-tabs-panel {
+  padding: var(--space-5);
+
+  @media (min-width: 1024px) {
+    padding: var(--space-6);
+  }
+}
+
 // ─── Toast ───────────────────────────────────────────
 .p-toast {
   .p-toast-message {
