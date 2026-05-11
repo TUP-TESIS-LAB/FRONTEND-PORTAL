@@ -14,6 +14,8 @@ export class WizardComponent {
   // El padre controla el paso actual y decide si se puede avanzar
   @Input({ required: true }) currentStep!: number;
   @Input() canProceed = false;
+  @Input() confirmLabel = 'Confirmar';
+  @Input() loading = false;
 
   @Output() next      = new EventEmitter<void>(); // padre incrementa currentStep
   @Output() back      = new EventEmitter<void>(); // padre decrementa currentStep

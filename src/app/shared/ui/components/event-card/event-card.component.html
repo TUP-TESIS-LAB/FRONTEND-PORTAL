@@ -15,6 +15,14 @@
         <span>{{ detail.text }}</span>
       </p>
     }
+    @if (persona) {
+      <div class="ui-event-card__persona">
+        <span class="ui-event-card__persona-avatar" aria-hidden="true">
+          {{ persona.iniciales }}
+        </span>
+        <span class="ui-event-card__persona-nombre">{{ persona.nombre }}</span>
+      </div>
+    }
   </div>
 
   <!-- Estado + slot de acción contextual -->

@@ -6,6 +6,11 @@ export interface EventDetail {
   text: string;
 }
 
+export interface EventPersona {
+  nombre: string;
+  iniciales: string;
+}
+
 @Component({
   selector: 'ui-event-card',
   standalone: true,
@@ -14,11 +19,13 @@ export interface EventDetail {
   styleUrl: './event-card.component.scss',
 })
 export class EventCardComponent {
-  @Input({ required: true }) day!: string;         // '19'
-  @Input({ required: true }) month!: string;       // 'MAY'
+  @Input({ required: true }) day!: string;
+  @Input({ required: true }) month!: string;
   @Input({ required: true }) title!: string;
   @Input({ required: true }) details!: EventDetail[];
-  @Input({ required: true }) statusKey!: string;   // 'confirmado', 'pendiente', etc.
+  @Input({ required: true }) statusKey!: string;
   @Input({ required: true }) statusLabel!: string;
   @Input() urgent = false;
+  // Muestra avatar + nombre de persona (yo o familiar)
+  @Input() persona?: EventPersona;
 }

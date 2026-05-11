@@ -1,0 +1,33 @@
+@if (loading) {
+  @for (i of [1,2,3]; track i) {
+    <p-skeleton height="88px" styleClass="ui-sede-skeleton" />
+  }
+} @else {
+  <div class="ui-sede-list">
+    @for (sede of sedes; track sede.id) {
+      <button
+        type="button"
+        class="ui-sede-card"
+        [class.ui-sede-card--selected]="isSelected(sede.id)"
+        (click)="selectSede(sede.id)"
+        [attr.aria-pressed]="isSelected(sede.id)">
+
+        <div class="ui-sede-card__icon">
+          <i class="pi pi-map-marker" aria-hidden="true"></i>
+        </div>
+
+        <div class="ui-sede-card__info">
+          <span class="ui-sede-card__nombre">{{ sede.nombre }}</span>
+          <span class="ui-sede-card__direccion">{{ sede.direccion }}</span>
+          <span class="ui-sede-card__horario">{{ sede.horario }}</span>
+        </div>
+
+        @if (sede.distanciaKm !== undefined) {
+          <div class="ui-sede-card__distancia" aria-label="{{ sede.distanciaKm }} kilómetros">
+            {{ sede.distanciaKm }} km
+          </div>
+        }
+      </button>
+    }
+  </div>
+}
