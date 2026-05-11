@@ -1,0 +1,104 @@
+@use 'breakpoints' as *;
+
+// El componente entero no tiene razón de existir en desktop/tablet:
+// el bottom-nav tampoco se muestra, así que el sheet nunca se abre.
+// Agregamos display:none defensivo para el caso en que se use fuera del shell.
+:host {
+  @include desktop-up {
+    display: none;
+  }
+}
+
+// ─── Contenido interno del sheet ─────────────────────────────────────────────
+// Los estilos del p-drawer container van en primeng-overrides.scss porque
+// el drawer se renderiza como portal al <body>, fuera del árbol del componente.
+
+.ui-bottom-sheet {
+  // Respeta el home indicator en iOS
+  padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+
+  &__handle {
+    width: 40px;
+    height: 4px;
+    background: var(--ds-surface-dark);
+    border-radius: 999px;
+    margin: var(--space-2) auto var(--space-4);
+  }
+
+  &__title {
+    padding: 0 var(--space-5) var(--space-3);
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ds-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--ds-surface);
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      border-bottom: 1px solid var(--ds-surface);
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+
+  &__btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: 0 var(--space-5);
+    min-height: 56px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--ds-font);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ds-text);
+    text-align: left;
+    transition: background 0.12s;
+    -webkit-tap-highlight-color: transparent;
+
+    // Ícono principal
+    > i:first-child {
+      font-size: 20px;
+      color: var(--ds-text-muted);
+      flex-shrink: 0;
+      width: 24px;
+      text-align: center;
+    }
+
+    span {
+      flex: 1;
+      min-width: 0;
+    }
+
+    &:active {
+      background: var(--ds-surface);
+    }
+
+    // Variante destructive: texto e ícono en rojo
+    &--destructive {
+      color: var(--ds-danger);
+
+      > i:first-child {
+        color: var(--ds-danger);
+      }
+    }
+  }
+
+  &__chevron {
+    font-size: 13px;
+    color: var(--ds-text-muted);
+    flex-shrink: 0;
+  }
+}

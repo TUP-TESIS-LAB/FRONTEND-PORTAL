@@ -1,0 +1,68 @@
+<p-toast position="top-right" />
+
+<!-- Encabezado de página -->
+<ui-page-header
+  title="Mi grupo familiar"
+  subtitle="Gestioná turnos y resultados de las personas a tu cargo."
+>
+  <p-button
+    label="Agregar familiar"
+    icon="pi pi-plus"
+    severity="primary"
+    size="small"
+    (onClick)="onAddFamily()"
+  />
+</ui-page-header>
+
+<!-- Stats grid -->
+@if (loading()) {
+  <div class="ui-stats-grid">
+    @for (i of [1, 2, 3, 4]; track i) {
+      <p-skeleton height="80px" borderRadius="10px" />
+    }
+  </div>
+} @else {
+  <div class="ui-stats-grid">
+    <ui-stat-card
+      label="Personas vinculadas"
+      [value]="stats()!.personasVinculadas"
+      accent="secondary"
+    />
+    <ui-stat-card
+      label="Turnos próximos"
+      [value]="stats()!.turnosProximos"
+      accent="primary"
+    />
+    <ui-stat-card
+      label="Estudios disponibles"
+      [value]="stats()!.estudiosDisponibles"
+      accent="accent"
+    />
+    <ui-stat-card
+      label="Pendientes retiro"
+      [value]="stats()!.pendientesRetiro"
+      accent="warning"
+    />
+  </div>
+}
+
+<!-- Grid de familiares -->
+@if (loading()) {
+  <ui-family-grid>
+    @for (i of [1, 2, 3]; track i) {
+      <p-skeleton height="340px" borderRadius="10px" />
+    }
+    <p-skeleton height="340px" borderRadius="10px" />
+  </ui-family-grid>
+} @else {
+  <ui-family-grid>
+    @for (familiar of familiares(); track familiar.id) {
+      <ui-family-card
+        [familiar]="familiar"
+        (verEstudios)="onVerEstudios($event)"
+        (sacarTurno)="onSacarTurno($event)"
+      />
+    }
+    <ui-add-family-card (addClick)="onAddFamily()" />
+  </ui-family-grid>
+}

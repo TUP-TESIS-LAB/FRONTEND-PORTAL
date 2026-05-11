@@ -266,3 +266,50 @@
   display: inline-flex;
   align-items: center;
 }
+
+// ─── Bottom sheet drawer ─────────────────────────────
+// El p-drawer se renderiza como portal al <body>, fuera del árbol de Angular,
+// por eso los overrides van aquí y no en el SCSS del componente.
+.ui-bottom-sheet-drawer {
+  // Altura automática según el contenido (no full-screen)
+  height: auto !important;
+  // Border-radius solo en la parte superior, estilo iOS
+  border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0 !important;
+  // El padding lo maneja el contenido interno para controlar el safe-area
+  padding: 0 !important;
+  overflow: hidden;
+
+  // Área de contenido: sin padding propio (el .ui-bottom-sheet lo gestiona)
+  .p-drawer-content {
+    padding: 0;
+    overflow: visible;
+  }
+}
+
+// ─── Toast ───────────────────────────────────────────
+.p-toast {
+  .p-toast-message {
+    border-radius: var(--ds-radius-md);
+    box-shadow: var(--ds-shadow-md);
+  }
+
+  .p-toast-message-content {
+    padding: var(--space-4) var(--space-5);
+    gap: var(--space-3);
+    align-items: flex-start;
+  }
+
+  .p-toast-message-text {
+    gap: var(--space-1);
+  }
+
+  .p-toast-summary {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .p-toast-detail {
+    font-size: 13px;
+    margin-top: 0;
+  }
+}
