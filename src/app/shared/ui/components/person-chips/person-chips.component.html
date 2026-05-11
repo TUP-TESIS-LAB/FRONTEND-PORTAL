@@ -1,0 +1,17 @@
+<div class="ui-person-chips" role="group" aria-label="Filtrar por persona">
+  @for (persona of personas; track persona.id) {
+    <button
+      type="button"
+      class="ui-person-chip"
+      [class]="selectedColorClass(persona)"
+      [class.ui-person-chip--selected]="isSelected(persona)"
+      [attr.aria-pressed]="isSelected(persona)"
+      [attr.aria-label]="'Filtrar por ' + persona.nombre"
+      (click)="select(persona.id)">
+      <span class="ui-person-chip__avatar" [class]="avatarColorClass(persona.avatarColor)">
+        {{ persona.iniciales }}
+      </span>
+      <span class="ui-person-chip__nombre">{{ persona.nombre }}</span>
+    </button>
+  }
+</div>

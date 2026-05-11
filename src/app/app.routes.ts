@@ -59,6 +59,13 @@ export const routes: Routes = [
             m => m.SacarTurnoComponent,
           ),
       },
+      {
+        path: 'estudios',
+        loadComponent: () =>
+          import('./features/main/estudios/estudios.component').then(
+            m => m.EstudiosComponent,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: '' },
