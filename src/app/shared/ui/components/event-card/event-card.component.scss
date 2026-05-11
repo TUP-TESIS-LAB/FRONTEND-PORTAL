@@ -1,0 +1,83 @@
+@use 'breakpoints' as *;
+
+:host {
+  display: block;
+}
+
+.ui-event-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-md);
+  margin-bottom: var(--space-3);
+  box-shadow: var(--ds-shadow-sm);
+
+  // ─── Date stamp ─────────────────────────────────────────
+  &__date-stamp {
+    flex-shrink: 0;
+    width: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-2);
+    background: var(--brand-primary-light);
+    border-radius: var(--ds-radius-sm);
+    color: var(--brand-primary);
+  }
+
+  &__day {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &__month {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  // ─── Info ────────────────────────────────────────────────
+  &__info {
+    flex: 1;
+    min-width: 0;
+
+    h4 {
+      margin: 0 0 var(--space-1);
+      font-size: 15px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--ds-text-muted);
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+
+      i { font-size: 12px; flex-shrink: 0; }
+      span { min-width: 0; }
+    }
+  }
+
+  // ─── Estado + acciones ──────────────────────────────────
+  &__status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-2);
+    flex-shrink: 0;
+  }
+
+  // ─── Modificador: urgente (turno próximo o sin confirmar) ─
+  &--urgent {
+    border-left: 4px solid var(--brand-accent);
+  }
+}

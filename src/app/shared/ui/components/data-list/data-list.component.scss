@@ -1,0 +1,38 @@
+@use 'breakpoints' as *;
+
+:host {
+  display: block;
+}
+
+.ui-data-list {
+  // Desktop: grid de 2 columnas (label | valor)
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+  font-size: 14px;
+
+  dt {
+    color: var(--ds-text-muted);
+    font-weight: 500;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--ds-text);
+  }
+
+  // Mobile: stack vertical con label en caps pequeñas encima del valor
+  @include mobile-only {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+
+    dt {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--ds-text-muted);
+      margin-bottom: -4px; // acerca el label al valor en stack mobile
+    }
+  }
+}

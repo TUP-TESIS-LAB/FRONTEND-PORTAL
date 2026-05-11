@@ -1,0 +1,54 @@
+<div class="ui-patient-layout">
+
+  <!-- Desktop: sidebar fija oscura -->
+  <ui-sidebar
+    class="ui-show-desktop"
+    [navGroups]="navGroups"
+    [user]="mockUser"
+    [tenant]="tenant()!">
+  </ui-sidebar>
+
+  <!-- Mobile/tablet: mismo sidebar dentro de un drawer off-canvas -->
+  <p-drawer
+    [visible]="drawerOpen()"
+    (visibleChange)="drawerOpen.set($event)"
+    position="left"
+    [style]="{ width: 'var(--ds-sidebar-w)', padding: '0' }"
+    styleClass="ui-drawer">
+    <ng-template pTemplate="headless">
+      <ui-sidebar
+        [navGroups]="navGroups"
+        [user]="mockUser"
+        [tenant]="tenant()!"
+        (itemClick)="drawerOpen.set(false)">
+      </ui-sidebar>
+    </ng-template>
+  </p-drawer>
+
+  <!-- Área principal: topbar + contenido con router-outlet -->
+  <div class="ui-patient-layout__main">
+
+    <!-- Topbar: visible solo en mobile (hamburguesa) -->
+    <header class="ui-topbar">
+      <div class="ui-topbar__left">
+        <p-button
+          icon="pi pi-bars"
+          [rounded]="true"
+          [text]="true"
+          ariaLabel="Abrir menú"
+          (onClick)="drawerOpen.set(true)" />
+      </div>
+    </header>
+
+    <main class="ui-patient-content">
+      <router-outlet />
+    </main>
+  </div>
+
+  <!-- Mobile: bottom navigation (app-like) -->
+  <ui-bottom-nav
+    class="ui-show-mobile"
+    [items]="mainNavItems"
+    (moreClick)="drawerOpen.set(true)" />
+
+</div>

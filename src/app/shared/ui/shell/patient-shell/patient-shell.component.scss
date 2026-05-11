@@ -1,0 +1,58 @@
+@use 'breakpoints' as *;
+
+:host {
+  display: block;
+}
+
+.ui-patient-layout {
+  display: flex;
+  min-height: 100vh;
+
+  &__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+}
+
+// Topbar: solo visible en mobile (el sidebar cubre la navegación en desktop)
+.ui-topbar {
+  height: calc(var(--ds-topbar-h) + var(--ds-safe-top));
+  padding-top: var(--ds-safe-top);
+  padding-left: max(var(--space-4), var(--ds-safe-left));
+  padding-right: max(var(--space-4), var(--ds-safe-right));
+  background: var(--ds-white);
+  border-bottom: 1px solid var(--ds-surface-dark);
+  display: flex;
+  align-items: center;
+  box-shadow: var(--ds-shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-topbar);
+  flex-shrink: 0;
+
+  @include desktop-up {
+    display: none;
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+}
+
+.ui-patient-content {
+  flex: 1;
+  padding: var(--space-4);
+  // Espacio para el bottom nav fijo en mobile
+  padding-bottom: calc(var(--ds-bottom-nav-h) + var(--space-4) + var(--ds-safe-bottom));
+  background: var(--ds-bg);
+
+  @include desktop-up {
+    max-width: var(--ds-content-max);
+    margin: 0 auto;
+    padding: var(--space-6);
+  }
+}

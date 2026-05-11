@@ -16,7 +16,22 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
   },
-  // TODO: rutas del portal paciente (/paciente/...) — próxima iteración
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: '**', redirectTo: 'login' },
+  {
+    path: '',
+    loadComponent: () =>
+      import('./shared/ui/shell/patient-shell/patient-shell.component').then(
+        m => m.PatientShellComponent,
+      ),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./features/main/patient-placeholder.component').then(
+            m => m.PatientPlaceholderComponent,
+          ),
+      },
+    ],
+  },
+  { path: '**', redirectTo: '' },
 ];

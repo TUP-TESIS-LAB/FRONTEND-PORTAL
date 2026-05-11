@@ -201,12 +201,19 @@ Catálogo completo en `references/components.md`.
 
 ### Severities de botón mapeadas
 ```scss
-// p-button:
+// p-button severities válidas en PrimeNG v17:
+// 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'help' | 'danger' | 'contrast'
+//
+// Mapeo a tokens del DS:
 // primary   → --brand-primary
 // secondary → --brand-secondary
 // warning   → --brand-accent (no es warning de estado, es CTA secundario destacado)
 // danger    → --ds-danger
-// text      → sin fondo, color --brand-primary
+//
+// IMPORTANTE: para botones "text" (sin fondo, solo texto/ícono coloreado)
+// NO usar severity="text" — eso NO existe en v17.
+// Usar el input [text]="true" en su lugar.
+// Ejemplo: <p-button label="Cancelar" [text]="true" />
 ```
 
 **Importante:** la severity `warning` del botón usa el color de marca (`--brand-accent`), no el `--ds-warning` (que es para tags de estado). Los colores de estado son para señalización informativa, no para acciones.

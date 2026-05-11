@@ -1,0 +1,9 @@
+<div class="ui-empty-state">
+  <i [class]="'pi ' + icon"></i>
+  <h4>{{ heading }}</h4>
+  @if (message) {
+    <p>{{ message }}</p>
+  }
+  <!-- Slot para botón CTA opcional. El padre proyecta un <p-button> si aplica -->
+  <ng-content />
+</div>

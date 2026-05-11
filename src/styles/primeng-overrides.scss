@@ -255,3 +255,14 @@
   width: 100%;
   justify-content: center;
 }
+
+// ─── p-tag: estilos base del DS ──────────────────────
+// Los colores los inyectan las clases .ui-tag-* de utilities.scss
+.p-tag {
+  font-weight: 600;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: var(--ds-radius-sm);
+  display: inline-flex;
+  align-items: center;
+}

@@ -38,19 +38,19 @@ constructor(public bp: BreakpointService) {}
 ```html
 <header class="ui-topbar">
   <div class="ui-topbar__left">
-    <p-button icon="pi pi-bars" [rounded]="true" severity="text"
+    <p-button icon="pi pi-bars" [rounded]="true" [text]="true"
               styleClass="ui-show-mobile-tablet"
               ariaLabel="Abrir menú"
               (onClick)="menuToggle.emit()" />
     <span class="ui-topbar__title">{{ pageTitle }}</span>
   </div>
   <div class="ui-topbar__right">
-    <p-button icon="pi pi-bell" [rounded]="true" severity="text"
+    <p-button icon="pi pi-bell" [rounded]="true" [text]="true"
               [badge]="unreadCount > 0 ? unreadCount.toString() : null"
               ariaLabel="Notificaciones" />
     <p-avatar [label]="userInitials" shape="circle" />
     <p-menu #menu [model]="userMenuItems" [popup]="true" />
-    <p-button icon="pi pi-chevron-down" severity="text"
+    <p-button icon="pi pi-chevron-down" [text]="true"
               ariaLabel="Menú de usuario"
               (onClick)="menu.toggle($event)" />
   </div>
@@ -359,7 +359,7 @@ Mismo data, dos vistas controladas por CSS. Es uno de los patrones más importan
         </td>
         <td>{{ item.field3 }}</td>
         <td>
-          <p-button icon="pi pi-eye" [rounded]="true" severity="text"
+          <p-button icon="pi pi-eye" [rounded]="true" [text]="true"
                     [routerLink]="['...', item.id]"
                     pTooltip="Ver detalle" ariaLabel="Ver detalle" />
         </td>
@@ -458,7 +458,7 @@ Mismo data, dos vistas controladas por CSS. Es uno de los patrones más importan
     <p-inputIcon styleClass="pi pi-search" />
     <input pInputText type="text" [(ngModel)]="searchTerm" placeholder="Buscar..." />
   </p-iconField>
-  <p-button icon="pi pi-filter" [rounded]="true" severity="text"
+  <p-button icon="pi pi-filter" [rounded]="true" [text]="true"
             (onClick)="filtersDrawer = true" ariaLabel="Filtros"
             [badge]="activeFiltersCount > 0 ? activeFiltersCount.toString() : null" />
 </div>
@@ -524,7 +524,7 @@ Mismo data, dos vistas controladas por CSS. Es uno de los patrones más importan
   </ng-template>
 
   <ng-template pTemplate="footer">
-    <p-button label="Cancelar" severity="text" (onClick)="showDialog = false" />
+    <p-button label="Cancelar" [text]="true" (onClick)="showDialog = false" />
     <p-button label="Guardar" severity="primary" (onClick)="onSave()" [loading]="saving" />
   </ng-template>
 </p-dialog>
@@ -533,7 +533,7 @@ Mismo data, dos vistas controladas por CSS. Es uno de los patrones más importan
 **Reglas:**
 - Desktop ancho estándar: 520px (form simple), 720px (form extenso), 900px (con tabla).
 - Mobile siempre full-screen vía `ui-dialog-fullscreen-mobile`.
-- Footer: cancelar a la izquierda (`severity="text"`), acción principal a la derecha.
+- Footer: cancelar a la izquierda (`[text]="true"` — NO `severity="text"`, ese valor no existe en v17), acción principal a la derecha.
 
 ---
 
@@ -675,7 +675,7 @@ export class EntityFormComponent {
 
   <!-- Patrón: footer con cancelar (text) + acción primaria (loading state) -->
   <div class="ui-form-actions ui-form-full">
-    <p-button label="Cancelar" severity="text" type="button" (onClick)="cerrar()" />
+    <p-button label="Cancelar" [text]="true" type="button" (onClick)="cerrar()" />
     <p-button label="Guardar" severity="primary" type="submit"
               [loading]="saving" [disabled]="form.invalid && form.touched" />
   </div>
@@ -846,7 +846,7 @@ Patrón para cards que muestran un resumen siempre visible y un detalle expandib
 
       <!-- Acciones opcionales al final del body -->
       <div class="ui-collapsible-card__actions">
-        <p-button label="..." icon="pi pi-..." severity="text" (onClick)="..." />
+        <p-button label="..." icon="pi pi-..." [text]="true" (onClick)="..." />
       </div>
     </div>
   }
@@ -1097,7 +1097,7 @@ Patrón genérico para mostrar una entidad con identidad visual (avatar/iniciale
     <p>{{ entity.metadata }}</p>
   </div>
   <div class="ui-entity-card__actions">
-    <p-button icon="pi pi-..." severity="text"
+    <p-button icon="pi pi-..." [text]="true"
               ariaLabel="..." pTooltip="..." (onClick)="..." />
     <!-- ... más acciones ... -->
   </div>
@@ -1318,7 +1318,7 @@ export class TurnoWizardComponent {
   <footer class="ui-wizard__footer">
     <p-button [label]="currentStep() === 0 ? 'Cancelar' : 'Volver'"
               icon="pi pi-arrow-left"
-              severity="text"
+              [text]="true"
               type="button"
               (onClick)="back()" />
     <p-button [label]="isLastStep() ? 'Confirmar turno' : 'Continuar'"

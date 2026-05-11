@@ -1,0 +1,16 @@
+<section class="ui-section">
+  <!--
+    Header opcional: solo se renderiza si se pasa [heading].
+    El slot [heading-action] permite proyectar un botón/link a la derecha del título.
+    Uso: <p-button heading-action label="Ver todos" [text]="true" />
+  -->
+  @if (heading) {
+    <div class="ui-section__header">
+      <h3>{{ heading }}</h3>
+      <ng-content select="[heading-action]" />
+    </div>
+  }
+
+  <!-- Contenido principal de la sección -->
+  <ng-content />
+</section>

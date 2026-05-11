@@ -1,0 +1,203 @@
+@use 'breakpoints' as *;
+
+:host {
+  display: block;
+  // Permite que el sidebar llene la altura del drawer cuando está dentro de p-drawer
+  height: 100%;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Sidebar — layout principal
+// ═══════════════════════════════════════════════════════════════
+.ui-sidebar {
+  width: var(--ds-sidebar-w);
+  background: var(--brand-primary);
+  color: var(--ds-white);
+  min-height: 100vh;
+  height: 100%;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  // ─── Header ─────────────────────────────────────────────────
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+  }
+
+  &__logo-mark {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--ds-radius-sm);
+    background: var(--brand-secondary);
+    color: var(--ds-white);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    min-width: 0;
+
+    strong {
+      font-size: 14px;
+      color: var(--ds-white);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    span {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.65);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  // ─── Nav ────────────────────────────────────────────────────
+  &__nav {
+    flex: 1;
+    padding: var(--space-3) 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  &__group-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: rgba(255, 255, 255, 0.45);
+    padding: var(--space-4) var(--space-5) var(--space-2);
+  }
+
+  // ─── Footer ─────────────────────────────────────────────────
+  &__footer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-5);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+  }
+
+  &__footer-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--brand-secondary);
+    color: var(--ds-white);
+    font-weight: 600;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__footer-name {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+
+    strong {
+      font-size: 13px;
+      color: var(--ds-white);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    span {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.55);
+    }
+  }
+
+  &__footer-action {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    width: 32px;
+    height: 32px;
+    border-radius: var(--ds-radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
+
+    i { font-size: 16px; }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--ds-white);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Nav items (fuera del bloque .ui-sidebar porque también aplica
+// en contextos inline si se reutiliza el patrón)
+// ═══════════════════════════════════════════════════════════════
+.ui-nav-item {
+  padding: var(--space-3) var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--ds-font);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  min-height: var(--ds-touch-target);
+  transition: background 0.2s, color 0.2s, border-left-color 0.2s;
+
+  i {
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  span {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &:hover,
+  &.active {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--ds-white);
+    border-left-color: var(--brand-secondary);
+  }
+
+  &__badge {
+    margin-left: auto;
+    background: var(--brand-secondary);
+    color: var(--ds-white);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    min-width: 22px;
+    text-align: center;
+  }
+}
