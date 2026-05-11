@@ -48,12 +48,13 @@
       (onClick)="onBack()" />
 
     <p-button
-      [label]="isLastStep ? 'Confirmar' : 'Continuar'"
+      [label]="isLastStep ? confirmLabel : 'Continuar'"
       [icon]="isLastStep ? 'pi pi-check' : 'pi pi-arrow-right'"
       iconPos="right"
       severity="primary"
       type="button"
       [disabled]="!canProceed"
+      [loading]="isLastStep && loading"
       (onClick)="onNext()" />
   </footer>
 

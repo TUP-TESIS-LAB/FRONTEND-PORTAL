@@ -1954,3 +1954,308 @@ Los estilos del container del drawer van en `primeng-overrides.scss` (no en el S
   .p-drawer-content { padding: 0; }
 }
 ```
+
+---
+
+## ui-analysis-card-grid
+
+Lista vertical de cards seleccionables para tipos de análisis. Multi-select: cada click agrega o quita el tipo del array. Usado como Paso 1 del wizard de reservar turno.
+
+### Cuándo usarlo
+
+- Paso 1 "Tipo de análisis" del wizard de sacar turno.
+- Cualquier pantalla donde el usuario deba seleccionar uno o más estudios de un catálogo.
+
+### API
+
+```typescript
+// Inputs
+@Input({ required: true }) tipos!: TipoAnalisis[];
+@Input({ required: true }) selectedIds!: string[];   // array de ids seleccionados
+@Input() loading = false;                             // muestra 4 skeletons
+
+// Output
+@Output() selectionChange = new EventEmitter<string[]>(); // array completo actualizado
+```
+
+### Uso
+
+```html
+<ui-analysis-card-grid
+  [tipos]="tiposAnalisis()"
+  [selectedIds]="selectedTipoIds()"
+  (selectionChange)="selectedTipoIds.set($event)" />
+```
+
+### Estructura visual
+
+```
+┌─────────────────────────────────────────────┐
+│  [icon]  Hemograma completo            ⚪  │
+│          Glóbulos rojos, blancos, plaquetas │
+└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│  [icon]  Glucemia en ayunas            🔵  │  ← seleccionada
+│          Ayuno mínimo 8 hs                  │     border brand-primary + bg brand-primary-light
+└─────────────────────────────────────────────┘
+```
+
+- Cards en lista vertical con `gap: --space-2`.
+- Ícono a la izquierda: cuadrado 40×40, `--ds-surface`, icono 18px muted.
+- Radio custom a la derecha: `pi-circle-fill` (seleccionado) / `pi-circle` (vacío). **NO** usa `p-radioButton`.
+- Estado seleccionado: `border: 2px solid --brand-primary`, `background: --brand-primary-light`.
+- `min-height: --ds-touch-target` para mobile.
+- Loading: 4 `p-skeleton` de 72px.
+
+### SCSS clave
+
+```scss
+.ui-analysis-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-md);
+  min-height: var(--ds-touch-target);
+
+  &--selected {
+    border: 2px solid var(--brand-primary);
+    background: var(--brand-primary-light);
+    .ui-analysis-card__radio { color: var(--brand-primary); }
+  }
+}
+```
+
+### Importación
+
+```typescript
+import { AnalysisCardGridComponent } from '../../../shared/ui/components/analysis-card-grid/analysis-card-grid.component';
+```
+
+---
+
+## ui-sede-list
+
+Lista vertical de cards seleccionables de sedes del laboratorio. Single-select. Muestra nombre, dirección, horario y distancia en chip. Usado como Paso 2 del wizard de reservar turno.
+
+### Cuándo usarlo
+
+- Paso 2 "Sede" del wizard de sacar turno.
+- Cualquier pantalla de selección de sede o sucursal.
+
+### API
+
+```typescript
+// Inputs
+@Input({ required: true }) sedes!: Sede[];
+@Input({ required: true }) selectedId!: string | null;
+@Input() loading = false;
+
+// Output
+@Output() selectionChange = new EventEmitter<string>(); // id de la sede seleccionada
+```
+
+### Uso
+
+```html
+<ui-sede-list
+  [sedes]="sedes()"
+  [selectedId]="selectedSedeId()"
+  (selectionChange)="onSedeChange($event)" />
+```
+
+### Estructura visual
+
+```
+┌─────────────────────────────────────────────────┐
+│  [📍]  Sede Centro                    [1.2 km]  │
+│        Av. Colón 450, Córdoba                   │
+│        L-V 7:00 a 19:00                         │
+└─────────────────────────────────────────────────┘
+```
+
+- Mismo estilo base que `ui-analysis-card-grid` (hover, selected, touch target).
+- Ícono `pi-map-marker` en cuadrado 40×40.
+- Chip de distancia: `--brand-secondary-light` bg, `--brand-secondary-dark` texto, pill shape.
+- Loading: 3 `p-skeleton` de 88px.
+
+### SCSS clave
+
+```scss
+.ui-sede-card__distancia {
+  background: var(--brand-secondary-light);
+  color: var(--brand-secondary-dark);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px var(--space-2);
+  align-self: flex-start;
+}
+```
+
+### Importación
+
+```typescript
+import { SedeListComponent } from '../../../shared/ui/components/sede-list/sede-list.component';
+```
+
+---
+
+## ui-time-slots
+
+Grilla de botones de hora para seleccionar un slot de turno. Single-select. Los slots no disponibles se muestran disabled con tachado. Usado como parte del Paso 3 del wizard de reservar turno.
+
+### Cuándo usarlo
+
+- Paso 3 "Fecha y hora" del wizard de sacar turno (junto con `p-datepicker [inline]`).
+- Cualquier pantalla de selección de horario con disponibilidad variable.
+
+### API
+
+```typescript
+// Inputs
+@Input({ required: true }) slots!: SlotDisponible[];
+@Input({ required: true }) selectedHora!: string | null;
+@Input() loading = false;
+
+// Output
+@Output() selectionChange = new EventEmitter<string>(); // hora seleccionada: '08:30'
+```
+
+### Uso
+
+```html
+<ui-time-slots
+  [slots]="slots()"
+  [selectedHora]="selectedHora()"
+  [loading]="loadingSlots()"
+  (selectionChange)="selectedHora.set($event)" />
+```
+
+### Estructura visual
+
+```
+[ 07:00 ] [ 07:15 ] [~~07:30~~] [ 07:45 ]   ← 07:30 tomado (disabled)
+[ 08:00 ] [■08:15■] [ 08:30 ]  [ 08:45 ]   ← 08:15 seleccionado (brand-primary bg)
+```
+
+- Grid: **4 cols mobile**, **5 cols tablet**, **6 cols desktop** (vía breakpoints).
+- `min-width: 64px`, `min-height: --ds-touch-target` por slot.
+- Estado disabled: `background: --ds-surface`, `color: --ds-text-disabled`, `text-decoration: line-through`, `cursor: not-allowed`.
+- Estado selected: `background: --brand-primary`, `color: white`.
+- Loading: `p-skeleton` de 200px altura.
+
+### SCSS clave
+
+```scss
+.ui-time-slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+  @include tablet-up  { grid-template-columns: repeat(5, 1fr); }
+  @include desktop-up { grid-template-columns: repeat(6, 1fr); }
+}
+
+.ui-time-slot--disabled {
+  background: var(--ds-surface);
+  color: var(--ds-text-disabled);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+```
+
+### Importación
+
+```typescript
+import { TimeSlotsComponent } from '../../../shared/ui/components/time-slots/time-slots.component';
+```
+
+---
+
+## ui-turno-resumen
+
+Card de resumen de un turno antes de confirmarlo. Solo lectura: muestra los 4 datos seleccionados (tipos, sede, fecha/hora) y un banner de ayuno si aplica. Usado como Paso 4 del wizard de reservar turno.
+
+### Cuándo usarlo
+
+- Paso 4 "Confirmar" del wizard de sacar turno.
+- Cualquier pantalla de previsualización antes de un submit.
+
+### API
+
+```typescript
+// Inputs
+@Input({ required: true }) tipos!: TipoAnalisis[];    // tipos seleccionados
+@Input({ required: true }) sede!: Sede;
+@Input({ required: true }) fecha!: Date;
+@Input({ required: true }) hora!: string;             // '08:30'
+@Input() requiereAyuno = false;                       // computed por el padre
+```
+
+### Uso
+
+```html
+<ui-turno-resumen
+  [tipos]="selectedTipos()"
+  [sede]="selectedSede()!"
+  [fecha]="selectedFecha()!"
+  [hora]="selectedHora()!"
+  [requiereAyuno]="requiereAyuno()" />
+```
+
+El padre calcula `requiereAyuno` como:
+```typescript
+requiereAyuno = computed(() => this.selectedTipos().some(t => t.ayuno));
+```
+
+### Estructura visual
+
+```
+┌─────────────────────────────────────────────┐
+│  Confirmá tu turno                           │
+│  Revisá los datos antes de confirmar.        │
+│  ─────────────────────────────────────────  │
+│  TIPO DE ANÁLISIS                            │
+│  • Hemograma completo                        │
+│  • Glucemia en ayunas                        │
+│  ─────────────────────────────────────────  │
+│  SEDE                                        │
+│  Sede Centro                                 │
+│  Av. Colón 450, Córdoba                      │
+│  ─────────────────────────────────────────  │
+│  FECHA Y HORA                                │
+│  Martes 21 de mayo · 08:30 hs               │
+│  ─────────────────────────────────────────  │
+│  ⚠ Requiere 8 hs de ayuno antes del turno  │  ← solo si requiereAyuno
+└─────────────────────────────────────────────┘
+```
+
+- Secciones separadas por `border-top: 1px solid --ds-surface`.
+- Labels uppercase 11px `--ds-text-muted`.
+- Banner de ayuno: `background: --ds-warning-light`, `color: --ds-warning`, `role="alert"`.
+- `formatFecha(fecha)` produce "Martes 21 de mayo" con arrays locales en español (sin dependencia de locale Angular).
+
+### SCSS clave
+
+```scss
+.ui-turno-resumen__ayuno {
+  background: var(--ds-warning-light);
+  color: var(--ds-warning);
+  border-radius: var(--ds-radius-md);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+```
+
+### Importación
+
+```typescript
+import { TurnoResumenComponent } from '../../../shared/ui/components/turno-resumen/turno-resumen.component';
+```
+
+### Patrón completo del wizard
+
+Ver `SacarTurnoComponent` en `src/app/features/main/turnos/sacar/` para el ejemplo de integración de los 4 componentes con `ui-wizard`, `SacarTurnoService` y el patrón adaptativo dialog/drawer.

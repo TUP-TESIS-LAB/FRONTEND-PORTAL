@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, effect, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -40,6 +41,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
   private readonly turnoService   = inject(TurnoService);
   private readonly messageService = inject(MessageService);
   private readonly confirmService = inject(ConfirmationService);
+  private readonly router         = inject(Router);
   readonly bp                     = inject(BreakpointService);
 
   proximosTurnos   = signal<Turno[]>([]);
@@ -136,12 +138,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
   }
 
   onSacarTurno(): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Próximamente',
-      detail: 'La función de reservar turno estará disponible pronto.',
-      life: 3000,
-    });
+    this.router.navigate(['/turnos/sacar']);
   }
 
   ngOnDestroy(): void {

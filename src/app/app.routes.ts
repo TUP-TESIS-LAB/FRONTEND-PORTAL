@@ -52,6 +52,13 @@ export const routes: Routes = [
             m => m.TurnosComponent,
           ),
       },
+      {
+        path: 'turnos/sacar',
+        loadComponent: () =>
+          import('./features/main/turnos/sacar/sacar-turno.component').then(
+            m => m.SacarTurnoComponent,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

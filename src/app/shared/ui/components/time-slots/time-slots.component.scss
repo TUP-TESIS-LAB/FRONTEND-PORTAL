@@ -1,0 +1,59 @@
+@use 'breakpoints' as *;
+
+:host {
+  display: block;
+}
+
+.ui-time-slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+
+  @include tablet-up {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  @include desktop-up {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.ui-time-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  min-width: 64px;
+  min-height: var(--ds-touch-target);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-white);
+  color: var(--ds-text);
+  font-family: var(--ds-font);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+
+  &:hover:not(.ui-time-slot--selected):not(.ui-time-slot--disabled) {
+    border-color: var(--brand-primary);
+  }
+
+  &:active:not(.ui-time-slot--disabled) {
+    transform: scale(0.96);
+  }
+
+  &--selected {
+    background: var(--brand-primary);
+    border-color: var(--brand-primary);
+    color: var(--ds-white);
+  }
+
+  &--disabled {
+    background: var(--ds-surface);
+    color: var(--ds-text-disabled);
+    cursor: not-allowed;
+    text-decoration: line-through;
+    border-color: var(--ds-surface);
+  }
+}

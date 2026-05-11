@@ -373,6 +373,47 @@
   }
 }
 
+// ─── Wizard bottom sheet (mobile) ────────────────────
+// Drawer full-height para el wizard de sacar turno.
+// El drawer se renderiza como portal al <body>, por eso va aquí.
+.ui-wizard-sheet {
+  height: 92dvh !important;
+  border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  .p-drawer-content {
+    padding: 0;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    // El wizard toma toda la altura disponible
+    ui-wizard {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+
+      .ui-wizard {
+        flex: 1;
+        min-height: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+// ─── Wizard dialog (desktop) ─────────────────────────
+// Elimina el padding del contenido para que el wizard controle su propio espaciado.
+.ui-wizard-dialog .p-dialog-content {
+  padding: 0;
+}
+
 // ─── Toast ───────────────────────────────────────────
 .p-toast {
   .p-toast-message {
