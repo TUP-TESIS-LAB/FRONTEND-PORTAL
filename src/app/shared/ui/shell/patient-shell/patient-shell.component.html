@@ -2,7 +2,6 @@
 
   <!-- Desktop: sidebar fija oscura -->
   <ui-sidebar
-    class="ui-show-desktop"
     [navGroups]="navGroups"
     [user]="mockUser"
     [tenant]="tenant()!">
@@ -47,8 +46,15 @@
 
   <!-- Mobile: bottom navigation (app-like) -->
   <ui-bottom-nav
-    class="ui-show-mobile"
     [items]="mainNavItems"
-    (moreClick)="drawerOpen.set(true)" />
+    (moreClick)="moreSheetOpen.set(true)" />
+
+  <!-- Mobile: bottom sheet con opciones secundarias (Mi perfil, Mi familia, Cerrar sesión) -->
+  <ui-bottom-sheet
+    [visible]="moreSheetOpen()"
+    (visibleChange)="moreSheetOpen.set($event)"
+    title="Más"
+    [items]="moreSheetItems"
+    (itemClick)="onMoreItemClick($event)" />
 
 </div>

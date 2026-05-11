@@ -16,7 +16,29 @@
   }
 }
 
-// Topbar: solo visible en mobile (el sidebar cubre la navegación en desktop)
+// Visibilidad del sidebar y el bottom nav.
+// Las clases .ui-show-* de utilities.scss no sirven en elementos de componentes
+// porque el :host de cada componente tiene la misma especificidad (0,1,0) y,
+// al ser inyectado después, gana la cascada.
+// Los selectores de elemento en el SCSS del padre quedan escopados como
+// ui-sidebar[_ngcontent-xxx] → especificidad (0,1,1) → ganan al :host hijo.
+ui-sidebar {
+  display: none;
+
+  @include desktop-up {
+    display: block;
+  }
+}
+
+ui-bottom-nav {
+  @include desktop-up {
+    display: none;
+  }
+}
+
+// Topbar: visible solo en tablet (768-1023px).
+// Mobile usa bottom-nav + bottom-sheet para toda la navegación.
+// Desktop usa el sidebar fijo.
 .ui-topbar {
   height: calc(var(--ds-topbar-h) + var(--ds-safe-top));
   padding-top: var(--ds-safe-top);
@@ -31,6 +53,10 @@
   top: 0;
   z-index: var(--z-topbar);
   flex-shrink: 0;
+
+  @include mobile-only {
+    display: none;
+  }
 
   @include desktop-up {
     display: none;

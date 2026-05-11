@@ -31,6 +31,13 @@ export const routes: Routes = [
             m => m.PatientPlaceholderComponent,
           ),
       },
+      {
+        path: 'familia',
+        loadComponent: () =>
+          import('./features/main/familia/familia.component').then(
+            m => m.FamiliaComponent,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

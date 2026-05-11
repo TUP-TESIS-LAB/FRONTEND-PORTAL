@@ -1,0 +1,62 @@
+<div class="ui-family-card" [style.border-top-color]="accentColor">
+
+  <div class="ui-family-card__body">
+    <!-- Avatar circular con iniciales -->
+    <div class="ui-family-card__avatar" [style.background]="accentColor">
+      {{ familiar.iniciales }}
+    </div>
+
+    <h4 class="ui-family-card__name">{{ familiar.nombre }} {{ familiar.apellido }}</h4>
+
+    <p class="ui-family-card__meta">
+      {{ familiar.vinculo }} · {{ familiar.edad }} años · {{ familiar.cobertura }}
+    </p>
+
+    <!-- Stats inline -->
+    <div class="ui-family-card__stats">
+      <span>
+        <i class="pi pi-calendar"></i>
+        {{ familiar.totalTurnos }}
+        {{ familiar.totalTurnos === 1 ? 'turno próximo' : 'turnos próximos' }}
+      </span>
+      <span>
+        <i class="pi pi-file"></i>
+        {{ familiar.totalEstudios }}
+        {{ familiar.totalEstudios === 1 ? 'estudio' : 'estudios' }}
+      </span>
+    </div>
+
+    <!-- Caja próximo turno -->
+    <div class="ui-family-card__turno-box">
+      @if (familiar.proximoTurno) {
+        <i class="pi pi-calendar"></i>
+        <span>{{ familiar.proximoTurno.fechaResumen }}</span>
+      } @else {
+        <span class="ui-family-card__turno-vacio">Sin próximos turnos</span>
+      }
+    </div>
+  </div>
+
+  <!-- Acciones -->
+  <div class="ui-family-card__actions">
+    <p-button
+      label="Ver estudios"
+      [outlined]="true"
+      size="small"
+      (onClick)="verEstudios.emit(familiar)"
+    />
+    <p-button
+      label="Sacar turno"
+      [text]="true"
+      size="small"
+      (onClick)="sacarTurno.emit(familiar)"
+    />
+    <p-button
+      icon="pi pi-ellipsis-v"
+      [text]="true"
+      size="small"
+      ariaLabel="Más opciones"
+    />
+  </div>
+
+</div>

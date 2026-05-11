@@ -1487,3 +1487,97 @@ export class TurnoWizardComponent {
 - En desktop puede embeberse en un `p-dialog` ancho (≥720px). En mobile va full-screen vía `ui-dialog-fullscreen-mobile` o como ruta propia.
 - Validar SIEMPRE solo el FormGroup del paso actual antes de avanzar — nunca todo el form.
 - El paso de confirmación **no tiene controles editables**: muestra un resumen y permite volver para corregir.
+
+---
+
+## Bottom sheet (mobile)
+
+**Solo mobile.** Para acciones secundarias que no entran en el bottom-nav. No usar para navegación primaria ni para formularios — esos van en el bottom-nav y en `p-dialog` respectivamente.
+
+Ubicación: `src/app/shared/ui/overlays/bottom-sheet/`
+
+### Cuándo usarlo
+
+- Menú de "Más" del bottom-nav: opciones de navegación secundaria (Perfil, Familia, Cerrar sesión).
+- Acciones contextuales sobre un item (editar, eliminar, compartir) cuando son 2-4 opciones y no justifican un dialog.
+- Nunca en desktop/tablet: el componente tiene `display: none` en `@include desktop-up`.
+
+### API
+
+```typescript
+export interface BottomSheetItem {
+  id: string;
+  icon: string;           // PrimeIcons sin 'pi ': 'pi-user', 'pi-sign-out'
+  label: string;
+  route?: any[];          // si está presente, navega al hacer click
+  action?: () => void;    // si está presente, ejecuta la función
+  destructive?: boolean;  // estilo danger (texto e ícono en --ds-danger)
+}
+
+// Inputs
+@Input() visible = false;
+@Input() title?: string;                          // label muted uppercase arriba de la lista
+@Input({ required: true }) items!: BottomSheetItem[];
+
+// Outputs
+@Output() visibleChange = new EventEmitter<boolean>();   // two-way binding
+@Output() itemClick     = new EventEmitter<BottomSheetItem>();
+```
+
+### Uso
+
+```html
+<ui-bottom-sheet
+  [visible]="sheetOpen()"
+  (visibleChange)="sheetOpen.set($event)"
+  title="Más"
+  [items]="sheetItems"
+  (itemClick)="onItemClick($event)" />
+```
+
+```typescript
+sheetOpen  = signal(false);
+sheetItems: BottomSheetItem[] = [
+  { id: 'perfil',  icon: 'pi-user',     label: 'Mi perfil',    route: ['/perfil'] },
+  { id: 'familia', icon: 'pi-users',    label: 'Mi familia',   route: ['/familia'] },
+  { id: 'logout',  icon: 'pi-sign-out', label: 'Cerrar sesión',
+    action: () => this.logout(), destructive: true },
+];
+```
+
+### Comportamiento interno
+
+- Usa `p-drawer position="bottom"` con `pTemplate="headless"` para control total del contenido.
+- El drawer maneja: animación slide-up (~250ms), backdrop, ESC key y focus-trap.
+- Al hacer click en un item: navega (si tiene `route`) o ejecuta `action()`, emite `itemClick` y cierra el sheet via `visibleChange`.
+- El backdrop nativo del drawer cierra el sheet sin pasar por `onItemClick`.
+
+### Estructura visual
+
+```
+┌─────────────────────────────────┐
+│            ─────                │  ← handle (40×4px, --ds-surface-dark)
+│  MÁS                            │  ← título (uppercase, muted) — opcional
+│  ─────────────────────────      │
+│  [ícono]  Mi perfil       ›    │  ← item con route: muestra chevron
+│  [ícono]  Mi familia      ›    │
+│  ─────────────────────────      │
+│  [ícono]  Cerrar sesión        │  ← item destructive: rojo, sin chevron
+└─────────────────────────────────┘
+   padding-bottom: safe-area-inset-bottom
+```
+
+### CSS overrides
+
+Los estilos del container del drawer van en `primeng-overrides.scss` (no en el SCSS del componente) porque `p-drawer` se renderiza como portal al `<body>`:
+
+```scss
+.ui-bottom-sheet-drawer {
+  height: auto !important;
+  border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+
+  .p-drawer-content { padding: 0; }
+}
+```
