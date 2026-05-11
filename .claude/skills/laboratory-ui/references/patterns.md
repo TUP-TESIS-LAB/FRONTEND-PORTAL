@@ -112,7 +112,7 @@ Cuando hay navegación de "atrás" (vista de detalle, por ejemplo):
 
 ```html
 <div class="ui-page-header">
-  <p-button icon="pi pi-arrow-left" severity="text"
+  <p-button icon="pi pi-arrow-left" [text]="true"
             label="{Sección padre}" routerLink="..." />
   <h1>{{ entityTitle }}</h1>
 </div>
@@ -400,7 +400,7 @@ Para dividir una pantalla en secciones con su propio header y acción.
 <section class="ui-section">
   <div class="ui-section__header">
     <h3>{Título de la sección}</h3>
-    <p-button icon="pi pi-..." severity="text" label="..."
+    <p-button icon="pi pi-..." [text]="true" label="..."
               (onClick)="..." />
   </div>
   <!-- contenido de la sección -->
@@ -436,10 +436,10 @@ Para procesos multi-step que en mobile se navegan secuencialmente.
 <div class="ui-wizard">
   <header class="ui-wizard__header">
     @if (currentStep > 1) {
-      <p-button icon="pi pi-arrow-left" severity="text"
+      <p-button icon="pi pi-arrow-left" [text]="true"
                 (onClick)="prevStep()" ariaLabel="Atrás" />
     } @else {
-      <p-button icon="pi pi-times" severity="text"
+      <p-button icon="pi pi-times" [text]="true"
                 (onClick)="cerrar()" ariaLabel="Cerrar" />
     }
     <h2>{Título del proceso}</h2>

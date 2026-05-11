@@ -1,0 +1,41 @@
+@use 'breakpoints' as *;
+
+:host {
+  display: block;
+}
+
+.ui-stat-card {
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--ds-shadow-sm);
+  // border-left-color se inyecta vía [style.border-left-color] desde el template
+  border-left-width: 4px;
+  border-left-style: solid;
+  border-left-color: var(--brand-secondary); // fallback si accent no llega aún
+
+  @include desktop-up {
+    padding: var(--space-5);
+  }
+
+  &__label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ds-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__value {
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 700;
+    color: var(--brand-primary);
+    margin: var(--space-1) 0;
+    line-height: 1.1;
+  }
+
+  &__sub {
+    font-size: 12px;
+    color: var(--ds-text-muted);
+  }
+}

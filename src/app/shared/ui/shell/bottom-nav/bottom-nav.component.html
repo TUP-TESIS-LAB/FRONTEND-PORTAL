@@ -1,0 +1,24 @@
+<nav class="ui-bottom-nav" aria-label="Navegación principal">
+
+  @for (item of items; track item.id) {
+    <a class="ui-bottom-nav__item"
+       [routerLink]="item.route"
+       routerLinkActive="active"
+       #rla="routerLinkActive"
+       [routerLinkActiveOptions]="item.exactMatch ? { exact: true } : {}"
+       [attr.aria-current]="rla.isActive ? 'page' : null">
+      <i [class]="'pi ' + item.icon"></i>
+      <span>{{ item.label }}</span>
+    </a>
+  }
+
+  <!-- Cuarto item fijo: abre el drawer con el sidebar completo -->
+  <button type="button"
+          class="ui-bottom-nav__item"
+          (click)="moreClick.emit()"
+          aria-label="Ver más opciones de navegación">
+    <i class="pi pi-ellipsis-h"></i>
+    <span>Más</span>
+  </button>
+
+</nav>

@@ -1,0 +1,159 @@
+@use 'breakpoints' as *;
+
+:host {
+  display: block;
+}
+
+.ui-wizard {
+  display: flex;
+  flex-direction: column;
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-sm);
+  overflow: hidden;
+
+  // ═══════════════════════════════════════════════════════
+  // Stepper header
+  // ═══════════════════════════════════════════════════════
+  &__stepper {
+    display: flex;
+    align-items: flex-start; // los conectores usan margin-top para alinearse al centro
+    padding: var(--space-5) var(--space-6);
+    background: var(--ds-bg);
+    border-bottom: 1px solid var(--ds-surface-dark);
+    gap: var(--space-2);
+
+    @include mobile-only {
+      padding: var(--space-4);
+      gap: var(--space-1);
+    }
+  }
+
+  &__step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+    min-width: 80px;
+
+    @include mobile-only {
+      min-width: 56px;
+    }
+  }
+
+  &__step-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--ds-surface-dark);
+    color: var(--ds-text-muted);
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+
+    @include mobile-only {
+      width: 30px;
+      height: 30px;
+      font-size: 12px;
+    }
+  }
+
+  &__step-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ds-text-muted);
+    text-align: center;
+    line-height: 1.2;
+
+    @include mobile-only {
+      font-size: 10px;
+    }
+  }
+
+  // ── Estado: paso activo ──────────────────────────────
+  &__step--active {
+    .ui-wizard__step-circle {
+      background: var(--brand-primary);
+      color: var(--ds-white);
+      box-shadow: 0 0 0 4px var(--brand-primary-light);
+    }
+
+    .ui-wizard__step-label {
+      color: var(--brand-primary);
+      font-weight: 600;
+    }
+  }
+
+  // ── Estado: paso completado (ya pasado) ─────────────
+  &__step--done {
+    .ui-wizard__step-circle {
+      background: var(--ds-success);
+      color: var(--ds-white);
+    }
+  }
+
+  // ── Conector entre pasos ─────────────────────────────
+  // margin-top = (alto círculo - alto conector) / 2
+  // desktop: (36px - 2px) / 2 = 17px
+  // mobile:  (30px - 2px) / 2 = 14px
+  &__connector {
+    flex: 1;
+    height: 2px;
+    background: var(--ds-surface-dark);
+    margin-top: 17px;
+    min-width: 16px;
+    transition: background 0.2s;
+
+    @include mobile-only {
+      margin-top: 14px;
+    }
+
+    &--done {
+      background: var(--ds-success);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Contenido del paso (proyectado por el padre)
+  // ═══════════════════════════════════════════════════════
+  &__content {
+    flex: 1;
+    padding: var(--space-6);
+    min-height: 320px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+
+    @include mobile-only {
+      padding: var(--space-4);
+      min-height: 260px;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Footer fijo: botones de navegación
+  // ═══════════════════════════════════════════════════════
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--ds-surface-dark);
+    background: var(--ds-white);
+    flex-shrink: 0;
+
+    @include mobile-only {
+      padding: var(--space-3) var(--space-4);
+      // Safe area para home indicator en iOS
+      padding-bottom: calc(var(--space-3) + var(--ds-safe-bottom));
+
+      // Ambos botones ocupan el mismo ancho en mobile
+      .p-button { flex: 1; }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+<div class="ui-event-card" [class.ui-event-card--urgent]="urgent">
+
+  <!-- Date stamp: día grande + mes -->
+  <div class="ui-event-card__date-stamp">
+    <span class="ui-event-card__day">{{ day }}</span>
+    <span class="ui-event-card__month">{{ month }}</span>
+  </div>
+
+  <!-- Info: título + detalles (hora, sede, etc.) -->
+  <div class="ui-event-card__info">
+    <h4>{{ title }}</h4>
+    @for (detail of details; track $index) {
+      <p>
+        <i [class]="'pi ' + detail.icon" aria-hidden="true"></i>
+        <span>{{ detail.text }}</span>
+      </p>
+    }
+  </div>
+
+  <!-- Estado + slot de acción contextual -->
+  <div class="ui-event-card__status">
+    <p-tag [value]="statusLabel" [styleClass]="'ui-tag-' + statusKey" />
+    <!-- El padre proyecta botones según el estado del evento -->
+    <ng-content />
+  </div>
+
+</div>

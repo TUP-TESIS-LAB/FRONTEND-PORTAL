@@ -1,0 +1,40 @@
+@use 'breakpoints' as *;
+
+:host {
+  display: block;
+}
+
+.ui-page-header {
+  display: flex;
+  // align-items: flex-start por default: en mobile el título puede ser multilinea
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+
+  @include desktop-up {
+    // En desktop, el botón de acción queda centrado verticalmente con el título
+    align-items: center;
+  }
+
+  &__text {
+    flex: 1;
+    min-width: 0;
+
+    h1 {
+      margin: 0 0 var(--space-1);
+    }
+
+    p {
+      margin: 0;
+      color: var(--ds-text-muted);
+      font-size: 14px;
+    }
+  }
+}
+
+// El contenido proyectado (botón de acción) se vuelve un flex-item directo.
+// Se agrega flex-shrink: 0 para que no se comprima si el título es largo.
+:host ::ng-deep > .ui-page-header > *:not(.ui-page-header__text) {
+  flex-shrink: 0;
+}

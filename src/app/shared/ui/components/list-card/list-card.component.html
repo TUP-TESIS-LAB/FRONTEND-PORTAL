@@ -1,0 +1,15 @@
+<a class="ui-list-card" [routerLink]="routerLink">
+  <p-avatar
+    [label]="initials"
+    shape="circle"
+    [style]="{ background: avatarBg, color: '#fff' }" />
+
+  <div class="ui-list-card__info">
+    <strong>{{ title }}</strong>
+    @if (subtitle) {
+      <span>{{ subtitle }}</span>
+    }
+  </div>
+
+  <i class="pi pi-chevron-right" aria-hidden="true"></i>
+</a>

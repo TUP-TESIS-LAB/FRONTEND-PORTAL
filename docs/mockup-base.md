@@ -427,16 +427,16 @@ Lista explícita de cosas que el mockup no cubre. **Si Claude las pide, redirigi
 
 ### Inventario
 
-| Ruta                       | Pantalla        | Acceso  | Estado |
-|----------------------------|-----------------|---------|--------|
-| `/login`                   | Login           | Pública | Mockeada |
-| `/register`                | Registro        | Pública | Mockeada |
-| `/paciente`                | Inicio          | Privada | Mockeada |
-| `/paciente/turnos`         | Mis turnos      | Privada | Mockeada |
-| `/paciente/turnos/sacar`   | Reservar turno  | Privada | Wizard 4 pasos |
-| `/paciente/estudios`       | Mis estudios    | Privada | Mockeada |
-| `/paciente/perfil`         | Mi perfil       | Privada | Mockeada |
-| `/paciente/familia`        | Mi familia      | Privada | Mockeada |
+| Ruta                 | Pantalla        | Acceso  | Estado |
+|----------------------|-----------------|---------|--------|
+| `/login`             | Login           | Pública | Mockeada |
+| `/register`          | Registro        | Pública | Mockeada |
+| `/`                  | Inicio          | Privada | Mockeada |
+| `/turnos`            | Mis turnos      | Privada | Mockeada |
+| `/turnos/sacar`      | Reservar turno  | Privada | Wizard 4 pasos |
+| `/estudios`          | Mis estudios    | Privada | Mockeada |
+| `/perfil`            | Mi perfil       | Privada | Mockeada |
+| `/familia`           | Mi familia      | Privada | Mockeada |
 
 ### Sidebar (config para portal paciente)
 
@@ -445,16 +445,16 @@ const navGroups: NavGroup[] = [
   {
     label: 'Principal',
     items: [
-      { id: 'inicio',   icon: 'pi-home',        label: 'Inicio',   route: '/paciente' },
-      { id: 'estudios', icon: 'pi-file',        label: 'Estudios', route: '/paciente/estudios' },
-      { id: 'turnos',   icon: 'pi-calendar',    label: 'Turnos',   route: '/paciente/turnos' },
+      { id: 'inicio',   icon: 'pi-home',     label: 'Inicio',   route: '/',          exactMatch: true },
+      { id: 'estudios', icon: 'pi-file',     label: 'Estudios', route: '/estudios' },
+      { id: 'turnos',   icon: 'pi-calendar', label: 'Turnos',   route: '/turnos' },
     ],
   },
   {
     label: 'Cuenta',
     items: [
-      { id: 'perfil',  icon: 'pi-user',  label: 'Mi perfil',  route: '/paciente/perfil' },
-      { id: 'familia', icon: 'pi-users', label: 'Mi familia', route: '/paciente/familia' },
+      { id: 'perfil',  icon: 'pi-user',  label: 'Mi perfil',  route: '/perfil' },
+      { id: 'familia', icon: 'pi-users', label: 'Mi familia', route: '/familia' },
     ],
   },
 ];
@@ -564,9 +564,9 @@ onSubmit() {
     this.form.markAllAsTouched();
     return;
   }
-  // Mock: navega a /paciente sin validar credenciales reales.
+  // Mock: navega al inicio sin validar credenciales reales.
   // TODO: reemplazar por llamada a AuthService.login()
-  this.router.navigate(['/paciente']);
+  this.router.navigate(['/']);
 }
 ```
 
@@ -620,7 +620,7 @@ Debajo del campo password, mostrar siempre: `Usá al menos 8 caracteres con may�
 
 ### Submit
 
-Mock: navega a `/paciente` simulando alta exitosa.
+Mock: navega a `/` (Inicio) simulando alta exitosa.
 
 ---
 
@@ -678,14 +678,14 @@ Lista de 3-4 estudios recientes (de cualquier persona del grupo familiar). Cada 
 - Tag verde "Disponible"
 - Botón "Descargar"
 
-Link "Ver todos →" que lleva a `/paciente/estudios`.
+Link "Ver todos →" que lleva a `/estudios`.
 
 ### Microcomportamientos
 
 - Click en "Cómo prepararme" → `p-dialog` con detalle de preparación (lista del campo `Turno.preparacion`).
-- Click en "Ver detalle" → navega a `/paciente/turnos` y selecciona ese turno en el aside.
+- Click en "Ver detalle" → navega a `/turnos` y selecciona ese turno en el aside.
 - Click en "Descargar" → `window.open(estudio.pdf.url, '_blank')`.
-- Click en "Sacar turno" (botón superior derecho) → navega a `/paciente/turnos/sacar`.
+- Click en "Sacar turno" (botón superior derecho) → navega a `/turnos/sacar`.
 
 ### Responsive
 
@@ -700,7 +700,7 @@ Link "Ver todos →" que lleva a `/paciente/estudios`.
 ### Layout
 
 Layout 2-col en desktop: lista de turnos a la izquierda, detalle del turno seleccionado a la derecha.
-En mobile: solo lista; al tocar un turno, se abre el detalle como ruta `/paciente/turnos/:id` (sub-pantalla con header propio).
+En mobile: solo lista; al tocar un turno, se abre el detalle como ruta `/turnos/:id` (sub-pantalla con header propio).
 
 ### Tabs
 
@@ -735,8 +735,8 @@ Si no hay turno seleccionado, mostrar empty state en el aside: "Seleccioná un t
 
 - Click en card de turno → lo selecciona (se highlight + se actualiza el aside en desktop, navega a sub-pantalla en mobile).
 - Click en "Cancelar turno" → `p-confirmDialog` con mensaje "¿Cancelar el turno del {fecha}?". Si confirma → mock que cambia el estado a 'cancelado' y muestra toast de éxito.
-- Click en "Reprogramar" → navega a `/paciente/turnos/sacar` con el turno actual prefilled (TBD: queda fuera del MVP, mostrar toast "Próximamente").
-- Botón "Sacar turno" superior derecho → `/paciente/turnos/sacar`.
+- Click en "Reprogramar" → navega a `/turnos/sacar` con el turno actual prefilled (TBD: queda fuera del MVP, mostrar toast "Próximamente").
+- Botón "Sacar turno" superior derecho → `/turnos/sacar`.
 
 ### Responsive
 
@@ -765,11 +765,11 @@ Si no hay turno seleccionado, mostrar empty state en el aside: "Seleccioná un t
 ### Embebido
 
 - Desktop: dentro de `p-dialog` con width 720px.
-- Mobile: ruta full-screen propia (`/paciente/turnos/sacar`).
+- Mobile: ruta full-screen propia (`/turnos/sacar`).
 
 ### Microcomportamientos
 
-- Al confirmar → mock POST → toast "Turno reservado para {fecha} a las {hora}" → cierra el wizard → navega a `/paciente/turnos`.
+- Al confirmar → mock POST → toast "Turno reservado para {fecha} a las {hora}" → cierra el wizard → navega a `/turnos`.
 - Si el paciente cierra el wizard a la mitad, descartar selección sin avisar (o mostrar `p-confirmDialog` "¿Salir sin guardar?" — TBD).
 
 ---
@@ -910,8 +910,8 @@ Card vacía con borde dashed, ícono `+` grande gris, texto "Agregar familiar / 
 
 ### Microcomportamientos
 
-- Click en `Ver estudios` → navega a `/paciente/estudios?personaId={id}` (filtro pre-aplicado).
-- Click en `Sacar turno` → navega a `/paciente/turnos/sacar?personaId={id}` (paciente pre-seleccionado en wizard).
+- Click en `Ver estudios` → navega a `/estudios?personaId={id}` (filtro pre-aplicado).
+- Click en `Sacar turno` → navega a `/turnos/sacar?personaId={id}` (paciente pre-seleccionado en wizard).
 - Click en card de "Agregar familiar" → muestra toast "Próximamente" (TBD para MVP).
 - Menú overflow: "Editar", "Quitar vinculación" (toast "Próximamente").
 
