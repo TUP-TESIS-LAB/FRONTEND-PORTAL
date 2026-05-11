@@ -1,0 +1,22 @@
+<div class="ui-data-field">
+  <div class="ui-data-field__icon-wrap">
+    <i [class]="'pi ' + icon"></i>
+  </div>
+
+  <div class="ui-data-field__body" [class.ui-data-field__body--multiline]="multiline">
+    <span class="ui-data-field__label">{{ label }}</span>
+    <span class="ui-data-field__value" [class.ui-data-field__value--empty]="isEmpty">
+      {{ displayValue }}
+    </span>
+  </div>
+
+  @if (editable) {
+    <p-button
+      icon="pi pi-pencil"
+      [text]="true"
+      severity="primary"
+      styleClass="ui-data-field__edit-btn"
+      [ariaLabel]="'Editar ' + label"
+      (onClick)="edit.emit()" />
+  }
+</div>

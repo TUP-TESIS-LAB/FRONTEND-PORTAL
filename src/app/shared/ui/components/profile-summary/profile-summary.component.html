@@ -1,0 +1,11 @@
+<!-- Hero card: gradient oscuro con avatar + datos básicos -->
+<div class="ui-profile-summary__hero">
+  <div class="ui-profile-summary__avatar">{{ user.iniciales }}</div>
+  <h2 class="ui-profile-summary__nombre">{{ user.nombre }} {{ user.apellido }}</h2>
+  <p class="ui-profile-summary__meta">DNI {{ user.dni }}</p>
+  <p class="ui-profile-summary__meta">{{ user.edad }} años · {{ sexoLabel }} · {{ user.ciudad }}</p>
+</div>
+
+<!-- Cards de cobertura y datos críticos debajo del hero -->
+<ui-coverage-card [cobertura]="user.cobertura" (subirCredencial)="subirCredencial.emit()" />
+<ui-medical-flags [datosMedicos]="user.datosMedicos" />

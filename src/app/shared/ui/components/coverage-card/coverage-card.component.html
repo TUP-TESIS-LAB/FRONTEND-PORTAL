@@ -1,0 +1,32 @@
+<div class="ui-coverage-card">
+  <span class="ui-coverage-card__label">COBERTURA ACTIVA</span>
+
+  <div class="ui-coverage-card__header">
+    <div class="ui-coverage-card__logo-placeholder">{{ inicalesPlan }}</div>
+    <div class="ui-coverage-card__info">
+      <strong class="ui-coverage-card__nombre">{{ cobertura.nombre }}</strong>
+      @if (cobertura.plan) {
+        <span class="ui-coverage-card__plan">{{ cobertura.plan }}</span>
+      }
+    </div>
+    @if (cobertura.vigente) {
+      <p-tag value="Vigente" styleClass="ui-tag-confirmado" />
+    }
+  </div>
+
+  @if (cobertura.afiliado) {
+    <div class="ui-coverage-card__afiliado">
+      N° <span>{{ cobertura.afiliado }}</span>
+    </div>
+  }
+
+  <div class="ui-coverage-card__footer">
+    @if (cobertura.venceEn) {
+      <span class="ui-coverage-card__vence">Vence {{ cobertura.venceEn }}</span>
+    }
+    <button type="button" class="ui-coverage-card__link"
+            (click)="subirCredencial.emit()">
+      Subir credencial
+    </button>
+  </div>
+</div>
