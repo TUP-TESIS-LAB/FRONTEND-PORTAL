@@ -46,3 +46,6 @@ Thumbs.db
 # Claude Code — local settings per machine
 .claude/settings.local.json
 .claude/*.local.json
+
+# Superpowers visual brainstorming session files
+.superpowers/
