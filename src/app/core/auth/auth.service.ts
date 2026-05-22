@@ -63,10 +63,12 @@ export class AuthService {
 
   private isExpired(token: string): boolean {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1] ?? ''));
+      const part = token.split('.')[1];
+      if (!part) return false;
+      const payload = JSON.parse(atob(part));
       return payload.exp && payload.exp * 1000 < Date.now();
     } catch {
-      return true;
+      return false;
     }
   }
 }
