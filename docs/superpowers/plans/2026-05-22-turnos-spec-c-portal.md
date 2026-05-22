@@ -1,6 +1,10 @@
 # Spec C — Implementation Plan (Portal patient flow)
 
+> **Jira:** [KAN-28](https://exequielsantoro.atlassian.net/browse/KAN-28)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+> **Post-Task 1 amendments (2026-05-22):** El finding de Task 1 (Patient exploration) determinó que `users_patients` (V7) ya cubre el bond familiar. Tasks afectadas: Task 2 usa **V55** (no V58), Task 3 queda **SKIP** (no V59 necesaria), Task 4 usa **V56** (no V60), Task 9 reescribe el adapter para delegar a `UserPatientJpaRepository` ya existente. Los pasos modificados están marcados con ⚠️ **POST-T1**.
 
 **Goal:** Habilitar al paciente externo a registrarse, loguearse, sacar turno (para sí o un familiar), listar y cancelar sus turnos en el portal multi-tenant, conectando los mockups existentes a endpoints reales del backend.
 
@@ -82,15 +86,17 @@ git commit -m "docs(turnos): patient model exploration findings for Spec C"
 
 ---
 
-### Task 2: Migration V58 — tabla tipos_analisis + puente
+### Task 2: Migration V55 — tabla tipos_analisis + puente ⚠️ POST-T1
 
 **Files:**
-- Create: `Backend/src/main/resources/db/migration/V58__create_tipos_analisis.sql`
+- Create: `Backend/src/main/resources/db/migration/V55__create_tipos_analisis.sql`
+
+**POST-T1 note:** El número de migración cambió de V58 → V55 porque `development` solo tiene hasta V54. V55-V57 viven en Spec B branch (`feat/turnos-specs`) sin mergear. Si Spec B mergea primero, renumerar en el merge conflict.
 
 - [ ] **Step 1: Crear migración**
 
 ```sql
--- V58__create_tipos_analisis.sql
+-- V55__create_tipos_analisis.sql
 -- Catálogo agregado de tipos de análisis (UX-friendly) para el portal del paciente.
 -- Cada tipo agrupa N determinaciones reales.
 
@@ -146,18 +152,17 @@ Si la app usa H2 en tests, agregar variante en `application-test.yml` o usar tip
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/main/resources/db/migration/V58__create_tipos_analisis.sql
-git commit -m "feat(turnos): add tipos_analisis catalog tables (V58)"
+git add src/main/resources/db/migration/V55__create_tipos_analisis.sql
+git commit -m "feat(turnos): add tipos_analisis catalog tables (V55)"
 ```
 
 ---
 
-### Task 3: Migration V59 — patient family link (si explore lo requiere)
+### Task 3: ⛔ SKIPPED — Migration V59 patient family link NO necesaria ⚠️ POST-T1
 
-**Files:**
-- Create: `Backend/src/main/resources/db/migration/V59__add_patient_family_link.sql` (condicional)
+**Razón:** Task 1 confirmó que la tabla `users_patients` (V7) ya modela la relación user ↔ patient con `bond` enum (`PROPIO/MADRE/PADRE/HERMANO/HERMANA/HIJO/HIJA/TUTOR/OTROS`) e `is_owner`/`status`. No se agregan columnas a `patients`.
 
-**SKIP esta tarea si** Step 3 de Task 1 documentó que el modelo Patient ya soporta vínculo familiar. Continuar con Task 4.
+Esta tarea queda como anclaje histórico para que la numeración del plan se entienda. Saltearla y continuar con Task 4.
 
 - [ ] **Step 1: Crear migración**
 
@@ -193,10 +198,12 @@ git commit -m "feat(empresa): add patient family link FK + vinculo (V59)"
 
 ---
 
-### Task 4: Migration V60 — seed dev tipos_analisis
+### Task 4: Migration V56 — seed dev tipos_analisis ⚠️ POST-T1
 
 **Files:**
-- Create: `Backend/src/main/resources/db/migration/V60__seed_local_dev_tipos_analisis.sql`
+- Create: `Backend/src/main/resources/db/migration/V56__seed_local_dev_tipos_analisis.sql`
+
+**POST-T1 note:** Renumerado de V60 → V56.
 
 - [ ] **Step 1: Identificar tenant demo y determinations existentes**
 
@@ -209,7 +216,7 @@ Anotar el `tenant_id` del tenant demo (usado por seeds previos como `V900__seed_
 - [ ] **Step 2: Crear migración profile-locked**
 
 ```sql
--- V60__seed_local_dev_tipos_analisis.sql
+-- V56__seed_local_dev_tipos_analisis.sql
 -- Profile-locked: solo corre en perfil 'localdev' (igual que V900__seed_local_dev).
 -- Tipos de análisis para el tenant demo, matcheando los hardcoded del mockup portal.
 
@@ -252,8 +259,8 @@ psql lab_dev -c "SELECT id, nombre, categoria FROM tipos_analisis;"
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/main/resources/db/migration/V60__seed_local_dev_tipos_analisis.sql
-git commit -m "feat(turnos): seed dev tipos_analisis for demo tenant (V60)"
+git add src/main/resources/db/migration/V56__seed_local_dev_tipos_analisis.sql
+git commit -m "feat(turnos): seed dev tipos_analisis for demo tenant (V56)"
 ```
 
 ---
@@ -797,12 +804,14 @@ git commit -m "feat(turnos): expose GET /turnos/catalog/tipos-analisis"
 
 ## PART 3 — Backend Family + Register
 
-### Task 9: PatientFamilyPort + adapter
+### Task 9: PatientFamilyPort + adapter ⚠️ POST-T1 (reescrito)
 
 **Files:**
 - Create: `Backend/src/main/java/lab/laboratorio/modules/empresa/domain/port/PatientFamilyPort.java`
 - Create: `Backend/src/main/java/lab/laboratorio/modules/empresa/domain/model/PatientFamilyEntry.java`
 - Create: `Backend/src/main/java/lab/laboratorio/modules/empresa/infrastructure/adapter/PatientFamilyAdapter.java`
+
+**POST-T1 note:** El adapter delega a `UserPatientJpaRepository` (existente desde V7) en lugar de agregar columnas a `patients`. El bond viene del enum `UserPatientBond` directo de `users_patients.bond`.
 
 - [ ] **Step 1: Domain model + port**
 
@@ -813,13 +822,13 @@ package lab.laboratorio.modules.empresa.domain.model;
 import java.time.LocalDate;
 
 public record PatientFamilyEntry(
-    Long id,
+    Long patientId,
     String nombre,
     String apellido,
     String dni,
     LocalDate fechaNacimiento,
-    String vinculo,             // null para el responsable raíz
-    Long responsablePatientId   // null para el responsable raíz
+    String bond,        // valor del enum UserPatientBond: PROPIO/MADRE/PADRE/HIJO/HIJA/etc.
+    boolean isOwner
 ) {}
 ```
 
@@ -832,105 +841,99 @@ import java.util.List;
 import java.util.Set;
 
 public interface PatientFamilyPort {
-    /** patientIds que el user puede operar (self + dependientes). */
+    /** patientIds que el user puede operar (self + dependientes vía users_patients). */
     Set<Long> resolveOwnedPatientIds(Long userId);
 
-    /** Lista jerárquica: responsable primero, después dependientes. */
+    /** Lista de bonds: owner primero (bond=PROPIO, is_owner=true), después dependientes. */
     List<PatientFamilyEntry> listFamily(Long userId);
 }
 ```
 
-- [ ] **Step 2: Adapter JPA**
+- [ ] **Step 2: Adapter JPA delegando a UserPatientJpaRepository**
 
 ```java
 // PatientFamilyAdapter.java
 package lab.laboratorio.modules.empresa.infrastructure.adapter;
 
+import lab.laboratorio.infrastructure.tenancy.TenantProvider;
 import lab.laboratorio.modules.empresa.domain.model.PatientFamilyEntry;
 import lab.laboratorio.modules.empresa.domain.port.PatientFamilyPort;
-import lab.laboratorio.modules.empresa.infrastructure.persistence.entity.PatientEntity;
+import lab.laboratorio.modules.empresa.infrastructure.persistence.entity.PatientJpaEntity;
+import lab.laboratorio.modules.empresa.infrastructure.persistence.entity.UserPatientJpaEntity;
 import lab.laboratorio.modules.empresa.infrastructure.persistence.repository.PatientJpaRepository;
+import lab.laboratorio.modules.empresa.infrastructure.persistence.repository.UserPatientJpaRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class PatientFamilyAdapter implements PatientFamilyPort {
 
-    private final PatientJpaRepository patients;
+    private final UserPatientJpaRepository userPatientRepo;
+    private final PatientJpaRepository patientRepo;
+    private final TenantProvider tenantProvider;
 
-    public PatientFamilyAdapter(PatientJpaRepository patients) {
-        this.patients = patients;
+    public PatientFamilyAdapter(UserPatientJpaRepository userPatientRepo,
+                                PatientJpaRepository patientRepo,
+                                TenantProvider tenantProvider) {
+        this.userPatientRepo = userPatientRepo;
+        this.patientRepo = patientRepo;
+        this.tenantProvider = tenantProvider;
     }
 
     @Override
     public Set<Long> resolveOwnedPatientIds(Long userId) {
-        PatientEntity responsible = patients.findByUserId(userId)
-            .orElseThrow(() -> new IllegalStateException("No patient linked to user " + userId));
-        Set<Long> ids = new HashSet<>();
-        ids.add(responsible.getId());
-        patients.findByResponsiblePatientId(responsible.getId())
-            .forEach(p -> ids.add(p.getId()));
-        return ids;
+        // Solo bonds en status VERIFIED (no incluir REJECTED ni CREATED pendientes)
+        return userPatientRepo.findByUser_IdAndTenantId(userId, tenantProvider.currentTenantId()).stream()
+            .filter(up -> "VERIFIED".equals(up.getStatus()))
+            .map(UserPatientJpaEntity::getPatientId)
+            .collect(Collectors.toCollection(HashSet::new));
     }
 
     @Override
     public List<PatientFamilyEntry> listFamily(Long userId) {
-        PatientEntity responsible = patients.findByUserId(userId)
-            .orElseThrow(() -> new IllegalStateException("No patient linked to user " + userId));
-        List<PatientFamilyEntry> out = new ArrayList<>();
-        out.add(toEntry(responsible, null));
-        patients.findByResponsiblePatientId(responsible.getId())
-            .forEach(p -> out.add(toEntry(p, responsible.getId())));
-        return out;
-    }
+        List<UserPatientJpaEntity> bonds = userPatientRepo
+            .findByUser_IdAndTenantId(userId, tenantProvider.currentTenantId()).stream()
+            .filter(up -> "VERIFIED".equals(up.getStatus()))
+            // Owner primero
+            .sorted((a, b) -> Boolean.compare(b.isOwner(), a.isOwner()))
+            .toList();
 
-    private PatientFamilyEntry toEntry(PatientEntity p, Long responsibleId) {
-        return new PatientFamilyEntry(
-            p.getId(), p.getNombre(), p.getApellido(), p.getDni(),
-            p.getFechaNacimiento(),
-            p.getFamilyVinculo(),  // null si es responsable
-            responsibleId == null ? null : (p.getResponsiblePatientId())
-        );
+        List<PatientFamilyEntry> out = new ArrayList<>();
+        for (UserPatientJpaEntity bond : bonds) {
+            PatientJpaEntity p = patientRepo.findById(bond.getPatientId()).orElse(null);
+            if (p == null) continue;  // dangling FK — skip silently
+            out.add(new PatientFamilyEntry(
+                p.getId(), p.getNombre(), p.getApellido(), p.getDni(),
+                p.getFechaNacimiento(),
+                bond.getBond() == null ? null : bond.getBond().name(),
+                bond.isOwner()
+            ));
+        }
+        return out;
     }
 }
 ```
 
-**Note:** `findByUserId` y `findByResponsiblePatientId` deben agregarse a `PatientJpaRepository`. Si los métodos `getFamilyVinculo()` / `getResponsiblePatientId()` no existen en `PatientEntity`, agregarlos junto con las columnas de la migración V59.
+**Note:** Los nombres exactos de campos en `UserPatientJpaEntity` y `PatientJpaEntity` deben verificarse al implementar (`bond` puede ser `String` o `enum` — usar el shape real). El `UserPatientBond` enum vive en `lab.laboratorio.modules.empresa.domain.model` (verificar path exacto).
 
-- [ ] **Step 3: Agregar queries al repository y getters a la entity**
-
-Modificar `PatientJpaRepository` para agregar:
-```java
-Optional<PatientEntity> findByUserId(Long userId);
-List<PatientEntity> findByResponsiblePatientId(Long responsibleId);
-```
-
-Modificar `PatientEntity` para agregar campos + getters/setters:
-```java
-@Column(name = "responsible_patient_id")
-private Long responsiblePatientId;
-
-@Column(name = "family_vinculo", length = 20)
-private String familyVinculo;
-```
-
-- [ ] **Step 4: Compilar**
+- [ ] **Step 3: Compilar**
 
 ```bash
 ./mvnw compile
 ```
 
-Expected: BUILD SUCCESS.
+Expected: BUILD SUCCESS. Si compila pero la query de `findByUser_IdAndTenantId` no existe en `UserPatientJpaRepository`, agregarla (es derivada de Spring Data, solo hay que declarar el método).
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add src/main/java/lab/laboratorio/modules/empresa/
-git commit -m "feat(empresa): add PatientFamilyPort + adapter"
+git commit -m "feat(empresa): add PatientFamilyPort backed by users_patients"
 ```
 
 ---
@@ -970,16 +973,17 @@ class ListMyFamilyUseCaseTest {
         when(userProvider.currentUserId()).thenReturn(42L);
         when(port.listFamily(42L)).thenReturn(List.of(
             new PatientFamilyEntry(10L, "María", "García", "30000000",
-                LocalDate.of(1990, 5, 12), null, null),
+                LocalDate.of(1990, 5, 12), "PROPIO", true),
             new PatientFamilyEntry(11L, "Lucía", "García", "55000000",
-                LocalDate.of(2018, 3, 8), "HIJA", 10L)
+                LocalDate.of(2018, 3, 8), "HIJA", false)
         ));
 
         List<PatientFamilyEntry> result = useCase.execute();
 
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).vinculo()).isNull();
-        assertThat(result.get(1).vinculo()).isEqualTo("HIJA");
+        assertThat(result.get(0).isOwner()).isTrue();
+        assertThat(result.get(0).bond()).isEqualTo("PROPIO");
+        assertThat(result.get(1).bond()).isEqualTo("HIJA");
     }
 }
 ```
@@ -1049,7 +1053,7 @@ git commit -m "feat(empresa): add ListMyFamilyUseCase with tests"
 - Create: `Backend/src/main/java/lab/laboratorio/modules/empresa/presentation/controller/MyFamilyController.java`
 - Create: `Backend/src/test/java/lab/laboratorio/modules/empresa/presentation/controller/MyFamilyControllerTest.java`
 
-- [ ] **Step 1: DTO**
+- [ ] **Step 1: DTO** ⚠️ POST-T1 (shape ajustado)
 
 ```java
 // PatientFamilyResponse.java
@@ -1059,17 +1063,17 @@ import lab.laboratorio.modules.empresa.domain.model.PatientFamilyEntry;
 import java.time.LocalDate;
 
 public record PatientFamilyResponse(
-    Long id,
+    Long patientId,
     String nombre,
     String apellido,
     String dni,
     LocalDate fechaNacimiento,
-    String vinculo,
-    Long responsablePatientId
+    String bond,        // raw enum UserPatientBond: PROPIO/MADRE/PADRE/HIJO/HIJA/HERMANO/HERMANA/TUTOR/OTROS
+    boolean isOwner
 ) {
     public static PatientFamilyResponse from(PatientFamilyEntry e) {
-        return new PatientFamilyResponse(e.id(), e.nombre(), e.apellido(), e.dni(),
-            e.fechaNacimiento(), e.vinculo(), e.responsablePatientId());
+        return new PatientFamilyResponse(e.patientId(), e.nombre(), e.apellido(), e.dni(),
+            e.fechaNacimiento(), e.bond(), e.isOwner());
     }
 }
 ```
@@ -1101,13 +1105,15 @@ class MyFamilyControllerTest {
     void returnsFamilyForExterno() throws Exception {
         when(listMyFamilyUseCase.execute()).thenReturn(List.of(
             new PatientFamilyEntry(10L, "María", "García", "30000000",
-                LocalDate.of(1990, 5, 12), null, null)
+                LocalDate.of(1990, 5, 12), "PROPIO", true)
         ));
 
         mockMvc.perform(get(BASE_URL))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].nombre").value("María"))
-            .andExpect(jsonPath("$[0].vinculo").doesNotExist());
+            .andExpect(jsonPath("$[0].patientId").value(10))
+            .andExpect(jsonPath("$[0].bond").value("PROPIO"))
+            .andExpect(jsonPath("$[0].isOwner").value(true));
     }
 }
 ```
@@ -3257,13 +3263,13 @@ import { Observable, map, of, tap, throwError } from 'rxjs';
 import { Familiar } from '../models/familiar.model';
 
 interface PatientFamilyResponse {
-  id: number;
+  patientId: number;
   nombre: string;
   apellido: string;
   dni: string;
   fechaNacimiento: string;
-  vinculo: string | null;
-  responsablePatientId: number | null;
+  bond: string;          // UserPatientBond raw: PROPIO/MADRE/PADRE/HIJO/HIJA/HERMANO/HERMANA/TUTOR/OTROS
+  isOwner: boolean;
 }
 
 const ACCENT_COLORS: Array<'primary' | 'secondary' | 'accent'> = ['primary', 'secondary', 'accent'];
@@ -3295,9 +3301,9 @@ export class FamilyService {
       (Date.now() - new Date(p.fechaNacimiento).getTime()) / (365.25 * 24 * 3600 * 1000),
     );
     const vinculoLabel: Familiar['vinculo'] =
-      p.vinculo === null ? 'Yo' : this.normalizeVinculo(p.vinculo);
+      p.bond === 'PROPIO' ? 'Yo' : this.normalizeBond(p.bond);
     return {
-      id: p.id,
+      id: p.patientId,
       nombre: p.nombre,
       apellido: p.apellido,
       iniciales: (p.nombre[0] ?? '?').toUpperCase(),
@@ -3311,10 +3317,15 @@ export class FamilyService {
     };
   }
 
-  private normalizeVinculo(raw: string): Familiar['vinculo'] {
+  private normalizeBond(raw: string): Familiar['vinculo'] {
+    // UserPatientBond → Vinculo del mockup
+    // HERMANO/HERMANA/TUTOR/OTROS no tienen correspondencia exacta → 'Otro'
     const map: Record<string, Familiar['vinculo']> = {
-      HIJO: 'Hijo', HIJA: 'Hija', MADRE: 'Madre', PADRE: 'Padre',
-      CONYUGE: 'Cónyuge', OTRO: 'Otro',
+      PROPIO: 'Yo',
+      HIJO: 'Hijo', HIJA: 'Hija',
+      MADRE: 'Madre', PADRE: 'Padre',
+      HERMANO: 'Otro', HERMANA: 'Otro',
+      TUTOR: 'Otro', OTROS: 'Otro',
     };
     return map[raw] ?? 'Otro';
   }

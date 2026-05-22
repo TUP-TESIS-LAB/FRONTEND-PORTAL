@@ -1,10 +1,16 @@
 # Spec C — Reserva de turnos del paciente externo (portal)
 
+> **Jira:** [KAN-28](https://exequielsantoro.atlassian.net/browse/KAN-28)
+
 **Fecha:** 2026-05-22
 **Repos afectados:** `Backend/` (módulos TURNOS, SUCURSALES, EMPRESA) + `FRONTEND-PORTAL/`
 **Ramas:** `feat/turnos-spec-c` en ambos
 **Predecesores:** Spec A (config agendas) y Spec B (cola + TV) — código completo en ramas `feat/turnos-specs`
 **Aprobación de enfoque:** Approach A — adaptación pura del mockup existente
+
+## Cambios post-exploración (2026-05-22)
+
+Task 1 del plan ejecutó la exploración del modelo Patient. Hallazgo clave: **`users_patients` (V7) ya existe con un modelo completo de bond familiar** (`user_id`, `patient_id`, `bond` enum con `PROPIO/MADRE/PADRE/HERMANO/HERMANA/HIJO/HIJA/TUTOR/OTROS`, `is_owner`, `status`). El `PatientFamilyPort` se backa contra esa tabla, NO contra una nueva FK en `patients`. La migración V59 originalmente propuesta queda **cancelada**. La última migración en `development` es V54, por lo que las migraciones de Spec C usan V55 (tipos_analisis) y V56 (seed dev). Las secciones §3.3.1, §3.3.3 y §3.4 reflejan estos ajustes.
 
 ---
 
@@ -180,31 +186,35 @@ public ResponseEntity<Void> cancel(@PathVariable Long id) {
 
 ### 3.3 Módulo EMPRESA
 
-#### 3.3.1 Modelo `Patient` — vínculo familiar
+#### 3.3.1 Modelo `Patient` — vínculo familiar (resuelto por Task 1)
 
-**Asunción a verificar en `/sdd-explore`:** el modelo `Patient` actual no tiene FK de "responsable". Si la migración previa no lo agregó:
+**Resolución post-exploración:** el backend ya tiene una tabla `users_patients` (V7) que modela la relación user ↔ paciente con bond familiar. Estructura existente:
 
-**Flyway `V59__add_patient_family_link.sql`:**
-```sql
-ALTER TABLE patients ADD COLUMN responsible_patient_id BIGINT NULL;
-ALTER TABLE patients ADD CONSTRAINT fk_patient_responsible
-  FOREIGN KEY (responsible_patient_id) REFERENCES patients(id);
-CREATE INDEX idx_patient_responsible ON patients(responsible_patient_id);
-
--- Vínculo: tipo de relación familiar
-ALTER TABLE patients ADD COLUMN family_vinculo VARCHAR(20) NULL;
--- 'HIJO', 'HIJA', 'MADRE', 'PADRE', 'CONYUGE', 'OTRO' — null para el paciente raíz (responsable)
+```
+users_patients(
+    user_id BIGINT NOT NULL FK → users(id),
+    patient_id BIGINT NOT NULL,
+    bond VARCHAR(20)        -- enum UserPatientBond
+                            -- valores: PROPIO, MADRE, PADRE, HERMANO,
+                            --         HERMANA, HIJO, HIJA, TUTOR, OTROS
+    is_owner BOOLEAN,
+    status VARCHAR(20)      -- CREATED | VERIFIED | REJECTED
+)
 ```
 
-**Implicación:** la relación es jerárquica simple (un paciente "responsable" tiene N "dependientes"). El responsable es siempre el que tiene el `User EXTERNO` linkeado. Sin sub-jerarquías para el MVP.
+**No se agrega ninguna columna a `patients` ni se crea V59.** El `PatientFamilyPort` se backa contra `users_patients` vía `UserPatientJpaRepository.findByUser_IdAndTenantId()` (ya existente). El use case `GetPatientsByUserUseCase` en `modules/empresa` ya implementa parte de la lógica.
 
-**Si la verificación en explore muestra que el modelo ya soporta la relación de otra forma, el spec se ajusta antes de `/sdd-new`.**
+**Implicaciones para el frontend (§4):** el enum `UserPatientBond` se mapea al enum `Vinculo` del mockup:
+- `PROPIO` → `'Yo'`
+- `MADRE` → `'Madre'`, `PADRE` → `'Padre'`
+- `HIJO` → `'Hijo'`, `HIJA` → `'Hija'`
+- `HERMANO`/`HERMANA` → `'Otro'` (el mockup no distingue hermanos; agregar al enum si UX lo pide)
+- `TUTOR`/`OTROS` → `'Otro'`
+- El mockup tiene `'Cónyuge'` pero el backend no — queda como TODO mapping si se necesita.
 
-#### 3.3.2 `User ↔ Patient` link
+#### 3.3.2 `User ↔ Patient` link (resuelto por Task 1)
 
-El backend ya debe linkear `User` (rol EXTERNO) ↔ `Patient` para resolver "el paciente del user logueado". Verificar en explore:
-- Si `User` tiene FK a `Patient` → usar directo
-- Si no → asumir relación vía `User.dni == Patient.dni` (más débil, pero suficiente para MVP). Documentar como TODO si requiere FK explícita.
+Confirmado: existe la tabla `users_patients` con FK `user_id`. El binding es N:M en general pero para el MVP usamos solo el "owner" (el paciente con `is_owner=true` y `bond=PROPIO`) como responsable, y los demás como dependientes.
 
 #### 3.3.3 Nuevo endpoint `GET /api/v1/empresa/patients/me/family`
 
@@ -225,9 +235,11 @@ El backend ya debe linkear `User` (rol EXTERNO) ↔ `Patient` para resolver "el 
 ]
 ```
 
-**Nuevo puerto `PatientFamilyPort`:**
-- `resolveOwnedPatientIds(userId): Set<Long>` — usado por TURNOS para ownership checks
-- `listFamily(userId): List<PatientFamilyEntry>` — usado por este endpoint
+**Nuevo puerto `PatientFamilyPort`** (backed by existing `users_patients` via `UserPatientJpaRepository`):
+- `resolveOwnedPatientIds(userId): Set<Long>` — usado por TURNOS para ownership checks. Implementación: `userPatientRepo.findByUser_IdAndTenantId(userId, tenantId)` → map a patientIds.
+- `listFamily(userId): List<PatientFamilyEntry>` — usado por este endpoint. Implementación: misma query + join con `patients` para traer nombre/dni/fecha_nacimiento.
+
+El existente `GetPatientsByUserUseCase` (`modules/empresa`) ya cubre parte de esto; se puede delegar o adaptar.
 
 **Agregar familiar desde portal: NO en MVP.** El mockup ya muestra toast "Próximamente". El admin del laboratorio carga los dependientes manualmente. **TODO en spec futuro: endpoint `POST /empresa/patients/me/family`.**
 
@@ -270,9 +282,10 @@ El backend ya debe linkear `User` (rol EXTERNO) ↔ `Patient` para resolver "el 
 
 | Migración | Contenido |
 |---|---|
-| `V58__create_tipos_analisis.sql` | Tabla `tipos_analisis` + puente `tipo_analisis_determinations` |
-| `V59__add_patient_family_link.sql` | `patients.responsible_patient_id` + `family_vinculo` (solo si explore confirma que falta) |
-| `V60__seed_local_dev_tipos_analisis.sql` | Profile-locked dev — 6 tipos para tenant demo |
+| `V55__create_tipos_analisis.sql` | Tabla `tipos_analisis` + puente `tipo_analisis_determinations` |
+| `V56__seed_local_dev_tipos_analisis.sql` | Profile-locked dev — 6 tipos para tenant demo |
+
+**Nota:** la última migración en `development` es V54. V55/V56/V57 viven en la rama `feat/turnos-specs` (Spec B) sin mergear todavía. Si Spec B PR mergea primero, las migraciones de Spec C se renumeran a V58/V59 al resolver el merge conflict. La migración V59 originalmente propuesta para `patients` queda cancelada — `users_patients` (V7) ya cubre el bond familiar.
 
 ### 3.5 Security review obligatorio
 
