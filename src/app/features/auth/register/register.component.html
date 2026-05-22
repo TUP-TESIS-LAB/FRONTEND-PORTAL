@@ -1,3 +1,4 @@
+<p-toast></p-toast>
 <div class="ui-auth-page" [style.background]="tenant.authPageBg()">
   <app-public-topbar />
 
@@ -146,6 +147,7 @@
           iconPos="right"
           severity="primary"
           styleClass="w-full"
+          [loading]="submitting()"
           [disabled]="form.invalid && form.touched"
         />
 
