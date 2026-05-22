@@ -1,4 +1,4 @@
-export type Vinculo = 'Hijo' | 'Hija' | 'Madre' | 'Padre' | 'Cónyuge' | 'Otro';
+export type Vinculo = 'Yo' | 'Hijo' | 'Hija' | 'Madre' | 'Padre' | 'Cónyuge' | 'Otro';
 
 export interface Familiar {
   id: number;
@@ -8,12 +8,12 @@ export interface Familiar {
   edad: number;
   vinculo: Vinculo;
   dni: string;
-  cobertura: string;
+  cobertura: string;             // TODO: backend does not return this in MVP
   proximoTurno?: {
     dia: string;
     fechaResumen: string;
   };
-  totalTurnos: number;
-  totalEstudios: number;
+  totalTurnos: number;           // TODO: derive from appointments in a future iteration
+  totalEstudios: number;         // TODO: derive from results in a future iteration
   accentColor: 'primary' | 'secondary' | 'accent';
 }
