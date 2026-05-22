@@ -6,7 +6,7 @@ import { Sede } from '../../../../core/models/sede.model';
 import { SlotDisponible } from '../../../../core/models/slot-disponible.model';
 
 export interface ReservaPayload {
-  tipoAnalisisIds: string[];
+  tipoAnalisisIds: (number | string)[];
   sedeId: string;
   fecha: Date;
   hora: string;
@@ -20,6 +20,8 @@ const TIPOS_ANALISIS_MOCK: TipoAnalisis[] = [
     ayuno: false,
     categoria: 'hematologia',
     icono: 'pi-chart-bar',
+    preparacion: [],
+    determinationIds: [],
   },
   {
     id: 'glucemia',
@@ -28,6 +30,8 @@ const TIPOS_ANALISIS_MOCK: TipoAnalisis[] = [
     ayuno: true,
     categoria: 'bioquimica',
     icono: 'pi-percentage',
+    preparacion: ['8 horas de ayuno'],
+    determinationIds: [],
   },
   {
     id: 'perfil-lipidico',
@@ -36,6 +40,8 @@ const TIPOS_ANALISIS_MOCK: TipoAnalisis[] = [
     ayuno: true,
     categoria: 'bioquimica',
     icono: 'pi-chart-line',
+    preparacion: ['12 horas de ayuno'],
+    determinationIds: [],
   },
   {
     id: 'perfil-tiroideo',
@@ -44,6 +50,8 @@ const TIPOS_ANALISIS_MOCK: TipoAnalisis[] = [
     ayuno: false,
     categoria: 'hormonas',
     icono: 'pi-sync',
+    preparacion: [],
+    determinationIds: [],
   },
   {
     id: 'orina-completa',
@@ -52,6 +60,8 @@ const TIPOS_ANALISIS_MOCK: TipoAnalisis[] = [
     ayuno: false,
     categoria: 'orina',
     icono: 'pi-filter',
+    preparacion: [],
+    determinationIds: [],
   },
   {
     id: 'covid-pcr',
@@ -60,6 +70,8 @@ const TIPOS_ANALISIS_MOCK: TipoAnalisis[] = [
     ayuno: false,
     categoria: 'bioquimica',
     icono: 'pi-shield',
+    preparacion: [],
+    determinationIds: [],
   },
 ];
 

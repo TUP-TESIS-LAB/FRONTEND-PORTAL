@@ -59,7 +59,7 @@ export class SacarTurnoComponent {
   readonly saving       = signal(false);
 
   // ─── Selecciones del usuario ─────────────────────────
-  readonly selectedTipoIds = signal<string[]>([]);
+  readonly selectedTipoIds = signal<(number | string)[]>([]);
   readonly selectedSedeId  = signal<string | null>(null);
   readonly selectedFecha   = signal<Date | null>(null);
   readonly selectedHora    = signal<string | null>(null);

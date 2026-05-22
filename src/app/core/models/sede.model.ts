@@ -1,8 +1,8 @@
 export interface Sede {
-  id: string;
+  id: string;           // coerced from backend number (String(b.id)) to preserve existing consumers
   nombre: string;
   direccion: string;
-  telefono: string;
-  horario: string;
-  distanciaKm?: number;
+  telefono?: string;    // TODO: backend does not expose this field
+  horario?: string;     // TODO: backend does not expose this field
+  distanciaKm?: number; // TODO: backend does not expose this field
 }
