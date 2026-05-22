@@ -14,7 +14,8 @@ import { EventCardComponent } from '../../../shared/ui/components/event-card/eve
 import { PlaceholderCardComponent } from '../../../shared/ui/components/placeholder-card/placeholder-card.component';
 import { TurnoDetailComponent } from '../../../shared/ui/components/turno-detail/turno-detail.component';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
-import { TurnoService } from './turno.service';
+import { AppointmentService } from './services/appointment.service';
+import { mapApiError } from '../../../shared/utils/api-error-mapper';
 import { Turno } from '../../../core/models/turno.model';
 
 @Component({
@@ -38,7 +39,7 @@ import { Turno } from '../../../core/models/turno.model';
   styleUrl: './turnos.component.scss',
 })
 export class TurnosComponent implements OnInit, OnDestroy {
-  private readonly turnoService   = inject(TurnoService);
+  private readonly appointmentSvc  = inject(AppointmentService);
   private readonly messageService = inject(MessageService);
   private readonly confirmService = inject(ConfirmationService);
   private readonly router         = inject(Router);
@@ -68,14 +69,19 @@ export class TurnosComponent implements OnInit, OnDestroy {
   private cargarTurnos(): void {
     this.cargando.set(true);
     this.subs.add(
-      this.turnoService.getProximos().subscribe(lista => {
-        this.proximosTurnos.set(lista);
-        this.cargando.set(false);
-      }),
-    );
-    this.subs.add(
-      this.turnoService.getAnteriores().subscribe(lista => {
-        this.anterioresTurnos.set(lista);
+      this.appointmentSvc.getMyAppointments().subscribe({
+        next: ({ proximos, anteriores }) => {
+          this.proximosTurnos.set(proximos);
+          this.anterioresTurnos.set(anteriores);
+          this.cargando.set(false);
+        },
+        error: (err) => {
+          this.cargando.set(false);
+          this.messageService.add({
+            severity: 'error', summary: 'Error',
+            detail: mapApiError(err), life: 4000,
+          });
+        },
       }),
     );
   }
@@ -110,25 +116,21 @@ export class TurnosComponent implements OnInit, OnDestroy {
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
         this.subs.add(
-          this.turnoService.cancelarTurno(turno.id).subscribe({
+          this.appointmentSvc.cancel(turno.id).subscribe({
             next: () => {
               this.mobileDetailOpen.set(false);
               this.selectedTurno.set(null);
-              // Refresca ambas listas desde el mock actualizado
               this.cargarTurnos();
               this.messageService.add({
-                severity: 'success',
-                summary: 'Turno cancelado',
+                severity: 'success', summary: 'Turno cancelado',
                 detail: `El turno del ${turno.fechaCompleta} fue cancelado.`,
                 life: 4000,
               });
             },
-            error: () => {
+            error: (err) => {
               this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'No se pudo cancelar el turno. Intentá de nuevo.',
-                life: 4000,
+                severity: 'error', summary: 'Error',
+                detail: mapApiError(err), life: 4000,
               });
             },
           }),
