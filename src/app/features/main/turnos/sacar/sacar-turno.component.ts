@@ -1,7 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Subject, switchMap } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -15,8 +15,13 @@ import { AnalysisCardGridComponent } from '../../../../shared/ui/components/anal
 import { SedeListComponent } from '../../../../shared/ui/components/sede-list/sede-list.component';
 import { TimeSlotsComponent } from '../../../../shared/ui/components/time-slots/time-slots.component';
 import { TurnoResumenComponent } from '../../../../shared/ui/components/turno-resumen/turno-resumen.component';
+import { StepParaQuienComponent } from './steps/step-para-quien/step-para-quien.component';
 import { BreakpointService } from '../../../../shared/utils/breakpoint.service';
-import { SacarTurnoService } from './sacar-turno.service';
+import { TipoAnalisisService } from '../services/tipo-analisis.service';
+import { SucursalPublicService } from '../../../../core/sucursales/sucursal-public.service';
+import { AppointmentService } from '../services/appointment.service';
+import { FamilyService } from '../../../../core/family/family.service';
+import { mapApiError } from '../../../../shared/utils/api-error-mapper';
 import { WizardStep } from '../../../../shared/ui/types';
 import { SlotDisponible } from '../../../../core/models/slot-disponible.model';
 
@@ -36,22 +41,28 @@ import { SlotDisponible } from '../../../../core/models/slot-disponible.model';
     SedeListComponent,
     TimeSlotsComponent,
     TurnoResumenComponent,
+    StepParaQuienComponent,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './sacar-turno.component.html',
   styleUrl: './sacar-turno.component.scss',
 })
-export class SacarTurnoComponent {
-  private readonly service       = inject(SacarTurnoService);
+export class SacarTurnoComponent implements OnInit {
+  private readonly tiposSvc       = inject(TipoAnalisisService);
+  private readonly sedeSvc        = inject(SucursalPublicService);
+  private readonly appointmentSvc = inject(AppointmentService);
+  private readonly familySvc      = inject(FamilyService);
   private readonly messageService = inject(MessageService);
   private readonly confirmService = inject(ConfirmationService);
   private readonly router         = inject(Router);
+  private readonly route          = inject(ActivatedRoute);
   private readonly destroyRef     = inject(DestroyRef);
   readonly bp                     = inject(BreakpointService);
 
   // ─── Datos del catálogo (cargados una sola vez) ──────
-  readonly tiposAnalisis = toSignal(this.service.getTiposAnalisis(), { initialValue: [] });
-  readonly sedes         = toSignal(this.service.getSedes(),         { initialValue: [] });
+  readonly tiposAnalisis = toSignal(this.tiposSvc.getTipos(), { initialValue: [] });
+  readonly sedes         = toSignal(this.sedeSvc.getSedes(),  { initialValue: [] });
+  readonly family        = toSignal(this.familySvc.getFamily(), { initialValue: [] });
 
   // ─── Slots: mutables, dependen de sede + fecha ───────
   readonly slots        = signal<SlotDisponible[]>([]);
@@ -59,13 +70,13 @@ export class SacarTurnoComponent {
   readonly saving       = signal(false);
 
   // ─── Selecciones del usuario ─────────────────────────
-  readonly selectedTipoIds = signal<(number | string)[]>([]);
-  readonly selectedSedeId  = signal<string | null>(null);
-  readonly selectedFecha   = signal<Date | null>(null);
-  readonly selectedHora    = signal<string | null>(null);
+  readonly selectedPatientId = signal<number | null>(null);
+  readonly selectedTipoIds   = signal<(number | string)[]>([]);
+  readonly selectedSedeId    = signal<string | null>(null);
+  readonly selectedFecha     = signal<Date | null>(null);
+  readonly selectedHora      = signal<string | null>(null);
 
   // ─── ngModel del datepicker (visual, no lógica) ──────
-  // Necesario para que el calendario muestre el día seleccionado al volver al paso
   fechaModel: Date | null = null;
 
   // ─── Paso actual del wizard ───────────────────────────
@@ -86,20 +97,22 @@ export class SacarTurnoComponent {
 
   readonly canProceed = computed(() => {
     switch (this.currentStep()) {
-      case 0: return this.selectedTipoIds().length > 0;
-      case 1: return this.selectedSedeId() !== null;
-      case 2: return this.selectedFecha() !== null && this.selectedHora() !== null;
-      case 3: return true;
+      case 0: return this.selectedPatientId() !== null;
+      case 1: return this.selectedTipoIds().length > 0;
+      case 2: return this.selectedSedeId() !== null;
+      case 3: return this.selectedFecha() !== null && this.selectedHora() !== null;
+      case 4: return true;
       default: return false;
     }
   });
 
   // ─── Definición de pasos ─────────────────────────────
   readonly steps: WizardStep[] = [
-    { id: 'tipo',      label: 'Tipo de análisis' },
-    { id: 'sede',      label: 'Sede'             },
-    { id: 'fecha',     label: 'Fecha y hora'     },
-    { id: 'confirmar', label: 'Confirmar'         },
+    { id: 'para-quien', label: 'Para quién'      },
+    { id: 'tipo',       label: 'Tipo de análisis' },
+    { id: 'sede',       label: 'Sede'             },
+    { id: 'fecha',      label: 'Fecha y hora'     },
+    { id: 'confirmar',  label: 'Confirmar'         },
   ];
 
   readonly today = new Date();
@@ -108,17 +121,37 @@ export class SacarTurnoComponent {
   private readonly loadSlotsSubject = new Subject<{ sedeId: string; fecha: Date }>();
 
   constructor() {
-    // switchMap cancela la petición anterior si llega una nueva antes de completarse
     this.loadSlotsSubject.pipe(
       switchMap(({ sedeId, fecha }) => {
         this.loadingSlots.set(true);
-        return this.service.getSlots(sedeId, fecha);
+        return this.appointmentSvc.getAvailability(Number(sedeId), fecha);
       }),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe(slots => {
       this.slots.set(slots);
       this.loadingSlots.set(false);
     });
+  }
+
+  ngOnInit(): void {
+    const personaIdParam = this.route.snapshot.queryParamMap.get('personaId');
+    if (personaIdParam !== null) {
+      const id = Number(personaIdParam);
+      if (!isNaN(id)) {
+        this.selectedPatientId.set(id);
+        this.currentStep.set(1); // skip step 0
+      }
+    }
+    // If no param, preselect first family member once family loads (the "Yo")
+    // We use an effect-like subscription: toSignal already loaded family, check once available
+    this.familySvc.getFamily()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(family => {
+        // Only preselect if still on step 0 and no selection yet
+        if (this.currentStep() === 0 && this.selectedPatientId() === null && family.length > 0) {
+          this.selectedPatientId.set(family[0].id);
+        }
+      });
   }
 
   // ─── Handlers de navegación del wizard ───────────────
@@ -146,7 +179,6 @@ export class SacarTurnoComponent {
 
   onSedeChange(sedeId: string): void {
     this.selectedSedeId.set(sedeId);
-    // Resetear hora al cambiar sede (slots cambiarán)
     this.selectedHora.set(null);
     if (this.selectedFecha()) {
       this.loadSlots();
@@ -170,38 +202,61 @@ export class SacarTurnoComponent {
   // ─── Confirmación final ───────────────────────────────
 
   onConfirm(): void {
-    const sedeId          = this.selectedSedeId();
-    const fecha           = this.selectedFecha();
-    const hora            = this.selectedHora();
-    const tipoAnalisisIds = this.selectedTipoIds();
+    const patientId = this.selectedPatientId();
+    const sedeId    = this.selectedSedeId();
+    const fecha     = this.selectedFecha();
+    const hora      = this.selectedHora();
+    const tipoIds   = this.selectedTipoIds();
 
-    if (!sedeId || !fecha || !hora || tipoAnalisisIds.length === 0) return;
+    if (!patientId || !sedeId || !fecha || !hora || tipoIds.length === 0) return;
+
+    const [hh, mm] = hora.split(':').map(Number);
+    const scheduledAt = new Date(fecha);
+    scheduledAt.setHours(hh, mm, 0, 0);
+
+    // Resolve determinationIds from selected tipos
+    const tiposMap = new Map(this.tiposAnalisis().map(t => [t.id, t]));
+    const allDetIds: number[] = [];
+    for (const id of tipoIds) {
+      const tipo = tiposMap.get(id);
+      if (!tipo) continue;
+      for (const d of tipo.determinationIds) {
+        if (!allDetIds.includes(d)) allDetIds.push(d);
+      }
+    }
+    const determinations = allDetIds.map((determinationId, idx) => ({
+      determinationId, orderNumber: idx + 1,
+    }));
 
     this.saving.set(true);
-    this.service.reservar({ tipoAnalisisIds, sedeId, fecha, hora })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Turno reservado',
-            detail: `Tu turno quedó confirmado para el ${fecha.getDate()} de ${
-              ['enero','febrero','marzo','abril','mayo','junio',
-               'julio','agosto','septiembre','octubre','noviembre','diciembre'][fecha.getMonth()]
-            } a las ${hora} hs.`,
-            life: 5000,
-          });
-          this.router.navigate(['/turnos']);
-        },
-        error: () => {
-          this.saving.set(false);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'No se pudo reservar el turno. Intentá de nuevo.',
-            life: 4000,
-          });
-        },
-      });
+    this.appointmentSvc.book({
+      patientId,
+      branchId: Number(sedeId),
+      scheduledAt: scheduledAt.toISOString(),
+      determinations,
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Turno reservado',
+          detail: `Tu turno quedó confirmado para el ${fecha.getDate()} de ${
+            this.MESES_FULL[fecha.getMonth()]} a las ${hora} hs.`,
+          life: 5000,
+        });
+        this.router.navigate(['/turnos']);
+      },
+      error: (err) => {
+        this.saving.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: mapApiError(err),
+          life: 4000,
+        });
+      },
+    });
   }
+
+  private readonly MESES_FULL = ['enero','febrero','marzo','abril','mayo','junio',
+                                 'julio','agosto','septiembre','octubre','noviembre','diciembre'];
 }

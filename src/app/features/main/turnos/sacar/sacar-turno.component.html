@@ -44,20 +44,27 @@
     @switch (currentStep()) {
 
       @case (0) {
+        <app-step-para-quien
+          [family]="family()"
+          [selectedPatientId]="selectedPatientId()"
+          (selectionChange)="selectedPatientId.set($event)" />
+      }
+
+      @case (1) {
         <ui-analysis-card-grid
           [tipos]="tiposAnalisis()"
           [selectedIds]="selectedTipoIds()"
           (selectionChange)="selectedTipoIds.set($event)" />
       }
 
-      @case (1) {
+      @case (2) {
         <ui-sede-list
           [sedes]="sedes()"
           [selectedId]="selectedSedeId()"
           (selectionChange)="onSedeChange($event)" />
       }
 
-      @case (2) {
+      @case (3) {
         <div class="ui-fecha-hora-step">
           <h4>Seleccioná la fecha</h4>
           <p-datepicker
@@ -77,8 +84,7 @@
         </div>
       }
 
-      @case (3) {
-        <!-- TODO: agregar queryParam personaId para prefill cuando se implemente reserva para familiar -->
+      @case (4) {
         <ui-turno-resumen
           [tipos]="selectedTipos()"
           [sede]="selectedSede()!"
