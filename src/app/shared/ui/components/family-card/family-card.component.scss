@@ -2,6 +2,11 @@
 
 :host {
   display: block;
+
+  &.is-selected .ui-family-card {
+    outline: 2px solid var(--brand-primary);
+    box-shadow: var(--ds-shadow-md);
+  }
 }
 
 .ui-family-card {
