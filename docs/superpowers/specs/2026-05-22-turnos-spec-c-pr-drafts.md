@@ -266,6 +266,51 @@ Decisión pendiente: estandarizar a uno. Sugerencia: numérico ISO (más estable
 4. Eliminar agenda existente con botón 🗑.
 5. Crear nueva agenda con horario distinto (no overlapping) → guarda OK → aparece en lista.
 
+---
+
+## Hallazgos del smoke B — 2026-05-24 (cola + TV display)
+
+### Pages implementadas vs stubs
+
+| Page | Estado | Detalle |
+|---|---|---|
+| `/turnos/recepcion` | ✓ Real (43 líneas) | Lista turnos de hoy, botón "Atender" → atencion-turno |
+| `/display/:slug/:branchId` | ✓ Real (115 líneas) | TV pública, polling cada 3s, beep al cambiar el `calledEntry` |
+| `/turnos/totem` | ✗ Stub (11 líneas) | Sólo icono `pi-desktop`. Sin flow de DNI + branch + check-in |
+| `/turnos/atencion-turno` | ✗ Stub (11 líneas) | Sólo icono. Sin botones para llamar / marcar atendido |
+
+### Fixes aplicados durante el smoke B
+
+- **`fix(lab)`** (`FRONTEND-LABORATORIO`): proxy.conf.json mapeaba sólo `/api` → la TV pegga `/public/display/...` y la dev-server devolvía la SPA HTML, dejando el snapshot null y la TV en estado 'loading' eterno. Agregar `/public` al proxy.
+- **`fix(turnos)`** (`FRONTEND-LABORATORIO`): `AppointmentService.listToday` consumía el backend asumiendo fields `appointmentTime` + `patientName` que no existen en la respuesta. Mapear `scheduledAt` → `appointmentTime` y usar `confirmationNumber` como nombre visible temporal.
+
+### UX gaps detectados (anotados para próxima iteración)
+
+- **"Atender" en recepción debería llamar + abrir atención de una**. Hoy el botón redirige a atencion-turno (que es stub). Idealmente el endpoint que dispara desde "Atender" debería:
+  1. Crear (si no existe) un `queue_entry` con `has_appointment=true` linkeado al `appointment_id`.
+  2. Llamar al paciente (`POST /turnos/queue/{id}/call` — setea `last_called_at`).
+  3. Navegar a `/turnos/atencion-turno?queueEntryId=N` donde queda la sesión abierta hasta marcar COMPLETED.
+
+  El flujo actual de "ir a atención, después llamar manual" tiene un click extra que la recepcionista no necesita. La observación es del user durante el smoke B. Requiere: implementar la página atencion-turno (hoy stub) + cablear `onAtender` para hacer ambas acciones.
+- **Beep de la TV bloqueado por autoplay policy**: `Audio.play()` requiere interacción previa del user con la tab. La TV moderna fija sin click previo nunca puede sonar. Workaround típico: mostrar un overlay "Click para activar sonido" la primera vez, después el beep va sin trabas. Anotar.
+- **Tótem es stub**: hay tabla `branch_totem_config` + endpoints para habilitar/deshabilitar (`POST /sucursales/branches/{id}/totem-config`), pero la página `/turnos/totem` no tiene UI de ingreso de DNI ni check-in. Es la pieza más grande que falta de Spec B.
+- **Atención-turno es stub**: necesita UI para llamar al siguiente (otra vez), marcar como atendido, asignar box. Cierra el flow.
+
+### Smoke B — Resultado parcial
+
+✓ **Recepción** PASS (con fixes arriba).
+✓ **TV** PASS — muestra entries pending, refresca cada 3s, el entry llamado via curl `POST /turnos/queue/{id}/call` aparece como card grande dentro de los 15s siguientes.
+✗ **Tótem** y **Atención-turno** NOT TESTED — son stubs, sin flow para smokear.
+
+Llamado via curl validado con `POST /api/v1/turnos/queue/1/call` (token ADMINISTRADOR): devuelve `{id, lastCalledAt, callCount, status}` y se refleja en la TV.
+
+### Seeds dev nuevas para smoke B
+
+- 5 queue_entries (4 en CENTRAL: A001 PENDING, A002 PENDING, A003 PENDING-called, A004 COMPLETED; 1 en NORTE B001 PENDING).
+- 4 appointments con `scheduled_at = CURRENT_DATE` en CENTRAL (TODAY-001..004).
+
+Insertados manualmente via `docker exec mysql` durante la sesión — NO en migration. Si querés que el smoke B sea reproducible from-zero, mover a `V905__seed_local_dev_queue_demo.sql` (o similar). Hoy quedó como data ad-hoc en la DB local.
+
 ### Seeds que ya cubren el escenario dev del lab
 
 Por ahora `V902` (3 branches), `V903` (1 agenda por branch lun-vie 9-17) y `V904` (todos los módulos del tenant activos) destraban el smoke A. Si alguien quiere crear NUEVAS agendas en el wizard, tiene que elegir horarios/días que no se superpongan con la seed (ej. 18-22 lun-vie) o eliminar la agenda existente primero.
