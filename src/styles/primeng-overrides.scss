@@ -377,14 +377,7 @@
 // Drawer full-height para el wizard de sacar turno.
 // El drawer se renderiza como portal al <body>, por eso va aquí.
 .ui-wizard-sheet {
-  // Apoyamos el borde inferior del sheet sobre el borde superior del
-  // bottom-nav fijo (z-index 400, alto 64px + safe-area). Sin esto, la nav
-  // queda pintada encima del último tramo del wizard y los botones del
-  // footer parecen tener un "espacio en blanco" debajo. Levantar la nav
-  // con z-index daría visual feo (sheet flotando) y rompió el mask de
-  // PrimeNG en pruebas anteriores.
-  height: calc(92dvh - var(--ds-bottom-nav-h) - var(--ds-safe-bottom)) !important;
-  bottom: calc(var(--ds-bottom-nav-h) + var(--ds-safe-bottom)) !important;
+  height: 92dvh !important;
   border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0 !important;
   padding: 0 !important;
   overflow: hidden;
