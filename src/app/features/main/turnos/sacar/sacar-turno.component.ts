@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -47,7 +47,7 @@ import { SlotDisponible } from '../../../../core/models/slot-disponible.model';
   templateUrl: './sacar-turno.component.html',
   styleUrl: './sacar-turno.component.scss',
 })
-export class SacarTurnoComponent implements OnInit {
+export class SacarTurnoComponent implements OnInit, OnDestroy {
   private readonly tiposSvc       = inject(TipoAnalisisService);
   private readonly sedeSvc        = inject(SucursalPublicService);
   private readonly appointmentSvc = inject(AppointmentService);
@@ -147,7 +147,13 @@ export class SacarTurnoComponent implements OnInit {
     });
   }
 
+  // El wizard se monta como overlay full-sheet en mobile (drawer) y como
+  // modal en desktop. Marca el body para que la patient-shell oculte el
+  // bottom-nav fijo mientras el wizard esté abierto (z-index --z-bottom-nav
+  // 400 > --z-drawer 300, así que sin ocultar el nav pinta encima del sheet).
   ngOnInit(): void {
+    document.body.classList.add('wizard-open');
+
     const personaIdParam = this.route.snapshot.queryParamMap.get('personaId');
     if (personaIdParam !== null) {
       const id = Number(personaIdParam);
@@ -166,6 +172,10 @@ export class SacarTurnoComponent implements OnInit {
           this.selectedPatientId.set(family[0].id);
         }
       });
+  }
+
+  ngOnDestroy(): void {
+    document.body.classList.remove('wizard-open');
   }
 
   // ─── Handlers de navegación del wizard ───────────────

@@ -4,6 +4,15 @@
   display: block;
 }
 
+// Ocultar el nav cuando un wizard / sheet full-screen está abierto. El
+// SacarTurnoComponent (y otros overlays grandes) agrega 'wizard-open' al
+// body en ngOnInit y lo quita en ngOnDestroy. Sin esto, el bottom-nav
+// (z-index 400) pinta encima del drawer del wizard (z-index 300) y deja
+// un strip blanco abajo que parece "espacio extra raro".
+:host-context(body.wizard-open) .ui-bottom-nav {
+  display: none;
+}
+
 .ui-bottom-nav {
   position: fixed;
   bottom: 0;
