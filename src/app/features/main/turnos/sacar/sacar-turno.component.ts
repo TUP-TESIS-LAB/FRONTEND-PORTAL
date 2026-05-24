@@ -82,6 +82,9 @@ export class SacarTurnoComponent implements OnInit {
   // ─── Paso actual del wizard ───────────────────────────
   readonly currentStep = signal(0);
 
+  // True cuando el patient se eligió via ?personaId= → ocultar el picker.
+  private readonly preselectedFromUrl = signal(false);
+
   // ─── Computed: datos derivados ───────────────────────
   readonly selectedTipos = computed(() =>
     this.tiposAnalisis().filter(t => this.selectedTipoIds().includes(t.id)),
@@ -95,25 +98,36 @@ export class SacarTurnoComponent implements OnInit {
     this.selectedTipos().some(t => t.ayuno),
   );
 
-  readonly canProceed = computed(() => {
-    switch (this.currentStep()) {
-      case 0: return this.selectedPatientId() !== null;
-      case 1: return this.selectedTipoIds().length > 0;
-      case 2: return this.selectedSedeId() !== null;
-      case 3: return this.selectedFecha() !== null && this.selectedHora() !== null;
-      case 4: return true;
-      default: return false;
+  // ─── Definición de pasos (dinámicos: ocultan 'para-quien' cuando no aporta) ───
+  // 'para-quien' sólo tiene sentido si hay más de un familiar real y el patient
+  // no vino preseleccionado desde un deeplink. En cualquier otro caso, el
+  // wizard arranca directo en 'tipo' (el patient ya está fijado).
+  readonly steps = computed<WizardStep[]>(() => {
+    const all: WizardStep[] = [
+      { id: 'para-quien', label: 'Para quién'      },
+      { id: 'tipo',       label: 'Tipo de análisis' },
+      { id: 'sede',       label: 'Sede'             },
+      { id: 'fecha',      label: 'Fecha y hora'     },
+      { id: 'confirmar',  label: 'Confirmar'         },
+    ];
+    if (this.family().length <= 1 || this.preselectedFromUrl()) {
+      return all.filter(s => s.id !== 'para-quien');
     }
+    return all;
   });
 
-  // ─── Definición de pasos ─────────────────────────────
-  readonly steps: WizardStep[] = [
-    { id: 'para-quien', label: 'Para quién'      },
-    { id: 'tipo',       label: 'Tipo de análisis' },
-    { id: 'sede',       label: 'Sede'             },
-    { id: 'fecha',      label: 'Fecha y hora'     },
-    { id: 'confirmar',  label: 'Confirmar'         },
-  ];
+  readonly currentStepId = computed(() => this.steps()[this.currentStep()]?.id);
+
+  readonly canProceed = computed(() => {
+    switch (this.currentStepId()) {
+      case 'para-quien': return this.selectedPatientId() !== null;
+      case 'tipo':       return this.selectedTipoIds().length > 0;
+      case 'sede':       return this.selectedSedeId() !== null;
+      case 'fecha':      return this.selectedFecha() !== null && this.selectedHora() !== null;
+      case 'confirmar':  return true;
+      default:           return false;
+    }
+  });
 
   readonly today = new Date();
 
@@ -139,22 +153,17 @@ export class SacarTurnoComponent implements OnInit {
       const id = Number(personaIdParam);
       if (!isNaN(id)) {
         this.selectedPatientId.set(id);
-        this.currentStep.set(1); // skip step 0
+        this.preselectedFromUrl.set(true);
       }
     }
-    // If no param, preselect first family member once family loads (the "Yo")
-    // We use an effect-like subscription: toSignal already loaded family, check once available
+    // Preselect the first family member once it loads. The 'para-quien' step
+    // is hidden via the steps computed when family.length <= 1, so no need
+    // to manually advance currentStep — step 0 is already 'tipo' in that case.
     this.familySvc.getFamily()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(family => {
-        // Only preselect if still on step 0 and no selection yet
-        if (this.currentStep() === 0 && this.selectedPatientId() === null && family.length > 0) {
+        if (this.selectedPatientId() === null && family.length > 0) {
           this.selectedPatientId.set(family[0].id);
-          // Auto-skip step 0 when the user only has themselves (PROPIO bond) —
-          // a single-card picker is friction without choice.
-          if (family.length === 1) {
-            this.currentStep.set(1);
-          }
         }
       });
   }
