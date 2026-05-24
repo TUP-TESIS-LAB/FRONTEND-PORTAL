@@ -383,6 +383,11 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  // El --z-drawer (300) queda por debajo del --z-bottom-nav (400), así que
+  // sin override el bottom-nav fijo de la patient-shell se ve encima del
+  // wizard cubriendo los últimos ~64px. Subimos al drawer del wizard por
+  // arriba del nav para que el sheet ocupe el viewport completo.
+  z-index: calc(var(--z-bottom-nav) + 10) !important;
 
   .p-drawer-content {
     padding: 0;
