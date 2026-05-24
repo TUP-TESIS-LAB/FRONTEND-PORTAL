@@ -69,7 +69,7 @@
           <h4>Seleccioná la fecha</h4>
           <p-datepicker
             [inline]="true"
-            [minDate]="today"
+            [minDate]="minBookingDate"
             [(ngModel)]="fechaModel"
             (onSelect)="onFechaChange($event)" />
 

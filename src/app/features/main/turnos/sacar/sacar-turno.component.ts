@@ -129,7 +129,16 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
     }
   });
 
-  readonly today = new Date();
+  // El backend (GetAvailableSlotsUseCase + CreateAppointmentUseCase) exige que
+  // la fecha del turno sea >= hoy + 2 días. Si el datepicker permite menos, el
+  // submit del slot pega 400 con InvalidBookingDateException. Reflejarlo en el
+  // minDate evita el viaje al servidor.
+  readonly minBookingDate = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  })();
 
   // ─── Subject para cancelar requests de slots previos ─
   private readonly loadSlotsSubject = new Subject<{ sedeId: string; fecha: Date }>();
