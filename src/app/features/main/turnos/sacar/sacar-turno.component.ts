@@ -150,6 +150,11 @@ export class SacarTurnoComponent implements OnInit {
         // Only preselect if still on step 0 and no selection yet
         if (this.currentStep() === 0 && this.selectedPatientId() === null && family.length > 0) {
           this.selectedPatientId.set(family[0].id);
+          // Auto-skip step 0 when the user only has themselves (PROPIO bond) —
+          // a single-card picker is friction without choice.
+          if (family.length === 1) {
+            this.currentStep.set(1);
+          }
         }
       });
   }
