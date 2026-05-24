@@ -2,7 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, map } from 'rxjs';
 import { TenantService } from '../tenant/tenant.service';
-import { AuthUser, RegisterPayload, AuthTokenResponse, RegisterResponse } from './auth.types';
+import { AuthUser, RegisterPayload, RegisterResponse, LoginPatientResponse } from './auth.types';
 import { tokenStorage } from './token-storage';
 
 @Injectable({ providedIn: 'root' })
@@ -30,8 +30,18 @@ export class AuthService {
 
   login(dni: string, password: string): Observable<void> {
     const slug = this.tenant.config()?.id ?? '';
-    return this.http.post<AuthTokenResponse>('/api/v1/auth/login', { dni, password, tenantSlug: slug })
-      .pipe(tap(res => this.persistAuth(res.token, res.user)), map(() => void 0));
+    return this.http.post<LoginPatientResponse>('/api/v1/auth/login-patient', { tenantSlug: slug, dni, password })
+      .pipe(tap(res => {
+        const user: AuthUser = {
+          id: res.userId,
+          nombre: `${res.firstName} ${res.lastName}`,
+          dni: res.dni,
+          email: res.email,
+          roles: res.roles,
+          tenantSlug: slug,
+        };
+        this.persistAuth(res.token, user);
+      }), map(() => void 0));
   }
 
   register(payload: RegisterPayload): Observable<void> {

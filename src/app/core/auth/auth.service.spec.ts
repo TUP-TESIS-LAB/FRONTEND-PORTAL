@@ -29,14 +29,19 @@ describe('AuthService', () => {
 
   it('login stores token + sets currentUser', () => {
     service.login('30123456', 'pass').subscribe();
-    const req = httpMock.expectOne(r => r.url.endsWith('/api/v1/auth/login'));
+    const req = httpMock.expectOne(r => r.url.endsWith('/api/v1/auth/login-patient'));
     req.flush({
       token: 'jwt-1',
-      user: { id: 1, nombre: 'A', dni: '30123456', email: 'a@a',
-              roles: ['EXTERNO'], tenantSlug: 'demo' },
+      userId: 1,
+      firstName: 'María',
+      lastName: 'García',
+      email: 'a@a',
+      dni: '30123456',
+      roles: ['EXTERNO'],
     });
     expect(service.isAuthenticated()).toBe(true);
     expect(service.currentUser()?.dni).toBe('30123456');
+    expect(service.currentUser()?.nombre).toBe('María García');
     expect(tokenStorage.get()).toBe('jwt-1');
   });
 

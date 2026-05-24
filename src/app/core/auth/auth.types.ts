@@ -18,3 +18,16 @@ export interface RegisterPayload {
 }
 export interface AuthTokenResponse { token: string; user: AuthUser; }
 export interface RegisterResponse { token: string; userId: number; }
+
+// Response del POST /api/v1/auth/login-patient — el backend devuelve los
+// campos del user sueltos (no anidados como AuthUser) para mantener la
+// forma de los responses del flow patient (RegisterResponse hace igual).
+export interface LoginPatientResponse {
+  token: string;
+  userId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  dni: string;
+  roles: string[];
+}
