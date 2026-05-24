@@ -151,6 +151,14 @@
       padding: var(--space-3) var(--space-4);
       // Safe area para home indicator en iOS
       padding-bottom: calc(var(--space-3) + var(--ds-safe-bottom));
+      // En mobile el contenido del paso puede ser largo (datepicker + slots).
+      // Pegar el footer al borde inferior del drawer garantiza que Volver /
+      // Continuar siempre estén accesibles sin scrollear hasta el final.
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+      // Sombra hacia arriba para indicar que hay contenido scroll detrás.
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
 
       // Ambos botones ocupan el mismo ancho en mobile
       .p-button { flex: 1; }
