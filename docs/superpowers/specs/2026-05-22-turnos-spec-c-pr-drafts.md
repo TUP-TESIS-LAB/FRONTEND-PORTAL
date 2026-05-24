@@ -220,3 +220,53 @@ Ambas viven en `Backend/src/main/resources/db/migration-local/` y sólo cargan c
 8. Para probar familia: SQL adjunto al final del checklist 2026-05-22 (con el fix `--default-character-set=utf8mb4` en el cliente). Refrescar `/familia` → sacar turno desde card de Lucía.
 9. Security: ver sección "Security checks" del checklist 2026-05-22.
 
+---
+
+## Hallazgos del smoke A — 2026-05-24 (lab frontend contra `feat/turnos-combined`)
+
+Smoke A se arrancó después del smoke C y el fix del Bug 3. Resumen al cierre:
+
+### Fixes aplicados durante el smoke A
+
+- **`feat(turnos)`** (`FRONTEND-LABORATORIO` `feat/turnos-specs`): cableé `StepSucursalComponent` al endpoint real `GET /api/v1/sucursales/branches` (antes tenía 3 branches mockeadas hardcodeadas). Service nuevo `listBranchesForSelector()` en `SucursalesService`. Sin esto, el wizard guardaba con `branchId` de mock → FK violation en backend.
+- **`feat(seed)`** (`Backend` `feat/turnos-combined`, V904): activé todos los módulos para tenant 1 en `tenant_modules`. Sin esto, `moduleActiveGuard` del lab redirigía a home cuando intentábamos abrir `/turnos/configuracion`.
+- **`fix(turnos)`** template stack (`agenda-branch-section.component.html`): agregué `<span class="p-column-title">` en cada `<td>` para que en viewports angostos (responsive `breakpoint="768px"`) se vean los labels al lado de cada valor. Sin esto sólo se veían datos sueltos.
+
+### Bugs abiertos detectados
+
+**1. `moduleActiveGuard` con race condition contra `loadTenantConfig` (lab)**
+
+`canMatch` corre antes de que el effect `loadTenantConfig` propague la respuesta al NgRx store. `ModuleRegistry.isActive(Turnos)` lee `config?.modules.includes(...)` con `config === null` → guard devuelve UrlTree('/') → wildcard redirige a `/home`. Pasa incluso post-login válido con V904 ya aplicado y endpoint devolviendo `"turnos"` en la respuesta.
+
+Workaround en la sesión: bypass temporal del guard comentando `canMatch` en `app.routes.ts:48` (NO commiteado, queda como working-tree change). Re-habilitar antes del PR.
+
+Fix correcto: convertir `moduleActiveGuard` a async esperando que la config esté cargada (`store.select(selectTenantConfig).pipe(filter(c => c !== null), take(1), map(c => c.modules.includes(key)))`).
+
+**2. Inconsistencia formato `recurring_days_of_week` entre Spec A y Spec B/C en el backend**
+
+- Spec A escribe en formato enum string (`'MONDAY,TUESDAY,...'`) — el frontend lab usa `formatDays` con ese mapping.
+- Spec B/C lee en formato numérico ISO (`'1,2,3,4,5'`) — `GetAvailableSlotsUseCase:99` parsea `Integer.parseInt`.
+- Mi seed V903 puso formato numérico (para que el portal funcione) → la lista del lab muestra "1 2 3 4 5" en vez de "L M X J V" para esa fila.
+
+Decisión pendiente: estandarizar a uno. Sugerencia: numérico ISO (más estable, sin dependencia de Locale enum). Migrar el writer de Spec A + el formatter del lab.
+
+### UX pendientes anotados
+
+- **Rediseñar el wizard de creación de agendas en el lab** usando el mismo patrón de stepper fluido de 4 pasos del portal (sacar-turno). La UI actual del wizard de agendas se ve mal — pedido del user en el smoke.
+- **Add sidebar item para "Configuración de Agendas"** en el lab — no existe item de navegación, el user tuvo que pegar la URL a mano.
+- **Mensaje de error "overlapping"**: el backend devuelve "An agenda configuration with overlapping time range and date period already exists for this branch" en inglés. UX del lab debería traducir + dar contexto (qué horario/fecha colisiona).
+- **Error handling general del wizard de agendas**: el user reportó al cerrar smoke A que los manejos de error son crudos (mensajes técnicos del backend salen tal cual al toast). Sugerencia: mapper `apiErrorToHumanMessage` que conozca los casos comunes (overlapping, validation, no auth, etc.) y devuelva copys en español. Mismo patrón que `mapApiError` del portal pero más específico para el flow de agendas.
+
+### Smoke A — Resultado final
+
+✓ **PASS** después de los fixes arriba. User pudo:
+1. Login admin@test.com / password en lab.
+2. Navegar a `/turnos/configuracion` (con bypass temporal del moduleActiveGuard).
+3. Ver lista de agendas seedeadas (con labels en stack mode).
+4. Eliminar agenda existente con botón 🗑.
+5. Crear nueva agenda con horario distinto (no overlapping) → guarda OK → aparece en lista.
+
+### Seeds que ya cubren el escenario dev del lab
+
+Por ahora `V902` (3 branches), `V903` (1 agenda por branch lun-vie 9-17) y `V904` (todos los módulos del tenant activos) destraban el smoke A. Si alguien quiere crear NUEVAS agendas en el wizard, tiene que elegir horarios/días que no se superpongan con la seed (ej. 18-22 lun-vie) o eliminar la agenda existente primero.
+
