@@ -7,6 +7,7 @@ import { SlotDisponible } from '../../../../core/models/slot-disponible.model';
 import { TipoAnalisisService } from './tipo-analisis.service';
 import { SucursalPublicService } from '../../../../core/sucursales/sucursal-public.service';
 import { FamilyService } from '../../../../core/family/family.service';
+import { parseLocalDateTime, toLocalDateString } from '../../../../shared/utils/local-datetime';
 
 export interface BookPayload {
   patientId: number;
@@ -67,7 +68,8 @@ export class AppointmentService {
 
       for (const a of ap) {
         const turno = appointmentToTurno(a, ctx);
-        const ts    = new Date(a.scheduledAt).getTime();
+        const parsed = parseLocalDateTime(a.scheduledAt);
+        const ts = parsed?.getTime() ?? NaN;
         (isFinite(ts) && ts >= now ? proximos : anteriores).push(turno);
       }
 
@@ -91,7 +93,7 @@ export class AppointmentService {
   }
 
   getAvailability(branchId: number, date: Date): Observable<SlotDisponible[]> {
-    const iso = date.toISOString().slice(0, 10);
+    const iso = toLocalDateString(date);
     return this.http
       .get<AvailableSlotResponse[]>(
         `/api/v1/turnos/availability?branchId=${branchId}&date=${iso}`,

@@ -2,6 +2,7 @@ import { Familiar } from '../../core/models/familiar.model';
 import { Sede } from '../../core/models/sede.model';
 import { TipoAnalisis } from '../../core/models/tipo-analisis.model';
 import { Turno, EstadoTurno } from '../../core/models/turno.model';
+import { parseLocalDateTime } from '../utils/local-datetime';
 
 export interface AppointmentResponse {
   id: number;
@@ -38,7 +39,7 @@ const DIAS_SEMANA  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes'
 
 export function appointmentToTurno(ap: AppointmentResponse, ctx: MapperContext): Turno {
   // LocalDateTime from Spring (no timezone) — parse as local time
-  const date = new Date(ap.scheduledAt);
+  const date = parseLocalDateTime(ap.scheduledAt) ?? new Date(NaN);
   const persona = ctx.family.get(ap.patientId);
   const sede    = ctx.sedes.get(String(ap.branchId));
   const status  = STATUS_MAP[ap.status];

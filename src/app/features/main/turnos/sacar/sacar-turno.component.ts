@@ -22,6 +22,7 @@ import { SucursalPublicService } from '../../../../core/sucursales/sucursal-publ
 import { AppointmentService } from '../services/appointment.service';
 import { FamilyService } from '../../../../core/family/family.service';
 import { mapApiError } from '../../../../shared/utils/api-error-mapper';
+import { toLocalDateTimeString } from '../../../../shared/utils/local-datetime';
 import { WizardStep } from '../../../../shared/ui/types';
 import { SlotDisponible } from '../../../../core/models/slot-disponible.model';
 
@@ -265,7 +266,7 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
     this.appointmentSvc.book({
       patientId,
       branchId: Number(sedeId),
-      scheduledAt: scheduledAt.toISOString(),
+      scheduledAt: toLocalDateTimeString(scheduledAt),
       determinations,
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
