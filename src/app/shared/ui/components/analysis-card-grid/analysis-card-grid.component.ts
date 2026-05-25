@@ -11,19 +11,19 @@ import { TipoAnalisis } from '../../../../core/models/tipo-analisis.model';
 })
 export class AnalysisCardGridComponent {
   @Input({ required: true }) tipos!: TipoAnalisis[];
-  @Input({ required: true }) selectedIds!: string[];
+  @Input({ required: true }) selectedIds!: (number | string)[];
   @Input() loading = false;
 
-  @Output() selectionChange = new EventEmitter<string[]>();
+  @Output() selectionChange = new EventEmitter<(number | string)[]>();
 
-  toggleTipo(id: string): void {
+  toggleTipo(id: number | string): void {
     const next = this.selectedIds.includes(id)
       ? this.selectedIds.filter(s => s !== id)
       : [...this.selectedIds, id];
     this.selectionChange.emit(next);
   }
 
-  isSelected(id: string): boolean {
+  isSelected(id: number | string): boolean {
     return this.selectedIds.includes(id);
   }
 }

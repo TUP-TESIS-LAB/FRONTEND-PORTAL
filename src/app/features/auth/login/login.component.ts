@@ -1,5 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import {
   FormBuilder,
   ReactiveFormsModule,
@@ -10,8 +10,12 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FloatLabelModule } from 'primeng/floatlabel';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { PublicTopbarComponent } from '../ui/public-topbar/public-topbar.component';
 import { TenantService } from '../../../core/tenant/tenant.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import { mapApiError } from '../../../shared/utils/api-error-mapper';
 
 @Component({
   selector: 'app-login',
@@ -24,15 +28,22 @@ import { TenantService } from '../../../core/tenant/tenant.service';
     PasswordModule,
     CheckboxModule,
     FloatLabelModule,
+    ToastModule,
     PublicTopbarComponent,
   ],
+  providers: [MessageService],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
 export class LoginComponent {
   private fb     = inject(FormBuilder);
   private router = inject(Router);
+  private route  = inject(ActivatedRoute);
+  private auth   = inject(AuthService);
+  private toast  = inject(MessageService);
   readonly tenant = inject(TenantService);
+
+  submitting = signal(false);
 
   form = this.fb.group({
     dni:        ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
@@ -48,11 +59,20 @@ export class LoginComponent {
   }
 
   onSubmit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-    // TODO: reemplazar por AuthService.login(this.form.getRawValue())
-    this.router.navigate(['/dashboard']);
+    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    const { dni, password } = this.form.getRawValue();
+    this.submitting.set(true);
+    this.auth.login(dni!, password!).subscribe({
+      next: () => {
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/turnos';
+        this.router.navigateByUrl(returnUrl);
+      },
+      error: (err) => {
+        this.submitting.set(false);
+        this.toast.add({
+          severity: 'error', summary: 'Error', detail: mapApiError(err), life: 4000,
+        });
+      },
+    });
   }
 }

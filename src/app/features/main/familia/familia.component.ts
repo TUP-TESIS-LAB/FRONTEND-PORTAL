@@ -10,7 +10,7 @@ import { StatCardComponent } from '../../../shared/ui/components/stat-card/stat-
 import { FamilyCardComponent } from '../../../shared/ui/components/family-card/family-card.component';
 import { FamilyGridComponent } from '../../../shared/ui/components/family-grid/family-grid.component';
 import { AddFamilyCardComponent } from '../../../shared/ui/components/add-family-card/add-family-card.component';
-import { FamiliaService } from './familia.service';
+import { FamilyService } from '../../../core/family/family.service';
 import { Familiar } from '../../../core/models/familiar.model';
 
 @Component({
@@ -32,12 +32,22 @@ import { Familiar } from '../../../core/models/familiar.model';
 })
 export class FamiliaComponent {
   private readonly router         = inject(Router);
-  private readonly familiaService = inject(FamiliaService);
+  private readonly familyService  = inject(FamilyService);
   private readonly messageService = inject(MessageService);
 
-  familiares = toSignal(this.familiaService.getFamiliares(), { initialValue: [] });
-  stats      = toSignal(this.familiaService.getStats(),      { initialValue: null });
-  loading    = computed(() => this.stats() === null);
+  familiares = toSignal(this.familyService.getFamily(), { initialValue: [] });
+
+  stats = computed(() => {
+    const list = this.familiares();
+    return {
+      personasVinculadas: list.length,
+      turnosProximos:     0,   // TODO: derive from AppointmentService when integrated
+      estudiosDisponibles: 0,  // TODO: derive from results
+      pendientesRetiro:   0,   // TODO: derive from results
+    };
+  });
+
+  loading = computed(() => false);
 
   onVerEstudios(f: Familiar): void {
     // TODO: la ruta /estudios aún no existe

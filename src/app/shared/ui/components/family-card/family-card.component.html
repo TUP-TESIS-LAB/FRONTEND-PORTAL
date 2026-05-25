@@ -9,32 +9,8 @@
     <h4 class="ui-family-card__name">{{ familiar.nombre }} {{ familiar.apellido }}</h4>
 
     <p class="ui-family-card__meta">
-      {{ familiar.vinculo }} · {{ familiar.edad }} años · {{ familiar.cobertura }}
+      {{ familiar.vinculo }} · {{ familiar.edad }} años
     </p>
-
-    <!-- Stats inline -->
-    <div class="ui-family-card__stats">
-      <span>
-        <i class="pi pi-calendar"></i>
-        {{ familiar.totalTurnos }}
-        {{ familiar.totalTurnos === 1 ? 'turno próximo' : 'turnos próximos' }}
-      </span>
-      <span>
-        <i class="pi pi-file"></i>
-        {{ familiar.totalEstudios }}
-        {{ familiar.totalEstudios === 1 ? 'estudio' : 'estudios' }}
-      </span>
-    </div>
-
-    <!-- Caja próximo turno -->
-    <div class="ui-family-card__turno-box">
-      @if (familiar.proximoTurno) {
-        <i class="pi pi-calendar"></i>
-        <span>{{ familiar.proximoTurno.fechaResumen }}</span>
-      } @else {
-        <span class="ui-family-card__turno-vacio">Sin próximos turnos</span>
-      }
-    </div>
   </div>
 
   <!-- Acciones -->

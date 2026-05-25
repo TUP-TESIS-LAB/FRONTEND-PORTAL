@@ -1,0 +1,15 @@
+.step-content { padding: 1rem; }
+.step-title { font-size: 1.5rem; margin-bottom: 0.5rem; }
+.step-subtitle { color: var(--text-muted, #888); margin-bottom: 1.5rem; }
+
+.family-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.family-hint {
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--text-muted, #888);
+}

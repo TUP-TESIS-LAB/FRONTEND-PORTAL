@@ -149,11 +149,26 @@
 
     @include mobile-only {
       padding: var(--space-3) var(--space-4);
-      // Safe area para home indicator en iOS
+      // Safe area para home indicator en iOS. Suma --ds-safe-bottom al padding
+      // base; en otros devices --ds-safe-bottom es 0, así que queda igual al
+      // horizontal. `max()` no servía: en iOS terminaba descartando el padding
+      // base cuando --ds-safe-bottom > --space-3, dejando los botones pegados.
       padding-bottom: calc(var(--space-3) + var(--ds-safe-bottom));
 
       // Ambos botones ocupan el mismo ancho en mobile
       .p-button { flex: 1; }
+    }
+
+    // Footer pegado al borde inferior del drawer cuando el wizard se renderiza
+    // como bottom-sheet (BreakpointService.isMobile = max-width 1023px). El
+    // breakpoint del TS abarca mobile + tablet, así que el sticky debe
+    // matchear ese mismo ancho — no el 767 del mixin mobile-only.
+    @media (max-width: 1023px) {
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+      // Sombra hacia arriba sutil para indicar contenido scrolleable detrás.
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
     }
   }
 }

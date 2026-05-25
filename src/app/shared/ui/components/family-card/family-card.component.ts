@@ -14,9 +14,13 @@ const ACCENT_MAP: Record<'primary' | 'secondary' | 'accent', string> = {
   imports: [ButtonModule],
   templateUrl: './family-card.component.html',
   styleUrl: './family-card.component.scss',
+  host: {
+    '[class.is-selected]': 'selected',
+  },
 })
 export class FamilyCardComponent {
   @Input({ required: true }) familiar!: Familiar;
+  @Input() selected = false;
 
   @Output() verEstudios = new EventEmitter<Familiar>();
   @Output() sacarTurno  = new EventEmitter<Familiar>();

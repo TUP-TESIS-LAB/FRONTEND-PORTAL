@@ -31,7 +31,7 @@
 
 <ng-template #wizardContent>
   <ui-wizard
-    [steps]="steps"
+    [steps]="steps()"
     [currentStep]="currentStep()"
     [canProceed]="canProceed()"
     confirmLabel="Confirmar turno"
@@ -41,28 +41,35 @@
     (confirmed)="onConfirm()"
     (cancelled)="onCancel()">
 
-    @switch (currentStep()) {
+    @switch (currentStepId()) {
 
-      @case (0) {
+      @case ('para-quien') {
+        <app-step-para-quien
+          [family]="family()"
+          [selectedPatientId]="selectedPatientId()"
+          (selectionChange)="selectedPatientId.set($event)" />
+      }
+
+      @case ('tipo') {
         <ui-analysis-card-grid
           [tipos]="tiposAnalisis()"
           [selectedIds]="selectedTipoIds()"
           (selectionChange)="selectedTipoIds.set($event)" />
       }
 
-      @case (1) {
+      @case ('sede') {
         <ui-sede-list
           [sedes]="sedes()"
           [selectedId]="selectedSedeId()"
           (selectionChange)="onSedeChange($event)" />
       }
 
-      @case (2) {
+      @case ('fecha') {
         <div class="ui-fecha-hora-step">
           <h4>Seleccioná la fecha</h4>
           <p-datepicker
             [inline]="true"
-            [minDate]="today"
+            [minDate]="minBookingDate"
             [(ngModel)]="fechaModel"
             (onSelect)="onFechaChange($event)" />
 
@@ -77,8 +84,7 @@
         </div>
       }
 
-      @case (3) {
-        <!-- TODO: agregar queryParam personaId para prefill cuando se implemente reserva para familiar -->
+      @case ('confirmar') {
         <ui-turno-resumen
           [tipos]="selectedTipos()"
           [sede]="selectedSede()!"
