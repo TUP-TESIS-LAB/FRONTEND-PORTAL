@@ -34,11 +34,11 @@ describe('authInterceptor', () => {
     expect(req.request.headers.get('Authorization')).toBe('Bearer jwt-1');
   });
 
-  it('skips Bearer for /auth/login', () => {
+  it('skips Bearer for /auth/login-patient', () => {
     tokenStorage.set('jwt-1');
     TestBed.inject(AuthService).loadFromStorage();
-    http.post('/api/v1/auth/login', {}).subscribe();
-    const req = mock.expectOne('/api/v1/auth/login');
+    http.post('/api/v1/auth/login-patient', {}).subscribe();
+    const req = mock.expectOne('/api/v1/auth/login-patient');
     expect(req.request.headers.has('Authorization')).toBe(false);
   });
 
