@@ -149,9 +149,11 @@
 
     @include mobile-only {
       padding: var(--space-3) var(--space-4);
-      // Safe area para home indicator en iOS; en otros devices --ds-safe-bottom
-      // es 0 y el padding-bottom queda igual al horizontal — sin "extra" abajo.
-      padding-bottom: max(var(--space-3), var(--ds-safe-bottom));
+      // Safe area para home indicator en iOS. Suma --ds-safe-bottom al padding
+      // base; en otros devices --ds-safe-bottom es 0, así que queda igual al
+      // horizontal. `max()` no servía: en iOS terminaba descartando el padding
+      // base cuando --ds-safe-bottom > --space-3, dejando los botones pegados.
+      padding-bottom: calc(var(--space-3) + var(--ds-safe-bottom));
 
       // Ambos botones ocupan el mismo ancho en mobile
       .p-button { flex: 1; }
