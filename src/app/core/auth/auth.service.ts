@@ -75,7 +75,10 @@ export class AuthService {
     try {
       const part = token.split('.')[1];
       if (!part) return false;
-      const payload = JSON.parse(atob(part));
+      // JWT payload is base64url; normalize to base64 (replace -/_ and pad).
+      const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
+      const payload = JSON.parse(atob(padded));
       return payload.exp && payload.exp * 1000 < Date.now();
     } catch {
       return false;
