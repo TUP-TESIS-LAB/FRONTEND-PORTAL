@@ -8,13 +8,21 @@ This is for the user to execute manually after both backend and frontend are rea
 
 ## Pre-requisites
 
-1. Backend running with localdev profile:
+1. Backend running with `local` profile (carga MySQL local + locations `db/migration-local/` con seeds dev):
    ```bash
    cd Backend
    git checkout feat/turnos-spec-c
-   SPRING_PROFILES_ACTIVE=localdev ./mvnw spring-boot:run
+   ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
    ```
    Wait for `Started LaboratorioApplication`.
+
+   **Si Flyway falla con checksum mismatch / out-of-order**, tu DB local está desactualizada. Camino más simple:
+   ```sql
+   -- mysql -u laboratorio -p
+   DROP DATABASE laboratorio;
+   CREATE DATABASE laboratorio CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+   Y reintentar el arranque — Flyway corre todas las migrations limpias incluyendo V55 (tipos), V56 (seed) y V900 (admin@test.com).
 
 2. Frontend running:
    ```bash

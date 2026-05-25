@@ -315,3 +315,47 @@ Insertados manualmente via `docker exec mysql` durante la sesión — NO en migr
 
 Por ahora `V902` (3 branches), `V903` (1 agenda por branch lun-vie 9-17) y `V904` (todos los módulos del tenant activos) destraban el smoke A. Si alguien quiere crear NUEVAS agendas en el wizard, tiene que elegir horarios/días que no se superpongan con la seed (ej. 18-22 lun-vie) o eliminar la agenda existente primero.
 
+---
+
+## Final review — 2026-05-25 (arco KAN-41 TURNOS cierre)
+
+> Sesión de cierre del módulo TURNOS multi-repo. Spec backend: `Backend/docs/superpowers/specs/2026-05-24-turnos-cierre-y-prs-design.md`. Plan: `Backend/docs/superpowers/plans/2026-05-24-turnos-cierre-y-prs.md`.
+
+### Estado del portal
+
+**Sin cambios de código en este arco.** Toda la implementación de Spec C ya estaba mergeada en `feat/turnos-spec-c` previo al inicio del cierre. Las commits sobre la branch son docs (smoke checklists, drafts) + el fix de Bug 3 login ya commiteado (`e9eb883`).
+
+- ✅ **Bug 3 login portal externo** resuelto en el backend (commit `b64be79` agrega `POST /api/v1/auth/login-patient`) + adaptación portal en `auth.service` (commit `e9eb883`).
+- ✅ **Smoke C E2E** validado en sesión previa 2026-05-24 (registro patient → login → reserva turno). Resultados anotados en `2026-05-22-turnos-spec-c-smoke-checklist.md` (incluyendo fix del `local` profile + nota de Flyway out-of-order).
+- ✅ **No regresiones** detectadas durante los smokes A/B/CRUD del lab.
+
+### Por qué el portal se mergea primero
+
+Los 3 PRs del arco (backend, lab, portal) están coordinados pero el portal es el más liviano:
+- No tiene dependencias sobre los cambios nuevos backend (los endpoints que usa portal — `POST /auth/login-patient`, `POST /turnos/queue`, etc. — ya estaban activos antes del arco).
+- Hasta que el PR backend mergee, el portal seguirá funcionando contra el endpoint actual de development (que ya tiene Bug 3 fix porque viene de un commit anterior).
+- No bloquea ni a backend ni a lab.
+
+### Estado de los PRs hermanos
+
+| Repo | Branch | PR | Notas |
+|---|---|---|---|
+| FRONTEND-PORTAL | `feat/turnos-spec-c` | ← **este** | Sin cambios de código nuevos; solo docs + smoke |
+| Backend | `feat/turnos-combined` | Pendiente | A+B+C combinados + Bug 3 + patient names + 2 endpoints + 6 fixes during smokes |
+| FRONTEND-LABORATORIO | `feat/turnos-specs` | Pendiente | Tótem, recepción atomic, CRUD sucursales, guard async + 5 fixes during smokes |
+
+### Verification
+
+```bash
+cd FRONTEND-PORTAL
+npm install
+npm run test
+npm run lint
+npm run start
+```
+
+### Follow-ups conocidos (no se incluyen en este PR)
+
+- E2E automatizado del flow Spec C (registro → login → reserva) con Playwright — está documentado el smoke manual, pero no automatizado.
+- Beep TV bloqueado por autoplay policy: requiere overlay "click para activar sonido" (issue Spec B, scope lab).
+

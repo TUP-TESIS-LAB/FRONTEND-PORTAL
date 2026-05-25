@@ -49,3 +49,6 @@ Thumbs.db
 
 # Superpowers visual brainstorming session files
 .superpowers/
+
+# Dev server logs
+*-startup.log
