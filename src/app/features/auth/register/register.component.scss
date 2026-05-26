@@ -1,5 +1,6 @@
 @use 'breakpoints' as *;
 
+
 .register__header {
   margin-bottom: var(--space-6);
 
@@ -44,6 +45,25 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+}
+
+.register__name-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+
+  @include mobile-only {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+}
+
+.register__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-text-muted);
+  margin-bottom: var(--space-1);
 }
 
 .register__password-hint {
