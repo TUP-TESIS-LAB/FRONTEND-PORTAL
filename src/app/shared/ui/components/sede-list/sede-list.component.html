@@ -19,7 +19,16 @@
         <div class="ui-sede-card__info">
           <span class="ui-sede-card__nombre">{{ sede.nombre }}</span>
           <span class="ui-sede-card__direccion">{{ sede.direccion }}</span>
-          <span class="ui-sede-card__horario">{{ sede.horario }}</span>
+          @if (sede.telefono) {
+            <span class="ui-sede-card__tel">
+              <i class="pi pi-phone" aria-hidden="true"></i> {{ sede.telefono }}
+            </span>
+          }
+          @if (sede.horario) {
+            <span class="ui-sede-card__horario">
+              <i class="pi pi-clock" aria-hidden="true"></i> {{ sede.horario }}
+            </span>
+          }
         </div>
 
         @if (sede.distanciaKm !== undefined) {

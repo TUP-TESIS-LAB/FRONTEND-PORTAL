@@ -5,9 +5,18 @@ import { Sede } from '../models/sede.model';
 import { TenantService } from '../tenant/tenant.service';
 
 /**
- * Matches the actual BranchPublicResponse Java record which exposes
- * flat street/streetNumber fields (NOT nested under address).
+ * Matches the actual BranchPublicResponse Java record.
+ * `phone` and `schedules` are added in feat/branch-public-fields backend branch;
+ * when that branch is not merged they are simply absent from the response,
+ * and the mapper falls back to empty string safely.
  */
+interface BackendPublicSchedule {
+  dayFrom: string;
+  dayTo: string;
+  fromTime: string;
+  toTime: string;
+}
+
 interface BranchPublicResponse {
   id: number;
   code: string;
@@ -15,6 +24,8 @@ interface BranchPublicResponse {
   status: string;
   street?: string | null;
   streetNumber?: string | null;
+  phone?: string | null;
+  schedules?: BackendPublicSchedule[] | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -43,7 +54,22 @@ export class SucursalPublicService {
       id: String(b.id),
       nombre: b.description,
       direccion,
-      // telefono / horario / distanciaKm not exposed by backend
+      telefono: b.phone ?? '',
+      horario: this.formatSchedules(b.schedules ?? []),
     };
+  }
+
+  private formatSchedules(schedules: BackendPublicSchedule[]): string {
+    if (schedules.length === 0) return '';
+    const SHORT: Record<string, string> = {
+      MONDAY: 'Lun', TUESDAY: 'Mar', WEDNESDAY: 'Mié', THURSDAY: 'Jue',
+      FRIDAY: 'Vie', SATURDAY: 'Sáb', SUNDAY: 'Dom',
+    };
+    return schedules.map(s => {
+      const days = s.dayFrom === s.dayTo
+        ? (SHORT[s.dayFrom] ?? s.dayFrom)
+        : `${SHORT[s.dayFrom] ?? s.dayFrom} a ${SHORT[s.dayTo] ?? s.dayTo}`;
+      return `${days} ${s.fromTime} — ${s.toTime}`;
+    }).join(', ');
   }
 }
