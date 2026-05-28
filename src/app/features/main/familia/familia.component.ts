@@ -6,7 +6,6 @@ import { ButtonModule } from 'primeng/button';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ToastModule } from 'primeng/toast';
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
-import { StatCardComponent } from '../../../shared/ui/components/stat-card/stat-card.component';
 import { FamilyCardComponent } from '../../../shared/ui/components/family-card/family-card.component';
 import { FamilyGridComponent } from '../../../shared/ui/components/family-grid/family-grid.component';
 import { AddFamilyCardComponent } from '../../../shared/ui/components/add-family-card/add-family-card.component';
@@ -21,7 +20,6 @@ import { Familiar } from '../../../core/models/familiar.model';
     SkeletonModule,
     ToastModule,
     PageHeaderComponent,
-    StatCardComponent,
     FamilyCardComponent,
     FamilyGridComponent,
     AddFamilyCardComponent,
@@ -36,16 +34,6 @@ export class FamiliaComponent {
   private readonly messageService = inject(MessageService);
 
   familiares = toSignal(this.familyService.getFamily(), { initialValue: [] });
-
-  stats = computed(() => {
-    const list = this.familiares();
-    return {
-      personasVinculadas: list.length,
-      turnosProximos:     0,   // TODO: derive from AppointmentService when integrated
-      estudiosDisponibles: 0,  // TODO: derive from results
-      pendientesRetiro:   0,   // TODO: derive from results
-    };
-  });
 
   loading = computed(() => false);
 

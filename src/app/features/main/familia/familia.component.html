@@ -14,38 +14,6 @@
   />
 </ui-page-header>
 
-<!-- Stats grid -->
-@if (loading()) {
-  <div class="ui-stats-grid">
-    @for (i of [1, 2, 3, 4]; track i) {
-      <p-skeleton height="80px" borderRadius="10px" />
-    }
-  </div>
-} @else {
-  <div class="ui-stats-grid">
-    <ui-stat-card
-      label="Personas vinculadas"
-      [value]="stats()!.personasVinculadas"
-      accent="secondary"
-    />
-    <ui-stat-card
-      label="Turnos próximos"
-      [value]="stats()!.turnosProximos"
-      accent="primary"
-    />
-    <ui-stat-card
-      label="Estudios disponibles"
-      [value]="stats()!.estudiosDisponibles"
-      accent="accent"
-    />
-    <ui-stat-card
-      label="Pendientes retiro"
-      [value]="stats()!.pendientesRetiro"
-      accent="warning"
-    />
-  </div>
-}
-
 <!-- Grid de familiares -->
 @if (loading()) {
   <ui-family-grid>
