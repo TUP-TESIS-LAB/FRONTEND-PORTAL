@@ -2,11 +2,15 @@
 
 :host {
   display: block;
+  height: 100%;
+  min-height: 0;
 }
 
 .ui-wizard {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-height: 0;
   background: var(--ds-white);
   border-radius: var(--ds-radius-lg);
   box-shadow: var(--ds-shadow-sm);
@@ -119,14 +123,19 @@
 
   // ═══════════════════════════════════════════════════════
   // Contenido del paso (proyectado por el padre)
+  // flex: 1 + overflow-y: auto → scroll INTERNO; el footer sticky
+  // queda siempre visible aunque la lista del step sea larga.
   // ═══════════════════════════════════════════════════════
   &__content {
+    flex: 1;
+    min-height: 0;
     padding: var(--space-6);
-    min-height: 320px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 
     @include mobile-only {
       padding: var(--space-4);
-      min-height: 260px;
     }
   }
 
