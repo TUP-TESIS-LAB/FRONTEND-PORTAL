@@ -235,16 +235,13 @@
 }
 
 // ─── Botón: solid primary con tokens del tenant ──────
-// brightness() funciona con cualquier color de tenant sin necesitar
-// variables dark calculadas en runtime.
+// Solo override colors/border — padding/font/radius los maneja PrimeNG
+// (cada size, severity, etc) para no romper layouts dependientes.
 .p-button {
   transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
   background: var(--brand-primary);
   color: var(--ds-white);
   border: 1px solid var(--brand-primary);
-  font-weight: 500;
-  padding: 0.625rem 1.25rem;
-  border-radius: var(--ds-radius-md);
 
   &:not(:disabled):hover {
     filter: brightness(0.88);
