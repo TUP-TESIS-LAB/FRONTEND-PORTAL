@@ -4,7 +4,7 @@
   &.is-selected .family-card {
     border-color: var(--brand-primary);
     outline: 2px solid var(--brand-primary);
-    background: var(--brand-primary-light, var(--surface-hover));
+    background: var(--brand-primary-light);
   }
 }
 
@@ -14,15 +14,15 @@
   justify-content: space-between;
   width: 100%;
   padding: 1rem;
-  background: var(--surface-card, var(--ds-white));
-  border: 1px solid var(--surface-border, var(--ds-surface-dark));
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
   border-radius: 12px;
   cursor: pointer;
   transition: background 0.15s;
   text-align: left;
 
   &:hover {
-    background: var(--surface-hover, var(--ds-surface));
+    background: var(--ds-surface);
   }
 }
 
@@ -35,16 +35,16 @@
 .name {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--text-color, var(--ds-text));
+  color: var(--ds-text);
 }
 
 .meta {
   font-size: 0.875rem;
-  color: var(--text-color-secondary, var(--ds-text-muted));
+  color: var(--ds-text-muted);
 }
 
 .chevron {
   font-size: 1.25rem;
-  color: var(--text-color-secondary, var(--ds-text-muted));
+  color: var(--ds-text-muted);
   flex-shrink: 0;
 }
