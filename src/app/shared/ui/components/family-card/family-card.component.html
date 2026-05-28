@@ -1,7 +1,5 @@
 <button class="family-card" type="button" (click)="onClick()">
-  <div class="content">
-    <strong class="name">{{ familiar.nombre }} {{ familiar.apellido }}</strong>
-    <span class="meta">{{ familiar.vinculo }} · {{ familiar.edad }} años</span>
-  </div>
-  <i class="pi pi-angle-right chevron"></i>
+  <div class="avatar">{{ familiar.iniciales }}</div>
+  <h4 class="name">{{ familiar.nombre }} {{ familiar.apellido }}</h4>
+  <p class="meta">{{ familiar.vinculo }} · {{ familiar.edad }} años</p>
 </button>
