@@ -1,4 +1,3 @@
-import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,8 +6,6 @@ import { Subject, switchMap } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DatePickerModule } from 'primeng/datepicker';
-import { DialogModule } from 'primeng/dialog';
-import { DrawerModule } from 'primeng/drawer';
 import { ToastModule } from 'primeng/toast';
 import { WizardComponent } from '../../../../shared/ui/wizard/wizard/wizard.component';
 import { AnalysisCardGridComponent } from '../../../../shared/ui/components/analysis-card-grid/analysis-card-grid.component';
@@ -30,12 +27,9 @@ import { SlotDisponible } from '../../../../core/models/slot-disponible.model';
   selector: 'app-sacar-turno',
   standalone: true,
   imports: [
-    NgTemplateOutlet,
     FormsModule,
     ConfirmDialogModule,
     DatePickerModule,
-    DialogModule,
-    DrawerModule,
     ToastModule,
     WizardComponent,
     AnalysisCardGridComponent,

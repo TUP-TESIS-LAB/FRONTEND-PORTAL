@@ -1,35 +1,7 @@
 <p-toast [position]="bp.isMobile() ? 'top-center' : 'top-right'" />
 <p-confirmDialog />
 
-<!-- ─── Adaptive: drawer en mobile, dialog en desktop ─── -->
-
-@if (bp.isMobile()) {
-  <p-drawer
-    [visible]="true"
-    position="bottom"
-    styleClass="ui-bottom-sheet-drawer ui-wizard-sheet">
-    <ng-template pTemplate="headless">
-      <ng-container [ngTemplateOutlet]="wizardContent" />
-    </ng-template>
-  </p-drawer>
-} @else {
-  <p-dialog
-    [visible]="true"
-    [modal]="true"
-    [closable]="false"
-    [closeOnEscape]="false"
-    [showHeader]="false"
-    [style]="{ width: '720px' }"
-    [draggable]="false"
-    [resizable]="false"
-    styleClass="ui-wizard-dialog">
-    <ng-container [ngTemplateOutlet]="wizardContent" />
-  </p-dialog>
-}
-
-<!-- ─── Contenido del wizard (compartido por dialog y drawer) ─── -->
-
-<ng-template #wizardContent>
+<div class="ui-sacar-page">
   <ui-wizard
     [steps]="steps()"
     [currentStep]="currentStep()"
@@ -95,4 +67,4 @@
 
     }
   </ui-wizard>
-</ng-template>
+</div>

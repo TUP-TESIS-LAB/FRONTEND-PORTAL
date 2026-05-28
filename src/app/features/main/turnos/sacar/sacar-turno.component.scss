@@ -4,6 +4,17 @@
   display: block;
 }
 
+// ─── Página container — wizard ya no es modal ──────────
+.ui-sacar-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-6);
+
+  @include mobile-only {
+    padding: var(--space-3);
+  }
+}
+
 // ─── Paso 3: fecha + slots ─────────────────────────────
 .ui-fecha-hora-step {
   display: flex;
