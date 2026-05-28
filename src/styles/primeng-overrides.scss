@@ -235,8 +235,10 @@
 }
 
 // ─── Botón: solid primary con tokens del tenant ──────
-// Solo override colors/border — padding/font/radius los maneja PrimeNG
-// (cada size, severity, etc) para no romper layouts dependientes.
+// Tailwind v4 resetea padding/border-radius de <button>; necesitamos
+// re-setearlo acá (PrimeNG @layer no gana). Solo aplica a botones solid
+// (no text / outlined / link) para no romper la compactitud de esos
+// variantes en wizard footers, list-cards, etc.
 .p-button {
   transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
   background: var(--brand-primary);
@@ -259,6 +261,25 @@
     cursor: not-allowed;
     opacity: 0.75;
   }
+}
+
+// Padding + radius solo en solid (no text/outlined/link/icon-only rounded)
+.p-button:not(.p-button-text):not(.p-button-outlined):not(.p-button-link):not(.p-button-icon-only):not(.p-button-rounded) {
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--ds-radius-md);
+  font-weight: 500;
+}
+
+// Size small: padding ajustado
+.p-button.p-button-sm:not(.p-button-text):not(.p-button-outlined):not(.p-button-icon-only):not(.p-button-rounded) {
+  padding: 0.5rem 1rem;
+  font-size: 13px;
+}
+
+// Text variant: padding compacto para que no ocupe demasiado
+.p-button.p-button-text {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--ds-radius-md);
 }
 
 // Variantes que NO deben tener bg solid (text / outlined / link)
