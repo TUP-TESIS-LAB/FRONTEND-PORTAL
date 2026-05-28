@@ -170,7 +170,7 @@
           severity="primary"
           styleClass="w-full"
           [loading]="submitting()"
-          [disabled]="form.invalid && form.touched"
+          [disabled]="form.invalid || submitting()"
         />
 
       </form>

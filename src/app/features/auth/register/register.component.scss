@@ -2,7 +2,7 @@
 
 
 .register__header {
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
 
   h1 { margin-bottom: var(--space-1); }
   p  { margin: 0; font-size: 14px; }
@@ -12,7 +12,7 @@
 .register__tabs {
   display: flex;
   border-bottom: 2px solid var(--ds-surface-dark);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
   gap: var(--space-1);
 }
 
@@ -44,7 +44,7 @@
 .register__form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-3);
 }
 
 .register__name-row {
@@ -81,8 +81,8 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  margin-top: var(--space-6);
-  padding-top: var(--space-5);
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
   border-top: 1px solid var(--ds-surface-dark);
   font-size: 13px;
   color: var(--ds-text-muted);

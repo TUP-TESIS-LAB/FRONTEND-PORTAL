@@ -234,11 +234,17 @@
   }
 }
 
-// ─── Botón: hover con color del tenant ───────────────
+// ─── Botón: solid primary con tokens del tenant ──────
 // brightness() funciona con cualquier color de tenant sin necesitar
 // variables dark calculadas en runtime.
 .p-button {
   transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  background: var(--brand-primary);
+  color: var(--ds-white);
+  border: 1px solid var(--brand-primary);
+  font-weight: 500;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--ds-radius-md);
 
   &:not(:disabled):hover {
     filter: brightness(0.88);
@@ -247,6 +253,39 @@
   &:not(:disabled):active {
     filter: brightness(0.80);
     transform: scale(0.98);
+  }
+
+  &:disabled {
+    background: var(--ds-surface-dark);
+    color: var(--ds-text-disabled);
+    border-color: var(--ds-surface-dark);
+    cursor: not-allowed;
+    opacity: 0.75;
+  }
+}
+
+// Variantes que NO deben tener bg solid (text / outlined / link)
+.p-button.p-button-text {
+  background: transparent;
+  color: var(--brand-primary);
+  border-color: transparent;
+
+  &:disabled {
+    background: transparent;
+    color: var(--ds-text-disabled);
+    border-color: transparent;
+  }
+}
+
+.p-button.p-button-outlined {
+  background: transparent;
+  color: var(--brand-primary);
+  border-color: var(--brand-primary);
+
+  &:disabled {
+    background: transparent;
+    color: var(--ds-text-disabled);
+    border-color: var(--ds-surface-dark);
   }
 }
 
