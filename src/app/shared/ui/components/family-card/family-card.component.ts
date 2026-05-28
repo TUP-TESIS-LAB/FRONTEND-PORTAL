@@ -16,16 +16,8 @@ export class FamilyCardComponent {
   @Input({ required: true }) familiar!: Familiar;
   @Input() selected = false;
 
-  /** Emitted when the card is clicked. */
+  /** Emitted when the card is clicked. Consumer decides the action (e.g. edit familiar). */
   @Output() select = new EventEmitter<Familiar>();
-
-  /**
-   * Kept for backwards-compat with familia.component which binds (verEstudios) and (sacarTurno).
-   * Both now fire on card click via onClick(); consumers that relied on the explicit action
-   * buttons should migrate to (select) or handle navigation via the parent's onClick logic.
-   */
-  @Output() verEstudios = new EventEmitter<Familiar>();
-  @Output() sacarTurno  = new EventEmitter<Familiar>();
 
   onClick(): void {
     this.select.emit(this.familiar);

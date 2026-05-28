@@ -59,8 +59,7 @@
     @for (familiar of familiares(); track familiar.id) {
       <ui-family-card
         [familiar]="familiar"
-        (verEstudios)="onVerEstudios($event)"
-        (sacarTurno)="onSacarTurno($event)"
+        (select)="onSelectFamiliar($event)"
       />
     }
     <ui-add-family-card (addClick)="onAddFamily()" />

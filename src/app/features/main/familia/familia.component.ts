@@ -49,14 +49,15 @@ export class FamiliaComponent {
 
   loading = computed(() => false);
 
-  onVerEstudios(f: Familiar): void {
-    // TODO: la ruta /estudios aún no existe
-    this.router.navigate(['/estudios'], { queryParams: { personaId: f.id } });
-  }
-
-  onSacarTurno(f: Familiar): void {
-    // TODO: la ruta /turnos/sacar aún no existe
-    this.router.navigate(['/turnos/sacar'], { queryParams: { personaId: f.id } });
+  onSelectFamiliar(f: Familiar): void {
+    // TODO: cuando exista la ruta de edición de familiar (/familia/:id/editar),
+    // navegar ahí. Por ahora avisamos al usuario para que el click no sea silencioso.
+    this.messageService.add({
+      severity: 'info',
+      summary: f.nombre + ' ' + f.apellido,
+      detail: 'La edición de familiares estará disponible pronto.',
+      life: 3000,
+    });
   }
 
   onAddFamily(): void {
