@@ -295,6 +295,17 @@
   justify-content: center;
 }
 
+// ─── p-button rounded icon-only: círculo verdadero ───
+// Cuando se renderiza solo con icono (sin label) + rounded=true,
+// forzamos dimensiones cuadradas + border-radius 50% para que sea círculo.
+.p-button.p-button-rounded.p-button-icon-only,
+.p-button.p-button-rounded:has(> .p-button-icon):not(:has(.p-button-label)) {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+}
+
 // ─── p-tag: estilos base del DS ──────────────────────
 // Los colores los inyectan las clases .ui-tag-* de utilities.scss
 .p-tag {
