@@ -17,6 +17,50 @@
   overflow: hidden;
 
   // ═══════════════════════════════════════════════════════
+  // Page header (opcional): back btn + título
+  // Una sola fila compacta dentro del card del wizard.
+  // ═══════════════════════════════════════════════════════
+  &__page-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--ds-surface-dark);
+    background: var(--ds-white);
+
+    h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ds-text);
+    }
+  }
+
+  &__back-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--ds-text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: background 0.15s, transform 0.05s;
+    flex-shrink: 0;
+
+    &:hover {
+      background: var(--ds-surface);
+    }
+
+    &:active {
+      transform: scale(0.92);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
   // Stepper header
   // ═══════════════════════════════════════════════════════
   &__stepper {

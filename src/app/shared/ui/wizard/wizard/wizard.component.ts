@@ -16,6 +16,9 @@ export class WizardComponent {
   @Input() canProceed = false;
   @Input() confirmLabel = 'Confirmar';
   @Input() loading = false;
+  /** Título opcional del wizard. Si se setea, aparece arriba con un botón de
+   *  back que dispara (cancelled) — pensado para usar al wizard como página. */
+  @Input() title?: string;
 
   @Output() next      = new EventEmitter<void>(); // padre incrementa currentStep
   @Output() back      = new EventEmitter<void>(); // padre decrementa currentStep

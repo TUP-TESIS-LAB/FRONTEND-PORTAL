@@ -7,63 +7,23 @@
 // ─── Página container — wizard ya no es modal ──────────
 // Toma altura fija del shell (.ui-patient-content) para que el scroll viva
 // dentro del wizard content (footer sticky siempre visible, sin scroll de página).
+// El back-btn + título ahora viven DENTRO del wizard card (via title @Input).
 .ui-sacar-page {
   max-width: 64rem;
   height: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
   min-height: 0;
 
   // No agregamos padding propio — el shell .ui-patient-content ya da var(--space-6)
   // en desktop y var(--space-4) en mobile.
 
-  @include mobile-only {
-    gap: var(--space-3);
-  }
-
-  // El wizard toma el espacio restante después del header
+  // El wizard ocupa toda la altura disponible
   > ui-wizard {
     flex: 1;
     min-height: 0;
     display: block;
-  }
-
-  &__header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-
-    h1 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--ds-text);
-    }
-  }
-
-  &__back-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    color: var(--ds-text);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    transition: background 0.15s;
-
-    &:hover {
-      background: var(--ds-surface);
-    }
-
-    &:active {
-      transform: scale(0.95);
-    }
   }
 }
 

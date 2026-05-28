@@ -1,5 +1,18 @@
 <div class="ui-wizard">
 
+  <!-- Page header opcional: back btn + título (cuando se usa como página) -->
+  @if (title) {
+    <header class="ui-wizard__page-header">
+      <button type="button"
+              class="ui-wizard__back-btn"
+              (click)="cancelled.emit()"
+              aria-label="Volver">
+        <i class="pi pi-arrow-left"></i>
+      </button>
+      <h2>{{ title }}</h2>
+    </header>
+  }
+
   <!-- Stepper header: círculos numerados + conectores + labels -->
   <div class="ui-wizard__stepper" role="list" aria-label="Pasos del proceso">
 
