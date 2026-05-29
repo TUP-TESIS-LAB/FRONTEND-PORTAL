@@ -639,7 +639,7 @@
     padding: 0.5rem 0.875rem;
     background: var(--ds-white);
     border: 1px solid var(--ds-surface-dark);
-    border-radius: 999px; // pill shape
+    border-radius: var(--ds-radius-md); // match input radius
     color: var(--ds-text);
     font-family: var(--ds-font);
     font-size: 13px;
