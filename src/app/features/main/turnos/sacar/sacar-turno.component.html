@@ -2,8 +2,17 @@
 <p-confirmDialog />
 
 <div class="ui-sacar-page">
+  <header class="ui-sacar-page__header">
+    <button type="button"
+            class="ui-sacar-page__back-btn"
+            (click)="onCancel()"
+            aria-label="Volver a turnos">
+      <i class="pi pi-arrow-left"></i>
+    </button>
+    <h1>Nuevo turno</h1>
+  </header>
+
   <ui-wizard
-    title="Nuevo turno"
     [steps]="steps()"
     [currentStep]="currentStep()"
     [canProceed]="canProceed()"

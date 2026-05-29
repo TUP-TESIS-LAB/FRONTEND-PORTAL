@@ -1,25 +1,65 @@
 @use 'breakpoints' as *;
 
+// ─── Host: ocupa altura completa del shell (.ui-patient-content)
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
-// ─── Página container — wizard ya no es modal ──────────
-// Toma altura fija del shell (.ui-patient-content) para que el scroll viva
-// dentro del wizard content (footer sticky siempre visible, sin scroll de página).
-// El back-btn + título ahora viven DENTRO del wizard card (via title @Input).
+// ─── Página container — wizard como página, no modal ───
+// Layout: header arriba (auto height) + wizard ocupando el resto (flex:1).
+// El wizard internamente scrollea su content; el footer queda siempre visible.
 .ui-sacar-page {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
   max-width: 64rem;
-  height: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  gap: var(--space-3);
 
-  // No agregamos padding propio — el shell .ui-patient-content ya da var(--space-6)
-  // en desktop y var(--space-4) en mobile.
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-shrink: 0;
 
-  // El wizard ocupa toda la altura disponible
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--ds-text);
+    }
+  }
+
+  &__back-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--ds-text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: background 0.15s, transform 0.05s;
+    flex-shrink: 0;
+
+    &:hover {
+      background: var(--ds-surface);
+    }
+
+    &:active {
+      transform: scale(0.92);
+    }
+  }
+
+  // El wizard ocupa el espacio restante
   > ui-wizard {
     flex: 1;
     min-height: 0;
@@ -27,7 +67,7 @@
   }
 }
 
-// ─── Paso 3: fecha + slots ─────────────────────────────
+// ─── Paso fecha + slots ────────────────────────────────
 .ui-fecha-hora-step {
   display: flex;
   flex-direction: column;
