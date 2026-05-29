@@ -19,7 +19,7 @@ import { TurnoDetailComponent } from '../../../shared/ui/components/turno-detail
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { AppointmentService } from './services/appointment.service';
 import { mapApiError } from '../../../shared/utils/api-error-mapper';
-import { Turno } from '../../../core/models/turno.model';
+import { EstadoTurno, Turno } from '../../../core/models/turno.model';
 
 @Component({
   selector: 'app-turnos',
@@ -59,8 +59,8 @@ export class TurnosComponent implements OnInit, OnDestroy {
   mobileDetailOpen = signal(false);
 
   // ─── Filtros seleccionables ──────────────────────────────
-  /** Chips de estado activos (estadoLabel del backend). Vacío = todos. */
-  estadoFilter   = signal<string[]>([]);
+  /** Chips de estado activos (estado local). Vacío = todos. */
+  estadoFilter   = signal<EstadoTurno[]>([]);
   /** Familiares seleccionados. Vacío = todos. */
   familiarFilter = signal<string[]>([]);
   /** Fecha desde (filtro mínimo). null = todas. */
@@ -78,14 +78,18 @@ export class TurnosComponent implements OnInit, OnDestroy {
     return Array.from(map.values());
   });
 
-  /** Chips de estado: solo los estadoLabels que el backend devuelve
-   *  para los turnos actuales (sin hardcodear "pendiente / confirmado"). */
-  protected readonly estadoOptions = computed(() => {
-    const all = [...this.proximosTurnos(), ...this.anterioresTurnos()];
-    const seen = new Set<string>();
-    for (const t of all) seen.add(t.estadoLabel);
-    return Array.from(seen).map(label => ({ label, value: label }));
-  });
+  /** Chips de estado: 4 categorías user-facing fijas que agrupan los 7 estados
+   *  del backend (per appointment-to-turno.mapper.ts). Curado para UX:
+   *    - SCHEDULED / IN_PROGRESS / RESCHEDULED → "Pendiente"
+   *    - CONFIRMED                              → "Confirmado"
+   *    - COMPLETED                              → "Completado"
+   *    - CANCELLED / NO_SHOW                    → "Cancelado" */
+  protected readonly estadoOptions: { label: string; value: EstadoTurno }[] = [
+    { label: 'Pendiente',  value: 'pendiente' },
+    { label: 'Confirmado', value: 'confirmado' },
+    { label: 'Completado', value: 'completado' },
+    { label: 'Cancelado',  value: 'cancelado' },
+  ];
 
   /** Lista combinada (próximos + anteriores) filtrada según los filtros activos. */
   protected readonly visibleTurnos = computed(() => {
@@ -105,7 +109,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
     const desde = this.fechaDesde();
 
     return list.filter(t => {
-      if (estados.size > 0 && !estados.has(t.estadoLabel)) return false;
+      if (estados.size > 0 && !estados.has(t.estado)) return false;
       if (fams.size > 0 && !fams.has(t.personaNombre)) return false;
       if (desde) {
         const turnoDate = new Date(t.fechaCompleta);

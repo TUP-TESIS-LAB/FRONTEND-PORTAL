@@ -16,7 +16,7 @@
   <div class="ui-turnos-filters__group">
     <span class="ui-turnos-filters__label">Estado</span>
     <p-selectbutton
-      [options]="estadoOptions()"
+      [options]="estadoOptions"
       [ngModel]="estadoFilter()"
       (ngModelChange)="estadoFilter.set($event)"
       [multiple]="true"
