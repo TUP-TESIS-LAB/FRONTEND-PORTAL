@@ -11,41 +11,56 @@
     (onClick)="onSacarTurno()" />
 </ui-page-header>
 
-<!-- ─── Barra de filtros ───────────────────────────────── -->
+<!-- ─── Barra de filtros (chips + multi-select + rango fechas) ─── -->
 <div class="ui-turnos-filters">
-  <span class="ui-turnos-filters__search">
-    <i class="pi pi-search" aria-hidden="true"></i>
-    <input
-      pInputText
-      type="search"
-      placeholder="Buscar por tipo, familiar, fecha o estado..."
-      [ngModel]="searchTerm()"
-      (ngModelChange)="searchTerm.set($event)" />
-  </span>
-
-  <p-select
-    [options]="statusOptions"
-    [ngModel]="statusFilter()"
-    (ngModelChange)="statusFilter.set($event)"
-    styleClass="ui-turnos-filters__status" />
+  <div class="ui-turnos-filters__group">
+    <span class="ui-turnos-filters__label">Estado</span>
+    <p-selectbutton
+      [options]="estadoOptions"
+      [ngModel]="estadoFilter()"
+      (ngModelChange)="estadoFilter.set($event)"
+      [multiple]="true"
+      optionLabel="label"
+      optionValue="value"
+      [allowEmpty]="false" />
+  </div>
 
   @if (familiares().length > 1) {
-    <p-select
-      [options]="familiares()"
-      [ngModel]="familiarFilter()"
-      (ngModelChange)="familiarFilter.set($event)"
-      placeholder="Todos los familiares"
-      [showClear]="true"
-      styleClass="ui-turnos-filters__familiar" />
+    <div class="ui-turnos-filters__group">
+      <span class="ui-turnos-filters__label">Familiar</span>
+      <p-multiselect
+        [options]="familiares()"
+        [ngModel]="familiarFilter()"
+        (ngModelChange)="familiarFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todos"
+        [showClear]="true"
+        styleClass="ui-turnos-filters__multiselect" />
+    </div>
   }
 
-  @if (searchTerm() || familiarFilter() || statusFilter() !== 'proximos') {
-    <p-button
-      label="Limpiar"
-      [text]="true"
-      severity="secondary"
-      icon="pi pi-times"
-      (onClick)="clearFilters()" />
+  <div class="ui-turnos-filters__group">
+    <span class="ui-turnos-filters__label">Fechas</span>
+    <p-datepicker
+      [ngModel]="fechaRange()"
+      (ngModelChange)="fechaRange.set($event)"
+      selectionMode="range"
+      placeholder="Cualquier fecha"
+      dateFormat="dd/mm/yy"
+      [showButtonBar]="true"
+      styleClass="ui-turnos-filters__datepicker" />
+  </div>
+
+  @if (hasActiveFilters()) {
+    <div class="ui-turnos-filters__clear">
+      <p-button
+        label="Limpiar"
+        [text]="true"
+        severity="secondary"
+        icon="pi pi-times"
+        (onClick)="clearFilters()" />
+    </div>
   }
 </div>
 
@@ -55,7 +70,7 @@
   <section class="ui-turnos-list">
     <div class="ui-turnos-list__header">
       <h3>
-        {{ statusFilter() === 'proximos' ? 'Pendientes' : 'Anteriores' }}
+        Mis turnos
         <span class="ui-tab-badge">{{ visibleTurnos().length }}</span>
       </h3>
     </div>
@@ -66,9 +81,9 @@
       }
     } @else if (visibleTurnos().length === 0) {
       <ui-empty-state
-        [icon]="statusFilter() === 'proximos' ? 'pi-calendar' : 'pi-history'"
-        [heading]="statusFilter() === 'proximos' ? 'No tenés turnos pendientes' : 'No tenés turnos anteriores'"
-        [message]="searchTerm() || familiarFilter() ? 'Probá limpiar los filtros para ver más resultados.' : statusFilter() === 'proximos' ? 'Cuando saques un turno va a aparecer acá.' : 'Tus turnos pasados van a aparecer acá.'" />
+        icon="pi-calendar"
+        [heading]="hasActiveFilters() ? 'No hay turnos con esos filtros' : 'No tenés turnos'"
+        [message]="hasActiveFilters() ? 'Probá limpiar los filtros para ver más resultados.' : 'Cuando saques un turno va a aparecer acá.'" />
     } @else {
       @for (turno of visibleTurnos(); track turno.id) {
         <ui-event-card

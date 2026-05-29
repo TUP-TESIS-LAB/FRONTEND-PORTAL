@@ -5,9 +5,10 @@ import { Subscription } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DatePickerModule } from 'primeng/datepicker';
 import { DrawerModule } from 'primeng/drawer';
-import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { SelectButtonModule } from 'primeng/selectbutton';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ToastModule } from 'primeng/toast';
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
@@ -18,7 +19,7 @@ import { TurnoDetailComponent } from '../../../shared/ui/components/turno-detail
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { AppointmentService } from './services/appointment.service';
 import { mapApiError } from '../../../shared/utils/api-error-mapper';
-import { Turno } from '../../../core/models/turno.model';
+import { EstadoTurno, Turno } from '../../../core/models/turno.model';
 
 @Component({
   selector: 'app-turnos',
@@ -27,9 +28,10 @@ import { Turno } from '../../../core/models/turno.model';
     FormsModule,
     ButtonModule,
     ConfirmDialogModule,
+    DatePickerModule,
     DrawerModule,
-    InputTextModule,
-    SelectModule,
+    MultiSelectModule,
+    SelectButtonModule,
     SkeletonModule,
     ToastModule,
     PageHeaderComponent,
@@ -56,13 +58,15 @@ export class TurnosComponent implements OnInit, OnDestroy {
   selectedTurno    = signal<Turno | null>(null);
   mobileDetailOpen = signal(false);
 
-  // ─── Filtros ──────────────────────────────────────────────
-  searchTerm     = signal<string>('');
-  familiarFilter = signal<string | null>(null);
-  /** 'proximos' (pendientes) por default — el caso de uso principal. */
-  statusFilter   = signal<'proximos' | 'anteriores'>('proximos');
+  // ─── Filtros seleccionables ──────────────────────────────
+  /** Chips de estado activos. Default: solo "activos" (pendiente + confirmado). */
+  estadoFilter   = signal<EstadoTurno[]>(['pendiente', 'confirmado']);
+  /** Familiares seleccionados. Vacío = todos. */
+  familiarFilter = signal<string[]>([]);
+  /** Rango de fechas [desde, hasta]. null = todas. */
+  fechaRange     = signal<Date[] | null>(null);
 
-  /** Lista única de familiares presentes en los turnos (para el dropdown). */
+  /** Lista única de familiares presentes en los turnos. */
   protected readonly familiares = computed(() => {
     const all = [...this.proximosTurnos(), ...this.anterioresTurnos()];
     const map = new Map<string, { label: string; value: string }>();
@@ -74,41 +78,51 @@ export class TurnosComponent implements OnInit, OnDestroy {
     return Array.from(map.values());
   });
 
-  protected readonly statusOptions = [
-    { label: 'Próximos', value: 'proximos' as const },
-    { label: 'Anteriores', value: 'anteriores' as const },
+  /** Opciones del chip group de estado. */
+  protected readonly estadoOptions: { label: string; value: EstadoTurno }[] = [
+    { label: 'Pendiente',  value: 'pendiente' },
+    { label: 'Confirmado', value: 'confirmado' },
+    { label: 'Completado', value: 'completado' },
+    { label: 'Cancelado',  value: 'cancelado' },
   ];
 
-  /** Lista filtrada según los 3 filtros + estado. */
+  /** Lista combinada (próximos + anteriores) filtrada según los filtros activos. */
   protected readonly visibleTurnos = computed(() => {
-    const source = this.statusFilter() === 'proximos'
-      ? this.proximosTurnos()
-      : this.anterioresTurnos();
-    return this.applyFilters(source);
+    const all = [...this.proximosTurnos(), ...this.anterioresTurnos()];
+    return this.applyFilters(all);
   });
 
-  /** Conteo de pendientes (para el badge del header). */
-  protected readonly pendientesCount = computed(() => this.proximosTurnos().length);
+  protected readonly hasActiveFilters = computed(() =>
+    this.familiarFilter().length > 0
+    || this.fechaRange() !== null
+    || !this.isDefaultEstado()
+  );
+
+  private isDefaultEstado(): boolean {
+    const cur = this.estadoFilter();
+    return cur.length === 2 && cur.includes('pendiente') && cur.includes('confirmado');
+  }
 
   private applyFilters(list: Turno[]): Turno[] {
-    const q = this.searchTerm().trim().toLowerCase();
-    const fam = this.familiarFilter();
+    const estados = new Set(this.estadoFilter());
+    const fams = new Set(this.familiarFilter());
+    const range = this.fechaRange();
+
     return list.filter(t => {
-      if (fam && t.personaNombre !== fam) return false;
-      if (q) {
-        // Buscar por: tipo de análisis, familiar, fecha, estado.
-        // NO incluye sede a propósito.
-        const hay = `${t.tipo} ${t.personaNombre} ${t.fechaCompleta} ${t.hora} ${t.estadoLabel}`.toLowerCase();
-        if (!hay.includes(q)) return false;
+      if (estados.size > 0 && !estados.has(t.estado)) return false;
+      if (fams.size > 0 && !fams.has(t.personaNombre)) return false;
+      if (range && range.length === 2 && range[0] && range[1]) {
+        const turnoDate = new Date(t.fechaCompleta);
+        if (turnoDate < range[0] || turnoDate > range[1]) return false;
       }
       return true;
     });
   }
 
   clearFilters(): void {
-    this.searchTerm.set('');
-    this.familiarFilter.set(null);
-    this.statusFilter.set('proximos');
+    this.estadoFilter.set(['pendiente', 'confirmado']);
+    this.familiarFilter.set([]);
+    this.fechaRange.set(null);
   }
 
   private subs = new Subscription();
