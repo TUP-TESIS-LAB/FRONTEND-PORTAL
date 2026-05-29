@@ -1,7 +1,30 @@
 <p-toast [position]="bp.isMobile() ? 'top-center' : 'top-right'" />
 <p-confirmDialog />
 
-<div class="ui-sacar-page">
+<!-- ─── Mobile: drawer bottom-sheet con el wizard ─── -->
+@if (bp.isMobile()) {
+  <p-drawer
+    [visible]="true"
+    position="bottom"
+    [modal]="true"
+    [closable]="false"
+    [closeOnEscape]="false"
+    styleClass="ui-bottom-sheet-drawer ui-wizard-sheet">
+    <ng-template pTemplate="headless">
+      <div class="ui-sacar-page ui-sacar-page--mobile">
+        <ng-container [ngTemplateOutlet]="wizardContent" />
+      </div>
+    </ng-template>
+  </p-drawer>
+} @else {
+  <!-- ─── Desktop: página con max-width ─── -->
+  <div class="ui-sacar-page">
+    <ng-container [ngTemplateOutlet]="wizardContent" />
+  </div>
+}
+
+<!-- Contenido compartido (header + wizard) -->
+<ng-template #wizardContent>
   <header class="ui-sacar-page__header">
     <button type="button"
             class="ui-sacar-page__back-btn"
@@ -86,4 +109,4 @@
 
     }
   </ui-wizard>
-</div>
+</ng-template>
