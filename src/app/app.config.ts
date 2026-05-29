@@ -32,6 +32,23 @@ export const appConfig: ApplicationConfig = {
           },
         },
       },
+      translation: {
+        // Datepicker (días, meses, botones, accept/clear) en español
+        dayNames:        ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
+        dayNamesShort:   ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'],
+        dayNamesMin:     ['D', 'L', 'M', 'X', 'J', 'V', 'S'],
+        monthNames:      ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+                          'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
+        monthNamesShort: ['ene', 'feb', 'mar', 'abr', 'may', 'jun',
+                          'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
+        today:           'Hoy',
+        clear:           'Limpiar',
+        weekHeader:      'Sem',
+        firstDayOfWeek:  1,
+        // Otros mensajes genéricos
+        accept:          'Aceptar',
+        reject:          'Cancelar',
+      },
     }),
 
     // Bloquea el bootstrap de Angular hasta que el tenant esté cargado.
