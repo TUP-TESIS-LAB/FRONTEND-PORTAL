@@ -78,13 +78,6 @@
 
   <!-- ─── Lista única (sin tabs) ─────────────────────── -->
   <section class="ui-turnos-list">
-    <div class="ui-turnos-list__header">
-      <h3>
-        Mis turnos
-        <span class="ui-tab-badge">{{ visibleTurnos().length }}</span>
-      </h3>
-    </div>
-
     @if (cargando()) {
       @for (i of [1, 2, 3]; track i) {
         <p-skeleton height="96px" styleClass="mb-3" />
