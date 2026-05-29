@@ -804,3 +804,36 @@
     min-height: 44px;
   }
 }
+
+// El popup del datepicker (con appendTo="body" se renderiza al <body>).
+// Necesita su propio styling porque sale del scope del componente.
+.p-datepicker-panel {
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-lg);
+  padding: var(--space-3);
+  z-index: var(--z-dialog); // alto suficiente para escapar cualquier container
+  font-family: var(--ds-font);
+
+  table { width: 100%; table-layout: fixed; }
+  th, td { text-align: center; padding: 4px 0; }
+  .p-datepicker-weekday { font-size: 12px; color: var(--ds-text-muted); font-weight: 600; }
+  .p-datepicker-day {
+    width: 34px; height: 34px;
+    margin: 0 auto;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 13px;
+
+    &:hover:not(.p-disabled) { background: var(--brand-primary-light); }
+    &.p-datepicker-day-selected,
+    &.p-highlight {
+      background: var(--brand-primary);
+      color: var(--ds-white);
+    }
+  }
+}
