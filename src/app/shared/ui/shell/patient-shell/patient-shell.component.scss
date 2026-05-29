@@ -30,7 +30,10 @@
 // al ser inyectado después, gana la cascada.
 // Los selectores de elemento en el SCSS del padre quedan escopados como
 // ui-sidebar[_ngcontent-xxx] → especificidad (0,1,1) → ganan al :host hijo.
-ui-sidebar {
+// IMPORTANTE: el selector usa > (hijo directo) para apuntar SOLO al sidebar
+// desktop. El sidebar dentro de p-drawer (mobile) queda libre de este rule
+// y se renderiza normal cuando el drawer está abierto.
+.ui-patient-layout > ui-sidebar {
   display: none;
 
   @include desktop-up {
