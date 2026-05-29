@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, computed, effect, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -25,6 +26,7 @@ import { EstadoTurno, Turno } from '../../../core/models/turno.model';
   selector: 'app-turnos',
   standalone: true,
   imports: [
+    NgTemplateOutlet,
     FormsModule,
     ButtonModule,
     ConfirmDialogModule,
@@ -97,6 +99,28 @@ export class TurnosComponent implements OnInit, OnDestroy {
   protected readonly visibleTurnos = computed(() => {
     const all = [...this.proximosTurnos(), ...this.anterioresTurnos()];
     return this.applyFilters(all);
+  });
+
+  /** Turnos pendientes (arriba, antes del HR). */
+  protected readonly pendientes = computed(() =>
+    this.visibleTurnos().filter(t => t.estado === 'pendiente')
+  );
+
+  /** Resto de turnos (después del HR): asistidos, cancelados, completados. */
+  protected readonly otrosTurnos = computed(() =>
+    this.visibleTurnos().filter(t => t.estado !== 'pendiente')
+  );
+
+  // ─── Drawer de filtros en mobile ─────────────────────────
+  filtersOpen = signal(false);
+
+  protected readonly activeFiltersCount = computed(() => {
+    let n = 0;
+    if (this.estadoFilter().length > 0) n++;
+    if (this.familiarFilter().length > 0) n++;
+    if (this.fechaDesde()) n++;
+    if (this.fechaHasta()) n++;
+    return n;
   });
 
   protected readonly hasActiveFilters = computed(() =>
