@@ -63,31 +63,34 @@
 }
 
 // ─── Filters sheet (drawer en mobile) ──────────────────
+// Bottom-sheet que se ajusta al contenido natural (NO toma toda la pantalla).
+// Solo crece hasta 80dvh máx; si excede, el body scrollea internamente.
 .ui-turnos-filters-sheet {
   display: flex;
   flex-direction: column;
   background: var(--ds-white);
   border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
-  max-height: 90dvh;
+  max-height: 80dvh;
 
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-4) var(--space-5);
+    padding: var(--space-3) var(--space-4);
     border-bottom: 1px solid var(--ds-surface-dark);
+    flex-shrink: 0;
 
     h3 {
       margin: 0;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 600;
       color: var(--ds-text);
     }
   }
 
   &__close {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: none;
     background: transparent;
@@ -96,26 +99,26 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 14px;
 
     &:hover { background: var(--ds-surface); }
   }
 
+  // SIN flex: 1 — body se ajusta al contenido natural. Scroll solo si excede.
   &__body {
-    padding: var(--space-4) var(--space-5);
+    padding: var(--space-3) var(--space-4);
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-3);
     overflow-y: auto;
-    flex: 1;
     min-height: 0;
   }
 
   &__footer {
     display: flex;
     justify-content: space-between;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-5) calc(var(--space-3) + var(--ds-safe-bottom));
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--ds-safe-bottom));
     border-top: 1px solid var(--ds-surface-dark);
     background: var(--ds-white);
     flex-shrink: 0;
