@@ -47,7 +47,7 @@
       }
 
       @case ('fecha') {
-        <div class="ui-fecha-hora-step" [class.ui-fecha-hora-step--with-slots]="selectedFecha()">
+        <div class="ui-fecha-hora-step">
           <div class="ui-fecha-hora-step__calendar">
             <h4>Seleccioná la fecha</h4>
             <p-datepicker
@@ -57,16 +57,21 @@
               (onSelect)="onFechaChange($event)" />
           </div>
 
-          @if (selectedFecha()) {
-            <div class="ui-fecha-hora-step__slots">
+          <div class="ui-fecha-hora-step__slots">
+            @if (selectedFecha()) {
               <h4>Horarios disponibles</h4>
               <ui-time-slots
                 [slots]="slots()"
                 [selectedHora]="selectedHora()"
                 [loading]="loadingSlots()"
                 (selectionChange)="selectedHora.set($event)" />
-            </div>
-          }
+            } @else {
+              <div class="ui-fecha-hora-step__placeholder">
+                <i class="pi pi-calendar"></i>
+                <p>Seleccioná un día para ver los horarios disponibles</p>
+              </div>
+            }
+          </div>
         </div>
       }
 

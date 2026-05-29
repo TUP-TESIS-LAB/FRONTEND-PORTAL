@@ -72,31 +72,18 @@
 }
 
 // ─── Paso fecha + slots ────────────────────────────────
-// Layout adaptado al ancho fijo de 960px del wizard.
-// Sin fecha: calendario centrado, ancho cómodo.
-// Con fecha: 360px calendario izq + slots der (todo el resto).
-// Mobile: apilado siempre.
+// Layout SIEMPRE 2-col en tablet+: calendar izq, slots/placeholder der.
+// Cuando no hay fecha, der muestra un placeholder dashed con CTA.
+// Mobile: apilado, placeholder oculto (no aporta visualmente).
 .ui-fecha-hora-step {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-5);
 
-  // Sin fecha seleccionada: calendario centrado, más grande para que se vea
-  // proporcional al ancho del stepper
-  &:not(.ui-fecha-hora-step--with-slots) .ui-fecha-hora-step__calendar {
-    @include tablet-up {
-      max-width: 560px;
-      margin: 0 auto;
-    }
-  }
-
-  // Con fecha: 2 columnas en tablet+
-  &--with-slots {
-    @include tablet-up {
-      grid-template-columns: 320px 1fr;
-      gap: var(--space-5);
-      align-items: start;
-    }
+  @include tablet-up {
+    grid-template-columns: 380px 1fr;
+    gap: var(--space-5);
+    align-items: stretch;
   }
 
   h4 {
@@ -114,16 +101,57 @@
     min-width: 0;
   }
 
-  // Datepicker inline: full-width del contenedor (ya limitado a 360-420px)
+  // Datepicker inline: más grande, full-width de su columna
   ::ng-deep .p-datepicker {
     width: 100%;
     border: 1px solid var(--ds-surface-dark);
     border-radius: var(--ds-radius-md);
     box-shadow: none;
+    font-size: 15px;
+
+    .p-datepicker-day-cell,
+    .p-datepicker-day {
+      padding: 0.5rem 0;
+    }
+    .p-datepicker-weekday {
+      font-size: 13px;
+      padding: 0.5rem 0;
+    }
   }
 
-  // Time-slots: en el layout 2-col el ancho de los slots es chico (~512px),
-  // limitamos a 4 columnas para que cada slot tenga texto legible.
+  // Placeholder dashed (cuando no hay fecha) — pattern del add-family-card
+  &__placeholder {
+    flex: 1;
+    border: 2px dashed var(--ds-surface-dark);
+    border-radius: var(--ds-radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-6);
+    color: var(--ds-text-muted);
+    text-align: center;
+    min-height: 280px;
+
+    i {
+      font-size: 2.5rem;
+      opacity: 0.5;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      max-width: 240px;
+      line-height: 1.4;
+    }
+
+    @include mobile-only {
+      display: none; // en mobile no agrega valor; solo aparecen slots cuando hay fecha
+    }
+  }
+
+  // Time-slots: limitamos a 4 columnas para que el texto se lea bien
   ::ng-deep .ui-fecha-hora-step__slots .ui-time-slots {
     @include tablet-up {
       grid-template-columns: repeat(4, 1fr);
