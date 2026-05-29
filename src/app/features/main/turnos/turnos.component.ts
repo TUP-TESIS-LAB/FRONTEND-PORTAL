@@ -19,7 +19,7 @@ import { TurnoDetailComponent } from '../../../shared/ui/components/turno-detail
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { AppointmentService } from './services/appointment.service';
 import { mapApiError } from '../../../shared/utils/api-error-mapper';
-import { EstadoTurno, Turno } from '../../../core/models/turno.model';
+import { Turno } from '../../../core/models/turno.model';
 
 @Component({
   selector: 'app-turnos',
@@ -59,8 +59,8 @@ export class TurnosComponent implements OnInit, OnDestroy {
   mobileDetailOpen = signal(false);
 
   // ─── Filtros seleccionables ──────────────────────────────
-  /** Chips de estado activos. Default: solo "activos" (pendiente + confirmado). */
-  estadoFilter   = signal<EstadoTurno[]>(['pendiente', 'confirmado']);
+  /** Chips de estado activos (estadoLabel del backend). Vacío = todos. */
+  estadoFilter   = signal<string[]>([]);
   /** Familiares seleccionados. Vacío = todos. */
   familiarFilter = signal<string[]>([]);
   /** Fecha desde (filtro mínimo). null = todas. */
@@ -78,13 +78,14 @@ export class TurnosComponent implements OnInit, OnDestroy {
     return Array.from(map.values());
   });
 
-  /** Opciones del chip group de estado. */
-  protected readonly estadoOptions: { label: string; value: EstadoTurno }[] = [
-    { label: 'Pendiente',  value: 'pendiente' },
-    { label: 'Confirmado', value: 'confirmado' },
-    { label: 'Completado', value: 'completado' },
-    { label: 'Cancelado',  value: 'cancelado' },
-  ];
+  /** Chips de estado: solo los estadoLabels que el backend devuelve
+   *  para los turnos actuales (sin hardcodear "pendiente / confirmado"). */
+  protected readonly estadoOptions = computed(() => {
+    const all = [...this.proximosTurnos(), ...this.anterioresTurnos()];
+    const seen = new Set<string>();
+    for (const t of all) seen.add(t.estadoLabel);
+    return Array.from(seen).map(label => ({ label, value: label }));
+  });
 
   /** Lista combinada (próximos + anteriores) filtrada según los filtros activos. */
   protected readonly visibleTurnos = computed(() => {
@@ -95,13 +96,8 @@ export class TurnosComponent implements OnInit, OnDestroy {
   protected readonly hasActiveFilters = computed(() =>
     this.familiarFilter().length > 0
     || this.fechaDesde() !== null
-    || !this.isDefaultEstado()
+    || this.estadoFilter().length > 0
   );
-
-  private isDefaultEstado(): boolean {
-    const cur = this.estadoFilter();
-    return cur.length === 2 && cur.includes('pendiente') && cur.includes('confirmado');
-  }
 
   private applyFilters(list: Turno[]): Turno[] {
     const estados = new Set(this.estadoFilter());
@@ -109,7 +105,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
     const desde = this.fechaDesde();
 
     return list.filter(t => {
-      if (estados.size > 0 && !estados.has(t.estado)) return false;
+      if (estados.size > 0 && !estados.has(t.estadoLabel)) return false;
       if (fams.size > 0 && !fams.has(t.personaNombre)) return false;
       if (desde) {
         const turnoDate = new Date(t.fechaCompleta);
@@ -120,7 +116,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
   }
 
   clearFilters(): void {
-    this.estadoFilter.set(['pendiente', 'confirmado']);
+    this.estadoFilter.set([]);
     this.familiarFilter.set([]);
     this.fechaDesde.set(null);
   }

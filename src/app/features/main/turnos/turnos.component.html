@@ -16,13 +16,13 @@
   <div class="ui-turnos-filters__group">
     <span class="ui-turnos-filters__label">Estado</span>
     <p-selectbutton
-      [options]="estadoOptions"
+      [options]="estadoOptions()"
       [ngModel]="estadoFilter()"
       (ngModelChange)="estadoFilter.set($event)"
       [multiple]="true"
       optionLabel="label"
       optionValue="value"
-      [allowEmpty]="false" />
+      [allowEmpty]="true" />
   </div>
 
   @if (familiares().length > 1) {
