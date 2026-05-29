@@ -14,7 +14,7 @@
 .ui-sacar-page {
   flex: 1;
   min-height: 0;
-  width: 60rem; // ancho fijo: 960px (NO max-width — no shrinkea con viewport)
+  width: 56rem; // ancho fijo: 896px (NO max-width — no shrinkea con viewport)
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -81,10 +81,11 @@
   grid-template-columns: 1fr;
   gap: var(--space-5);
 
-  // Sin fecha seleccionada: calendario centrado con ancho controlado
+  // Sin fecha seleccionada: calendario centrado, más grande para que se vea
+  // proporcional al ancho del stepper
   &:not(.ui-fecha-hora-step--with-slots) .ui-fecha-hora-step__calendar {
     @include tablet-up {
-      max-width: 420px;
+      max-width: 560px;
       margin: 0 auto;
     }
   }
@@ -92,8 +93,8 @@
   // Con fecha: 2 columnas en tablet+
   &--with-slots {
     @include tablet-up {
-      grid-template-columns: 360px 1fr;
-      gap: var(--space-6);
+      grid-template-columns: 320px 1fr;
+      gap: var(--space-5);
       align-items: start;
     }
   }
