@@ -41,12 +41,11 @@
   }
 
   <div class="ui-turnos-filters__group">
-    <span class="ui-turnos-filters__label">Fechas</span>
+    <span class="ui-turnos-filters__label">Fecha desde</span>
     <p-datepicker
-      [ngModel]="fechaRange()"
-      (ngModelChange)="fechaRange.set($event)"
-      selectionMode="range"
-      placeholder="Seleccionar fechas"
+      [ngModel]="fechaDesde()"
+      (ngModelChange)="fechaDesde.set($event)"
+      placeholder="Cualquier fecha"
       dateFormat="dd/mm/yy"
       [showButtonBar]="true"
       styleClass="ui-turnos-filters__datepicker" />

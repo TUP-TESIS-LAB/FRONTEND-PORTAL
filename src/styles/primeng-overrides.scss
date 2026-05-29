@@ -636,17 +636,17 @@
   gap: var(--space-2);
 
   .p-togglebutton {
-    padding: 0.5rem 0.875rem;
+    padding: 0.625rem 0.875rem;
     background: var(--ds-white);
-    border: 1px solid var(--ds-surface-dark);
+    border: 1.5px solid var(--ds-surface-dark);
     border-radius: var(--ds-radius-md); // match input radius
     color: var(--ds-text);
     font-family: var(--ds-font);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: background 0.15s, color 0.15s, border-color 0.15s;
-    min-height: 36px;
+    min-height: 44px; // match input min-height
     display: inline-flex;
     align-items: center;
     justify-content: center;

@@ -63,8 +63,8 @@ export class TurnosComponent implements OnInit, OnDestroy {
   estadoFilter   = signal<EstadoTurno[]>(['pendiente', 'confirmado']);
   /** Familiares seleccionados. Vacío = todos. */
   familiarFilter = signal<string[]>([]);
-  /** Rango de fechas [desde, hasta]. null = todas. */
-  fechaRange     = signal<Date[] | null>(null);
+  /** Fecha desde (filtro mínimo). null = todas. */
+  fechaDesde     = signal<Date | null>(null);
 
   /** Lista única de familiares presentes en los turnos. */
   protected readonly familiares = computed(() => {
@@ -94,7 +94,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
 
   protected readonly hasActiveFilters = computed(() =>
     this.familiarFilter().length > 0
-    || this.fechaRange() !== null
+    || this.fechaDesde() !== null
     || !this.isDefaultEstado()
   );
 
@@ -106,14 +106,14 @@ export class TurnosComponent implements OnInit, OnDestroy {
   private applyFilters(list: Turno[]): Turno[] {
     const estados = new Set(this.estadoFilter());
     const fams = new Set(this.familiarFilter());
-    const range = this.fechaRange();
+    const desde = this.fechaDesde();
 
     return list.filter(t => {
       if (estados.size > 0 && !estados.has(t.estado)) return false;
       if (fams.size > 0 && !fams.has(t.personaNombre)) return false;
-      if (range && range.length === 2 && range[0] && range[1]) {
+      if (desde) {
         const turnoDate = new Date(t.fechaCompleta);
-        if (turnoDate < range[0] || turnoDate > range[1]) return false;
+        if (turnoDate < desde) return false;
       }
       return true;
     });
@@ -122,7 +122,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
   clearFilters(): void {
     this.estadoFilter.set(['pendiente', 'confirmado']);
     this.familiarFilter.set([]);
-    this.fechaRange.set(null);
+    this.fechaDesde.set(null);
   }
 
   private subs = new Subscription();
