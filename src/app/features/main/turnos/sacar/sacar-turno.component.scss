@@ -137,6 +137,29 @@
       align-items: center;
       justify-content: center;
     }
+
+    // Mobile: comprimir días + cells + header para que entre cómodo en el sheet
+    @include mobile-only {
+      font-size: 13px;
+
+      th, td {
+        padding: 2px 0;
+      }
+
+      .p-datepicker-weekday {
+        font-size: 10px;
+      }
+
+      .p-datepicker-day {
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+      }
+
+      .p-datepicker-header {
+        padding: var(--space-2) var(--space-3);
+      }
+    }
   }
 
   // Placeholder dashed (cuando no hay fecha) — pattern del add-family-card
