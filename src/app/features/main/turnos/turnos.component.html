@@ -51,6 +51,17 @@
       styleClass="ui-turnos-filters__datepicker" />
   </div>
 
+  <div class="ui-turnos-filters__group">
+    <span class="ui-turnos-filters__label">Fecha hasta</span>
+    <p-datepicker
+      [ngModel]="fechaHasta()"
+      (ngModelChange)="fechaHasta.set($event)"
+      placeholder="Cualquier fecha"
+      dateFormat="dd/mm/yy"
+      [showButtonBar]="true"
+      styleClass="ui-turnos-filters__datepicker" />
+  </div>
+
   @if (hasActiveFilters()) {
     <div class="ui-turnos-filters__clear">
       <p-button

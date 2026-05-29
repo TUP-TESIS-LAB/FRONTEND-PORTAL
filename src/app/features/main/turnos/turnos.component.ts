@@ -63,8 +63,10 @@ export class TurnosComponent implements OnInit, OnDestroy {
   estadoFilter   = signal<EstadoTurno[]>([]);
   /** Familiares seleccionados. Vacío = todos. */
   familiarFilter = signal<string[]>([]);
-  /** Fecha desde (filtro mínimo). null = todas. */
+  /** Fecha desde (filtro mínimo). null = sin tope inferior. */
   fechaDesde     = signal<Date | null>(null);
+  /** Fecha hasta (filtro máximo). null = sin tope superior. */
+  fechaHasta     = signal<Date | null>(null);
 
   /** Lista única de familiares presentes en los turnos. */
   protected readonly familiares = computed(() => {
@@ -84,11 +86,11 @@ export class TurnosComponent implements OnInit, OnDestroy {
    *    - CONFIRMED                              → "Confirmado"
    *    - COMPLETED                              → "Completado"
    *    - CANCELLED / NO_SHOW                    → "Cancelado" */
+  /** 3 chips relevantes para el paciente. Confirmado se omite (back no lo setea hoy). */
   protected readonly estadoOptions: { label: string; value: EstadoTurno }[] = [
-    { label: 'Pendiente',  value: 'pendiente' },
-    { label: 'Confirmado', value: 'confirmado' },
-    { label: 'Completado', value: 'completado' },
-    { label: 'Cancelado',  value: 'cancelado' },
+    { label: 'Pendiente', value: 'pendiente' },  // SCHEDULED + IN_PROGRESS + RESCHEDULED
+    { label: 'Asistido',  value: 'completado' }, // COMPLETED
+    { label: 'Cancelado', value: 'cancelado' },  // CANCELLED + NO_SHOW
   ];
 
   /** Lista combinada (próximos + anteriores) filtrada según los filtros activos. */
@@ -100,6 +102,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
   protected readonly hasActiveFilters = computed(() =>
     this.familiarFilter().length > 0
     || this.fechaDesde() !== null
+    || this.fechaHasta() !== null
     || this.estadoFilter().length > 0
   );
 
@@ -107,13 +110,15 @@ export class TurnosComponent implements OnInit, OnDestroy {
     const estados = new Set(this.estadoFilter());
     const fams = new Set(this.familiarFilter());
     const desde = this.fechaDesde();
+    const hasta = this.fechaHasta();
 
     return list.filter(t => {
       if (estados.size > 0 && !estados.has(t.estado)) return false;
       if (fams.size > 0 && !fams.has(t.personaNombre)) return false;
-      if (desde) {
+      if (desde || hasta) {
         const turnoDate = new Date(t.fechaCompleta);
-        if (turnoDate < desde) return false;
+        if (desde && turnoDate < desde) return false;
+        if (hasta && turnoDate > hasta) return false;
       }
       return true;
     });
@@ -123,6 +128,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
     this.estadoFilter.set([]);
     this.familiarFilter.set([]);
     this.fechaDesde.set(null);
+    this.fechaHasta.set(null);
   }
 
   private subs = new Subscription();
