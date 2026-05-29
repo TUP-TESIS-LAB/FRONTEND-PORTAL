@@ -15,7 +15,7 @@
   flex: 1;
   min-height: 0;
   width: 100%;
-  max-width: 64rem;
+  max-width: 45rem; // ancho fijo de wizard (720px). En mobile cae al 100%.
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -68,22 +68,36 @@
 }
 
 // ─── Paso fecha + slots ────────────────────────────────
+// Layout: calendario solo cuando no hay fecha (ocupa todo).
+// Cuando hay fecha → grid 2 columnas: calendario izq, slots der.
+// Mobile siempre apila.
 .ui-fecha-hora-step {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
 
-  h4 {
-    margin: var(--space-4) 0 var(--space-2);
-
-    &:first-child {
-      margin-top: 0;
+  // Cuando hay fecha seleccionada, partir en 2 columnas en desktop
+  &--with-slots {
+    @include tablet-up {
+      grid-template-columns: auto 1fr;
+      align-items: start;
     }
   }
 
-  // Datepicker inline: full-width para aprovechar el espacio
+  h4 {
+    margin: 0 0 var(--space-2);
+  }
+
+  &__calendar,
+  &__slots {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  // Datepicker inline: no estirar; mantener tamaño natural
   ::ng-deep .p-datepicker {
-    width: 100%;
     border: none;
     box-shadow: none;
   }
