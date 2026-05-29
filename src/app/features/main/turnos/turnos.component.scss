@@ -38,6 +38,20 @@
   }
 }
 
+// ─── Header de la lista (reemplaza las tabs) ────────────
+.ui-turnos-list__header {
+  margin-bottom: var(--space-3);
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ds-text);
+    display: flex;
+    align-items: center;
+  }
+}
+
 // ─── Layout principal ────────────────────────────────────
 .ui-turnos-layout {
   display: grid;

@@ -18,10 +18,16 @@
     <input
       pInputText
       type="search"
-      placeholder="Buscar por tipo o sede..."
+      placeholder="Buscar por tipo, familiar, fecha o estado..."
       [ngModel]="searchTerm()"
       (ngModelChange)="searchTerm.set($event)" />
   </span>
+
+  <p-select
+    [options]="statusOptions"
+    [ngModel]="statusFilter()"
+    (ngModelChange)="statusFilter.set($event)"
+    styleClass="ui-turnos-filters__status" />
 
   @if (familiares().length > 1) {
     <p-select
@@ -33,7 +39,7 @@
       styleClass="ui-turnos-filters__familiar" />
   }
 
-  @if (searchTerm() || familiarFilter()) {
+  @if (searchTerm() || familiarFilter() || statusFilter() !== 'proximos') {
     <p-button
       label="Limpiar"
       [text]="true"
@@ -45,88 +51,42 @@
 
 <div class="ui-turnos-layout">
 
-  <!-- ─── Lista con tabs ─────────────────────────────── -->
+  <!-- ─── Lista única (sin tabs) ─────────────────────── -->
   <section class="ui-turnos-list">
-    <p-tabs
-      [value]="activeTab()"
-      (valueChange)="onTabChange($event)">
+    <div class="ui-turnos-list__header">
+      <h3>
+        {{ statusFilter() === 'proximos' ? 'Pendientes' : 'Anteriores' }}
+        <span class="ui-tab-badge">{{ visibleTurnos().length }}</span>
+      </h3>
+    </div>
 
-      <p-tablist>
-        <p-tab value="proximos">
-          Próximos
-          <span class="ui-tab-badge">{{ filteredProximos().length }}</span>
-        </p-tab>
-        <p-tab value="anteriores">
-          Anteriores
-          <span class="ui-tab-badge">{{ filteredAnteriores().length }}</span>
-        </p-tab>
-      </p-tablist>
-
-      <p-tabpanels>
-
-        <!-- Tab: Próximos -->
-        <p-tabpanel value="proximos">
-          @if (cargando()) {
-            @for (i of [1, 2, 3]; track i) {
-              <p-skeleton height="80px" styleClass="mb-3" />
-            }
-          } @else if (filteredProximos().length === 0) {
-            <ui-empty-state
-              icon="pi-calendar"
-              heading="No tenés turnos próximos"
-              message="Cuando saques un turno va a aparecer acá." />
-          } @else {
-            @for (turno of filteredProximos(); track turno.id) {
-              <ui-event-card
-                [day]="turno.dia"
-                [month]="turno.mes"
-                [title]="turno.tipo"
-                [details]="[
-                  { icon: 'pi-clock',      text: turno.hora + ' hs' },
-                  { icon: 'pi-map-marker', text: turno.sede.nombre }
-                ]"
-                [statusKey]="turno.estado"
-                [statusLabel]="turno.estadoLabel"
-                [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"
-                [class.ui-card-selected]="selectedTurno()?.id === turno.id"
-                (click)="onTurnoClick(turno)"
-                style="cursor: pointer" />
-            }
-          }
-        </p-tabpanel>
-
-        <!-- Tab: Anteriores -->
-        <p-tabpanel value="anteriores">
-          @if (cargando()) {
-            @for (i of [1, 2, 3]; track i) {
-              <p-skeleton height="80px" styleClass="mb-3" />
-            }
-          } @else if (filteredAnteriores().length === 0) {
-            <ui-empty-state
-              icon="pi-history"
-              heading="No tenés turnos anteriores"
-              message="Tus turnos pasados van a aparecer acá." />
-          } @else {
-            @for (turno of filteredAnteriores(); track turno.id) {
-              <ui-event-card
-                [day]="turno.dia"
-                [month]="turno.mes"
-                [title]="turno.tipo"
-                [details]="[
-                  { icon: 'pi-clock',      text: turno.hora + ' hs' },
-                  { icon: 'pi-map-marker', text: turno.sede.nombre }
-                ]"
-                [statusKey]="turno.estado"
-                [statusLabel]="turno.estadoLabel"
-                [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"
-                (click)="onTurnoClick(turno)"
-                style="cursor: pointer" />
-            }
-          }
-        </p-tabpanel>
-
-      </p-tabpanels>
-    </p-tabs>
+    @if (cargando()) {
+      @for (i of [1, 2, 3]; track i) {
+        <p-skeleton height="96px" styleClass="mb-3" />
+      }
+    } @else if (visibleTurnos().length === 0) {
+      <ui-empty-state
+        [icon]="statusFilter() === 'proximos' ? 'pi-calendar' : 'pi-history'"
+        [heading]="statusFilter() === 'proximos' ? 'No tenés turnos pendientes' : 'No tenés turnos anteriores'"
+        [message]="searchTerm() || familiarFilter() ? 'Probá limpiar los filtros para ver más resultados.' : statusFilter() === 'proximos' ? 'Cuando saques un turno va a aparecer acá.' : 'Tus turnos pasados van a aparecer acá.'" />
+    } @else {
+      @for (turno of visibleTurnos(); track turno.id) {
+        <ui-event-card
+          [day]="turno.dia"
+          [month]="turno.mes"
+          [title]="turno.tipo"
+          [details]="[
+            { icon: 'pi-clock',      text: turno.hora + ' hs' },
+            { icon: 'pi-map-marker', text: turno.sede.nombre }
+          ]"
+          [statusKey]="turno.estado"
+          [statusLabel]="turno.estadoLabel"
+          [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"
+          [class.ui-card-selected]="selectedTurno()?.id === turno.id"
+          (click)="onTurnoClick(turno)"
+          style="cursor: pointer" />
+      }
+    }
   </section>
 
   <!-- ─── Aside desktop ─────────────────────────────── -->

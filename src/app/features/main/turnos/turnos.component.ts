@@ -9,7 +9,6 @@ import { DrawerModule } from 'primeng/drawer';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
-import { TabsModule } from 'primeng/tabs';
 import { ToastModule } from 'primeng/toast';
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
 import { EmptyStateComponent } from '../../../shared/ui/components/empty-state/empty-state.component';
@@ -32,7 +31,6 @@ import { Turno } from '../../../core/models/turno.model';
     InputTextModule,
     SelectModule,
     SkeletonModule,
-    TabsModule,
     ToastModule,
     PageHeaderComponent,
     EmptyStateComponent,
@@ -55,13 +53,14 @@ export class TurnosComponent implements OnInit, OnDestroy {
   anterioresTurnos = signal<Turno[]>([]);
   cargando         = signal(true);
 
-  activeTab        = signal<string>('proximos');
   selectedTurno    = signal<Turno | null>(null);
   mobileDetailOpen = signal(false);
 
   // ─── Filtros ──────────────────────────────────────────────
-  searchTerm    = signal<string>('');
+  searchTerm     = signal<string>('');
   familiarFilter = signal<string | null>(null);
+  /** 'proximos' (pendientes) por default — el caso de uso principal. */
+  statusFilter   = signal<'proximos' | 'anteriores'>('proximos');
 
   /** Lista única de familiares presentes en los turnos (para el dropdown). */
   protected readonly familiares = computed(() => {
@@ -75,15 +74,33 @@ export class TurnosComponent implements OnInit, OnDestroy {
     return Array.from(map.values());
   });
 
-  protected readonly filteredProximos = computed(() => this.applyFilters(this.proximosTurnos()));
-  protected readonly filteredAnteriores = computed(() => this.applyFilters(this.anterioresTurnos()));
+  protected readonly statusOptions = [
+    { label: 'Próximos', value: 'proximos' as const },
+    { label: 'Anteriores', value: 'anteriores' as const },
+  ];
+
+  /** Lista filtrada según los 3 filtros + estado. */
+  protected readonly visibleTurnos = computed(() => {
+    const source = this.statusFilter() === 'proximos'
+      ? this.proximosTurnos()
+      : this.anterioresTurnos();
+    return this.applyFilters(source);
+  });
+
+  /** Conteo de pendientes (para el badge del header). */
+  protected readonly pendientesCount = computed(() => this.proximosTurnos().length);
 
   private applyFilters(list: Turno[]): Turno[] {
     const q = this.searchTerm().trim().toLowerCase();
     const fam = this.familiarFilter();
     return list.filter(t => {
       if (fam && t.personaNombre !== fam) return false;
-      if (q && !`${t.tipo} ${t.sede.nombre}`.toLowerCase().includes(q)) return false;
+      if (q) {
+        // Buscar por: tipo de análisis, familiar, fecha, estado.
+        // NO incluye sede a propósito.
+        const hay = `${t.tipo} ${t.personaNombre} ${t.fechaCompleta} ${t.hora} ${t.estadoLabel}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
       return true;
     });
   }
@@ -91,6 +108,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
   clearFilters(): void {
     this.searchTerm.set('');
     this.familiarFilter.set(null);
+    this.statusFilter.set('proximos');
   }
 
   private subs = new Subscription();
@@ -124,10 +142,6 @@ export class TurnosComponent implements OnInit, OnDestroy {
         },
       }),
     );
-  }
-
-  onTabChange(value: string | number | undefined): void {
-    if (value != null) this.activeTab.set(value.toString());
   }
 
   onTurnoClick(turno: Turno): void {
