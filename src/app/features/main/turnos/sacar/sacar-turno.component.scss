@@ -81,7 +81,7 @@
   gap: var(--space-5);
 
   @include tablet-up {
-    grid-template-columns: 380px 1fr;
+    grid-template-columns: 1fr 1fr; // 50/50 calendar + slots/placeholder
     gap: var(--space-5);
     align-items: stretch;
   }
