@@ -30,7 +30,7 @@
   }
 
   &:hover:not(:focus):not(:disabled) {
-    border-color: var(--brand-secondary);
+    border-color: var(--brand-primary);
   }
 
   &:focus,
@@ -662,8 +662,9 @@
 
     &.p-togglebutton-checked,
     &[aria-pressed="true"] {
-      background: var(--brand-primary);
-      color: var(--ds-white);
+      background: var(--brand-primary-light);
+      color: var(--brand-primary);
+      font-weight: 600;
     }
 
     &:disabled {
@@ -694,7 +695,7 @@
   transition: border-color 0.15s, box-shadow 0.15s;
 
   &:hover:not(.p-disabled) {
-    border-color: var(--brand-secondary);
+    border-color: var(--brand-primary);
   }
 
   &.p-focus,
@@ -770,11 +771,12 @@
 
     &:hover { background: var(--ds-surface); }
 
+    // Selected: solo tipografía bold, sin background azul fuerte
     &.p-multiselect-option-selected,
     &[aria-selected="true"] {
-      background: var(--brand-primary-light);
-      color: var(--brand-primary);
-      font-weight: 500;
+      background: var(--ds-surface);
+      color: var(--ds-text);
+      font-weight: 600;
     }
   }
 }
