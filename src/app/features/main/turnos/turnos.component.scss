@@ -5,7 +5,7 @@
   display: flex;
   align-items: flex-end;
   gap: var(--space-4);
-  padding: var(--space-4);
+  padding: var(--space-4) var(--space-5);
   background: var(--ds-white);
   border: 1px solid var(--ds-surface-dark);
   border-radius: var(--ds-radius-lg);
@@ -16,6 +16,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    min-width: 0;
   }
 
   &__label {
@@ -31,17 +32,18 @@
     align-self: flex-end;
   }
 
-  ::ng-deep .ui-turnos-filters__multiselect,
-  ::ng-deep .ui-turnos-filters__datepicker {
-    min-width: 200px;
+  ::ng-deep .ui-turnos-filters__multiselect {
+    min-width: 220px;
   }
 
-  // Chip group de estado: estilo más compacto
-  ::ng-deep .p-selectbutton .p-togglebutton {
-    padding: 0.5rem 0.875rem;
-    font-size: 13px;
-    font-weight: 500;
-    border-radius: var(--ds-radius-sm);
+  ::ng-deep .ui-turnos-filters__datepicker {
+    min-width: 240px;
+
+    input.p-inputtext,
+    .p-datepicker-input {
+      width: 100%;
+      min-width: 240px;
+    }
   }
 }
 
