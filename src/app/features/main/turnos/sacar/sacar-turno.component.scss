@@ -14,12 +14,16 @@
 .ui-sacar-page {
   flex: 1;
   min-height: 0;
-  width: 100%;
-  max-width: 60rem; // ancho fijo de wizard (960px). En mobile cae al 100%.
+  width: 60rem; // ancho fijo: 960px (NO max-width — no shrinkea con viewport)
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+
+  // Mobile: cae a 100% para no scrollear horizontal
+  @include mobile-only {
+    width: 100%;
+  }
 
   &__header {
     display: flex;
