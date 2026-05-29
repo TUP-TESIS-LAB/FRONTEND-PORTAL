@@ -674,6 +674,20 @@
   .p-togglebutton-icon {
     font-size: 13px;
   }
+
+  // PrimeNG envuelve el label en .p-togglebutton-content con bg/padding propio.
+  // Lo reseteamos para que solo se vea el background del .p-togglebutton outer.
+  .p-togglebutton-content,
+  .p-togglebutton-label {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
+    font: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
 }
 
 // ─── MultiSelect ──────────────────────────────────────────
