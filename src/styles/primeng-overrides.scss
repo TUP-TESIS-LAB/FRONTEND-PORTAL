@@ -627,43 +627,41 @@
   }
 }
 
-// ─── SelectButton (chip group para filtros) ──────────────
-// Tailwind v4 resetea botones — overrides para que se vean como segmented control.
+// ─── SelectButton (chips de filtro independientes) ───────
+// Cada chip es un botón standalone con su propio borde — no segmented.
+// Tailwind v4 resetea botones, así que reseteamos explícito.
 .p-selectbutton {
   display: inline-flex;
-  border: 1px solid var(--ds-surface-dark);
-  border-radius: var(--ds-radius-md);
-  overflow: hidden;
-  background: var(--ds-white);
+  flex-wrap: wrap;
+  gap: var(--space-2);
 
   .p-togglebutton {
-    padding: 0.625rem 1rem;
-    border: none;
+    padding: 0.5rem 0.875rem;
     background: var(--ds-white);
+    border: 1px solid var(--ds-surface-dark);
+    border-radius: 999px; // pill shape
     color: var(--ds-text);
     font-family: var(--ds-font);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-    min-height: 40px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    min-height: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.375rem;
 
-    & + .p-togglebutton {
-      border-left: 1px solid var(--ds-surface-dark);
-    }
-
     &:hover:not(.p-togglebutton-checked):not([aria-pressed="true"]):not(:disabled) {
       background: var(--ds-surface);
+      border-color: var(--brand-primary);
     }
 
     &.p-togglebutton-checked,
     &[aria-pressed="true"] {
       background: var(--brand-primary-light);
       color: var(--brand-primary);
+      border-color: var(--brand-primary);
       font-weight: 600;
     }
 
