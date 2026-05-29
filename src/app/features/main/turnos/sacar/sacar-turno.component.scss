@@ -72,37 +72,63 @@
 }
 
 // ─── Paso fecha + slots ────────────────────────────────
-// Layout: calendario solo cuando no hay fecha (ocupa todo).
-// Cuando hay fecha → grid 2 columnas: calendario izq, slots der.
-// Mobile siempre apila.
+// Layout adaptado al ancho fijo de 960px del wizard.
+// Sin fecha: calendario centrado, ancho cómodo.
+// Con fecha: 360px calendario izq + slots der (todo el resto).
+// Mobile: apilado siempre.
 .ui-fecha-hora-step {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-5);
 
-  // Cuando hay fecha seleccionada, partir en 2 columnas en desktop
+  // Sin fecha seleccionada: calendario centrado con ancho controlado
+  &:not(.ui-fecha-hora-step--with-slots) .ui-fecha-hora-step__calendar {
+    @include tablet-up {
+      max-width: 420px;
+      margin: 0 auto;
+    }
+  }
+
+  // Con fecha: 2 columnas en tablet+
   &--with-slots {
     @include tablet-up {
-      grid-template-columns: auto 1fr;
+      grid-template-columns: 360px 1fr;
+      gap: var(--space-6);
       align-items: start;
     }
   }
 
   h4 {
     margin: 0 0 var(--space-2);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ds-text-muted);
   }
 
   &__calendar,
   &__slots {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--space-3);
     min-width: 0;
   }
 
-  // Datepicker inline: no estirar; mantener tamaño natural
+  // Datepicker inline: full-width del contenedor (ya limitado a 360-420px)
   ::ng-deep .p-datepicker {
-    border: none;
+    width: 100%;
+    border: 1px solid var(--ds-surface-dark);
+    border-radius: var(--ds-radius-md);
     box-shadow: none;
+  }
+
+  // Time-slots: en el layout 2-col el ancho de los slots es chico (~512px),
+  // limitamos a 4 columnas para que cada slot tenga texto legible.
+  ::ng-deep .ui-fecha-hora-step__slots .ui-time-slots {
+    @include tablet-up {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    @include desktop-up {
+      grid-template-columns: repeat(4, 1fr);
+    }
   }
 }
