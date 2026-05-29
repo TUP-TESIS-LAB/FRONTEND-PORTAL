@@ -1,10 +1,13 @@
-import { Component, OnInit, OnDestroy, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, effect, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DrawerModule } from 'primeng/drawer';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TabsModule } from 'primeng/tabs';
 import { ToastModule } from 'primeng/toast';
@@ -22,9 +25,12 @@ import { Turno } from '../../../core/models/turno.model';
   selector: 'app-turnos',
   standalone: true,
   imports: [
+    FormsModule,
     ButtonModule,
     ConfirmDialogModule,
     DrawerModule,
+    InputTextModule,
+    SelectModule,
     SkeletonModule,
     TabsModule,
     ToastModule,
@@ -52,6 +58,40 @@ export class TurnosComponent implements OnInit, OnDestroy {
   activeTab        = signal<string>('proximos');
   selectedTurno    = signal<Turno | null>(null);
   mobileDetailOpen = signal(false);
+
+  // ─── Filtros ──────────────────────────────────────────────
+  searchTerm    = signal<string>('');
+  familiarFilter = signal<string | null>(null);
+
+  /** Lista única de familiares presentes en los turnos (para el dropdown). */
+  protected readonly familiares = computed(() => {
+    const all = [...this.proximosTurnos(), ...this.anterioresTurnos()];
+    const map = new Map<string, { label: string; value: string }>();
+    for (const t of all) {
+      if (!map.has(t.personaNombre)) {
+        map.set(t.personaNombre, { label: t.personaNombre, value: t.personaNombre });
+      }
+    }
+    return Array.from(map.values());
+  });
+
+  protected readonly filteredProximos = computed(() => this.applyFilters(this.proximosTurnos()));
+  protected readonly filteredAnteriores = computed(() => this.applyFilters(this.anterioresTurnos()));
+
+  private applyFilters(list: Turno[]): Turno[] {
+    const q = this.searchTerm().trim().toLowerCase();
+    const fam = this.familiarFilter();
+    return list.filter(t => {
+      if (fam && t.personaNombre !== fam) return false;
+      if (q && !`${t.tipo} ${t.sede.nombre}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }
+
+  clearFilters(): void {
+    this.searchTerm.set('');
+    this.familiarFilter.set(null);
+  }
 
   private subs = new Subscription();
 

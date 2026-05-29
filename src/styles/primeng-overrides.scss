@@ -299,7 +299,11 @@
 .p-button.p-button-outlined {
   background: transparent;
   color: var(--brand-primary);
-  border-color: var(--brand-primary);
+  border: 1px solid var(--brand-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--ds-radius-md);
+  font-weight: 500;
+  gap: 0.5rem;
 
   &:disabled {
     background: transparent;
@@ -427,19 +431,17 @@
   transition: left 0.2s ease, width 0.2s ease;
 }
 
-// Contenedor de los paneles
+// Contenedor de los paneles: transparente para que el bg de la página
+// se vea (las cards de contenido tienen su propio fondo blanco).
 .p-tabpanels {
-  background: var(--ds-white);
+  background: transparent;
 }
 
-// p-tabs-panel es la clase CSS que PrimeNG aplica al host de p-tabpanel
-// (no confundir con el selector HTML p-tabpanel).
+// p-tabs-panel es la clase CSS que PrimeNG aplica al host de p-tabpanel.
+// Padding lateral 0, vertical reducido — las cards dentro tienen su propio
+// margin-bottom para el spacing entre ellas.
 .p-tabs-panel {
-  padding: var(--space-5);
-
-  @media (min-width: 1024px) {
-    padding: var(--space-6);
-  }
+  padding: var(--space-4) 0 0;
 }
 
 // ─── Wizard bottom sheet (mobile) ────────────────────

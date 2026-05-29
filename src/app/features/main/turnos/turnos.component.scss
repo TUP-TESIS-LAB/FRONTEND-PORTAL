@@ -1,5 +1,43 @@
 @use 'breakpoints' as *;
 
+// ─── Barra de filtros ───────────────────────────────────
+.ui-turnos-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-md);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+
+  &__search {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+
+    i {
+      position: absolute;
+      left: var(--space-3);
+      color: var(--ds-text-muted);
+      pointer-events: none;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding-left: 2.25rem;
+    }
+  }
+
+  ::ng-deep .ui-turnos-filters__familiar {
+    min-width: 220px;
+  }
+}
+
 // ─── Layout principal ────────────────────────────────────
 .ui-turnos-layout {
   display: grid;

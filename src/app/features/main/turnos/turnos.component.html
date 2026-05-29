@@ -11,6 +11,38 @@
     (onClick)="onSacarTurno()" />
 </ui-page-header>
 
+<!-- ─── Barra de filtros ───────────────────────────────── -->
+<div class="ui-turnos-filters">
+  <span class="ui-turnos-filters__search">
+    <i class="pi pi-search" aria-hidden="true"></i>
+    <input
+      pInputText
+      type="search"
+      placeholder="Buscar por tipo o sede..."
+      [ngModel]="searchTerm()"
+      (ngModelChange)="searchTerm.set($event)" />
+  </span>
+
+  @if (familiares().length > 1) {
+    <p-select
+      [options]="familiares()"
+      [ngModel]="familiarFilter()"
+      (ngModelChange)="familiarFilter.set($event)"
+      placeholder="Todos los familiares"
+      [showClear]="true"
+      styleClass="ui-turnos-filters__familiar" />
+  }
+
+  @if (searchTerm() || familiarFilter()) {
+    <p-button
+      label="Limpiar"
+      [text]="true"
+      severity="secondary"
+      icon="pi pi-times"
+      (onClick)="clearFilters()" />
+  }
+</div>
+
 <div class="ui-turnos-layout">
 
   <!-- ─── Lista con tabs ─────────────────────────────── -->
@@ -22,11 +54,11 @@
       <p-tablist>
         <p-tab value="proximos">
           Próximos
-          <span class="ui-tab-badge">{{ proximosTurnos().length }}</span>
+          <span class="ui-tab-badge">{{ filteredProximos().length }}</span>
         </p-tab>
         <p-tab value="anteriores">
           Anteriores
-          <span class="ui-tab-badge">{{ anterioresTurnos().length }}</span>
+          <span class="ui-tab-badge">{{ filteredAnteriores().length }}</span>
         </p-tab>
       </p-tablist>
 
@@ -38,13 +70,13 @@
             @for (i of [1, 2, 3]; track i) {
               <p-skeleton height="80px" styleClass="mb-3" />
             }
-          } @else if (proximosTurnos().length === 0) {
+          } @else if (filteredProximos().length === 0) {
             <ui-empty-state
               icon="pi-calendar"
               heading="No tenés turnos próximos"
               message="Cuando saques un turno va a aparecer acá." />
           } @else {
-            @for (turno of proximosTurnos(); track turno.id) {
+            @for (turno of filteredProximos(); track turno.id) {
               <ui-event-card
                 [day]="turno.dia"
                 [month]="turno.mes"
@@ -69,13 +101,13 @@
             @for (i of [1, 2, 3]; track i) {
               <p-skeleton height="80px" styleClass="mb-3" />
             }
-          } @else if (anterioresTurnos().length === 0) {
+          } @else if (filteredAnteriores().length === 0) {
             <ui-empty-state
               icon="pi-history"
               heading="No tenés turnos anteriores"
               message="Tus turnos pasados van a aparecer acá." />
           } @else {
-            @for (turno of anterioresTurnos(); track turno.id) {
+            @for (turno of filteredAnteriores(); track turno.id) {
               <ui-event-card
                 [day]="turno.dia"
                 [month]="turno.mes"
