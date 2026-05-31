@@ -1,0 +1,54 @@
+.ui-notice-card {
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--ds-shadow-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+
+  // ── Contenedor del ícono ──────────────────────────
+  &__icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--ds-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .pi { font-size: 18px; }
+
+    &--info {
+      background: var(--ds-info-light);
+      color: var(--ds-info);
+      .pi { color: var(--ds-info); }
+    }
+
+    &--warning {
+      background: var(--ds-warning-light);
+      color: var(--ds-warning);
+      .pi { color: var(--ds-warning); }
+    }
+  }
+
+  // ── Texto ─────────────────────────────────────────
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    margin: 0 0 var(--space-1);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ds-text);
+  }
+
+  &__text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ds-text-muted);
+  }
+}

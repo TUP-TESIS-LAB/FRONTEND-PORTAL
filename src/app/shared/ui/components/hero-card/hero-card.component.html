@@ -1,0 +1,40 @@
+<div class="ui-hero-card">
+  <!-- Ícono decorativo — se oculta en mobile -->
+  @if (decorativeIcon) {
+    <i class="pi ui-hero-card__deco-icon" [class]="decorativeIcon"></i>
+  }
+
+  <div class="ui-hero-card__body">
+    <!-- Label uppercase -->
+    <span class="ui-hero-card__label">{{ label }}</span>
+
+    <!-- Título principal -->
+    <h2 class="ui-hero-card__title">{{ title }}</h2>
+
+    <!-- Detalles (ícono + texto) -->
+    @if (details.length > 0) {
+      <ul class="ui-hero-card__details">
+        @for (d of details; track d.icon) {
+          <li>
+            <i class="pi" [class]="d.icon"></i>
+            <span>{{ d.text }}</span>
+          </li>
+        }
+      </ul>
+    }
+
+    <!-- Chips de estudios -->
+    @if (chips.length > 0) {
+      <div class="ui-hero-card__chips">
+        @for (chip of chips; track chip) {
+          <span class="ui-hero-card__chip">{{ chip }}</span>
+        }
+      </div>
+    }
+
+    <!-- Slot de botones (ng-content para máxima flexibilidad) -->
+    <div class="ui-hero-card__actions">
+      <ng-content />
+    </div>
+  </div>
+</div>

@@ -1,0 +1,122 @@
+@use 'breakpoints' as *;
+
+.ui-hero-card {
+  position: relative;
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+  color: white;
+  padding: var(--space-6);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+
+  // ── Ícono decorativo ──────────────────────────────
+  &__deco-icon {
+    position: absolute;
+    right: var(--space-6);
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 5rem;
+    opacity: 0.2;
+    pointer-events: none;
+
+    @include mobile-only {
+      display: none;
+    }
+  }
+
+  // ── Body con z-index para estar sobre el ícono ────
+  &__body {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+
+    // Deja espacio a la derecha en desktop para el ícono decorativo
+    @include desktop-up {
+      padding-right: calc(5rem + var(--space-8));
+    }
+  }
+
+  // ── Label uppercase ───────────────────────────────
+  &__label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+
+  // ── Título ────────────────────────────────────────
+  &__title {
+    font-size: clamp(18px, 3vw, 22px);
+    font-weight: 600;
+    color: white;
+    margin: 0;
+  }
+
+  // ── Lista de detalles (ícono + texto) ─────────────
+  &__details {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+
+    @include desktop-up {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 13px;
+      opacity: 0.9;
+
+      .pi { font-size: 14px; }
+    }
+  }
+
+  // ── Chips de estudios ─────────────────────────────
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  &__chip {
+    background: rgba(255, 255, 255, 0.18);
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    padding: var(--space-1) var(--space-3);
+    border-radius: 999px;
+    backdrop-filter: blur(4px);
+  }
+
+  // ── Slot de botones ───────────────────────────────
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-1);
+
+    // Forzar estilos blancos a los p-button proyectados
+    ::ng-deep .p-button {
+      border-color: rgba(255, 255, 255, 0.6) !important;
+      color: white !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+      }
+
+      &.p-button-secondary {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-color: transparent !important;
+      }
+    }
+  }
+}
