@@ -1,5 +1,132 @@
 @use 'breakpoints' as *;
 
+// ─── Barra de filtros (chips + multi-select + rango fechas) ───
+.ui-turnos-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-lg);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  &__label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--ds-text-muted);
+  }
+
+  &__clear {
+    margin-left: auto;
+    align-self: flex-end;
+  }
+
+  ::ng-deep .ui-turnos-filters__multiselect {
+    min-width: 220px;
+  }
+
+  ::ng-deep .ui-turnos-filters__datepicker {
+    min-width: 240px;
+
+    input.p-inputtext,
+    .p-datepicker-input {
+      width: 100%;
+      min-width: 240px;
+    }
+  }
+}
+
+// ─── HR separador pendientes / resto ───────────────────
+.ui-turnos-list__divider {
+  border: none;
+  border-top: 1px solid var(--ds-surface-dark);
+  margin: var(--space-4) 0;
+}
+
+// ─── Mobile filterbar (botón "Filtros" + Limpiar) ───────
+.ui-turnos-mobile-filterbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+// ─── Filters sheet (drawer en mobile) ──────────────────
+// Bottom-sheet que se ajusta al contenido natural (NO toma toda la pantalla).
+// Solo crece hasta 80dvh máx; si excede, el body scrollea internamente.
+.ui-turnos-filters-sheet {
+  display: flex;
+  flex-direction: column;
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
+  max-height: 80dvh;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--ds-surface-dark);
+    flex-shrink: 0;
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ds-text);
+    }
+  }
+
+  &__close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--ds-text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+
+    &:hover { background: var(--ds-surface); }
+  }
+
+  // SIN flex: 1 — body se ajusta al contenido natural. Scroll solo si excede.
+  &__body {
+    padding: var(--space-3) var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--ds-safe-bottom));
+    border-top: 1px solid var(--ds-surface-dark);
+    background: var(--ds-white);
+    flex-shrink: 0;
+
+    .p-button { flex: 1; }
+  }
+}
+
 // ─── Layout principal ────────────────────────────────────
 .ui-turnos-layout {
   display: grid;
@@ -21,12 +148,16 @@
 
 // ─── Badge de conteo en los tabs ─────────────────────────
 .ui-tab-badge {
-  display: inline-block;
-  background: var(--ds-surface);
-  color: var(--ds-text-muted);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  background: var(--brand-primary-light);
+  color: var(--brand-primary);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 8px;
   border-radius: 999px;
   margin-left: var(--space-2);
   vertical-align: middle;
@@ -34,8 +165,9 @@
 
 // ─── Card seleccionada en desktop ────────────────────────
 ::ng-deep .ui-card-selected .ui-event-card {
-  border-left: 4px solid var(--brand-primary);
+  border-color: var(--brand-primary);
   background: var(--brand-primary-light);
+  box-shadow: 0 0 0 3px var(--brand-primary-light), var(--ds-shadow-md);
 }
 
 // ─── Override: quitar padding del panel de tabs ──────────

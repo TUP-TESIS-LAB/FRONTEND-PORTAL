@@ -30,7 +30,7 @@
   }
 
   &:hover:not(:focus):not(:disabled) {
-    border-color: var(--brand-secondary);
+    border-color: var(--brand-primary);
   }
 
   &:focus,
@@ -234,11 +234,16 @@
   }
 }
 
-// ─── Botón: hover con color del tenant ───────────────
-// brightness() funciona con cualquier color de tenant sin necesitar
-// variables dark calculadas en runtime.
+// ─── Botón: solid primary con tokens del tenant ──────
+// Tailwind v4 resetea padding/border-radius de <button>; necesitamos
+// re-setearlo acá (PrimeNG @layer no gana). Solo aplica a botones solid
+// (no text / outlined / link) para no romper la compactitud de esos
+// variantes en wizard footers, list-cards, etc.
 .p-button {
   transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  background: var(--brand-primary);
+  color: var(--ds-white);
+  border: 1px solid var(--brand-primary);
 
   &:not(:disabled):hover {
     filter: brightness(0.88);
@@ -248,12 +253,80 @@
     filter: brightness(0.80);
     transform: scale(0.98);
   }
+
+  &:disabled {
+    background: var(--ds-surface-dark);
+    color: var(--ds-text-disabled);
+    border-color: var(--ds-surface-dark);
+    cursor: not-allowed;
+    opacity: 0.75;
+  }
+}
+
+// Padding + radius solo en solid (no text/outlined/link/icon-only rounded)
+.p-button:not(.p-button-text):not(.p-button-outlined):not(.p-button-link):not(.p-button-icon-only):not(.p-button-rounded) {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--ds-radius-md);
+  font-weight: 500;
+  gap: 0.5rem;
+}
+
+// Size small: padding ajustado
+.p-button.p-button-sm:not(.p-button-text):not(.p-button-outlined):not(.p-button-icon-only):not(.p-button-rounded) {
+  padding: 0.5rem 1rem;
+  font-size: 13px;
+}
+
+// Text variant: padding compacto para que no ocupe demasiado
+.p-button.p-button-text {
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--ds-radius-md);
+}
+
+// Variantes que NO deben tener bg solid (text / outlined / link)
+.p-button.p-button-text {
+  background: transparent;
+  color: var(--brand-primary);
+  border-color: transparent;
+
+  &:disabled {
+    background: transparent;
+    color: var(--ds-text-disabled);
+    border-color: transparent;
+  }
+}
+
+.p-button.p-button-outlined {
+  background: transparent;
+  color: var(--brand-primary);
+  border: 1px solid var(--brand-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--ds-radius-md);
+  font-weight: 500;
+  gap: 0.5rem;
+
+  &:disabled {
+    background: transparent;
+    color: var(--ds-text-disabled);
+    border-color: var(--ds-surface-dark);
+  }
 }
 
 // ─── p-button: full-width cuando styleClass="w-full" ─
 .p-button.w-full {
   width: 100%;
   justify-content: center;
+}
+
+// ─── p-button rounded icon-only: círculo verdadero ───
+// Cuando se renderiza solo con icono (sin label) + rounded=true,
+// forzamos dimensiones cuadradas + border-radius 50% para que sea círculo.
+.p-button.p-button-rounded.p-button-icon-only,
+.p-button.p-button-rounded:has(> .p-button-icon):not(:has(.p-button-label)) {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
 }
 
 // ─── p-tag: estilos base del DS ──────────────────────
@@ -358,19 +431,17 @@
   transition: left 0.2s ease, width 0.2s ease;
 }
 
-// Contenedor de los paneles
+// Contenedor de los paneles: transparente para que el bg de la página
+// se vea (las cards de contenido tienen su propio fondo blanco).
 .p-tabpanels {
-  background: var(--ds-white);
+  background: transparent;
 }
 
-// p-tabs-panel es la clase CSS que PrimeNG aplica al host de p-tabpanel
-// (no confundir con el selector HTML p-tabpanel).
+// p-tabs-panel es la clase CSS que PrimeNG aplica al host de p-tabpanel.
+// Padding lateral 0, vertical reducido — las cards dentro tienen su propio
+// margin-bottom para el spacing entre ellas.
 .p-tabs-panel {
-  padding: var(--space-5);
-
-  @media (min-width: 1024px) {
-    padding: var(--space-6);
-  }
+  padding: var(--space-4) 0 0;
 }
 
 // ─── Wizard bottom sheet (mobile) ────────────────────
@@ -553,5 +624,216 @@
   .p-toast-detail {
     font-size: 13px;
     margin-top: 0;
+  }
+}
+
+// ─── SelectButton (chips de filtro independientes) ───────
+// Cada chip es un botón standalone con su propio borde — no segmented.
+// Tailwind v4 resetea botones, así que reseteamos explícito.
+.p-selectbutton {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+
+  .p-togglebutton {
+    padding: 0.625rem 0.875rem;
+    background: var(--ds-white);
+    border: 1.5px solid var(--ds-surface-dark);
+    border-radius: var(--ds-radius-md); // match input radius
+    color: var(--ds-text);
+    font-family: var(--ds-font);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    min-height: 44px; // match input min-height
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+
+    &:hover:not(.p-togglebutton-checked):not([aria-pressed="true"]):not(:disabled) {
+      background: var(--ds-surface);
+      border-color: var(--brand-primary);
+    }
+
+    &.p-togglebutton-checked,
+    &[aria-pressed="true"] {
+      background: var(--brand-primary-light);
+      color: var(--brand-primary);
+      border-color: var(--brand-primary);
+      font-weight: 600;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .p-togglebutton-icon {
+    font-size: 13px;
+  }
+
+  // PrimeNG envuelve el label en .p-togglebutton-content con bg/padding propio.
+  // Lo reseteamos para que solo se vea el background del .p-togglebutton outer.
+  .p-togglebutton-content,
+  .p-togglebutton-label {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
+    font: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+}
+
+// ─── MultiSelect ──────────────────────────────────────────
+.p-multiselect {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.625rem 0.875rem;
+  background: var(--ds-white);
+  border: 1.5px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-md);
+  min-height: 44px;
+  font-family: var(--ds-font);
+  font-size: 14px;
+  color: var(--ds-text);
+  cursor: pointer;
+  gap: 0.5rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover:not(.p-disabled) {
+    border-color: var(--brand-primary);
+  }
+
+  &.p-focus,
+  &:focus-within {
+    outline: none;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px var(--brand-primary-light);
+  }
+
+  .p-multiselect-label-container {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .p-multiselect-label {
+    color: var(--ds-text);
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &.p-placeholder,
+    &.p-multiselect-label-empty {
+      color: var(--ds-text-muted);
+    }
+  }
+
+  .p-multiselect-dropdown,
+  .p-multiselect-trigger {
+    color: var(--ds-text-muted);
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .p-multiselect-clear-icon {
+    color: var(--ds-text-muted);
+    cursor: pointer;
+    margin-right: var(--space-2);
+    flex-shrink: 0;
+
+    &:hover { color: var(--brand-primary); }
+  }
+}
+
+// Panel desplegable de p-multiselect (renderiza al body)
+.p-multiselect-overlay,
+.p-multiselect-panel {
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-md);
+
+  .p-multiselect-header {
+    padding: var(--space-3);
+    border-bottom: 1px solid var(--ds-surface-dark);
+  }
+
+  .p-multiselect-list,
+  .p-multiselect-items {
+    padding: var(--space-2) 0;
+  }
+
+  .p-multiselect-option,
+  .p-multiselect-item {
+    padding: 0.625rem var(--space-3);
+    font-size: 14px;
+    color: var(--ds-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+
+    &:hover { background: var(--ds-surface); }
+
+    // Selected: solo tipografía bold, sin background azul fuerte
+    &.p-multiselect-option-selected,
+    &[aria-selected="true"] {
+      background: var(--ds-surface);
+      color: var(--ds-text);
+      font-weight: 600;
+    }
+  }
+}
+
+// ─── DatePicker (input + trigger) ─────────────────────────
+.p-datepicker {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--ds-font);
+
+  input.p-inputtext,
+  .p-datepicker-input {
+    min-height: 44px;
+  }
+}
+
+// El popup del datepicker (con appendTo="body" se renderiza al <body>).
+// Necesita su propio styling porque sale del scope del componente.
+.p-datepicker-panel {
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-lg);
+  padding: var(--space-3);
+  z-index: var(--z-dialog); // alto suficiente para escapar cualquier container
+  font-family: var(--ds-font);
+
+  table { width: 100%; table-layout: fixed; }
+  th, td { text-align: center; padding: 4px 0; }
+  .p-datepicker-weekday { font-size: 12px; color: var(--ds-text-muted); font-weight: 600; }
+  .p-datepicker-day {
+    width: 34px; height: 34px;
+    margin: 0 auto;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 13px;
+
+    &:hover:not(.p-disabled) { background: var(--brand-primary-light); }
+    &.p-datepicker-day-selected,
+    &.p-highlight {
+      background: var(--brand-primary);
+      color: var(--ds-white);
+    }
   }
 }

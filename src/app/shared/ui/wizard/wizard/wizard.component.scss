@@ -2,11 +2,15 @@
 
 :host {
   display: block;
+  height: 100%;
+  min-height: 0;
 }
 
 .ui-wizard {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-height: 0;
   background: var(--ds-white);
   border-radius: var(--ds-radius-lg);
   box-shadow: var(--ds-shadow-sm);
@@ -119,23 +123,24 @@
 
   // ═══════════════════════════════════════════════════════
   // Contenido del paso (proyectado por el padre)
+  // flex: 1 + overflow-y: auto → scroll INTERNO; el footer sticky
+  // queda siempre visible aunque la lista del step sea larga.
   // ═══════════════════════════════════════════════════════
   &__content {
     flex: 1;
+    min-height: 0;
     padding: var(--space-6);
-    min-height: 320px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
 
     @include mobile-only {
       padding: var(--space-4);
-      min-height: 260px;
     }
   }
 
   // ═══════════════════════════════════════════════════════
-  // Footer fijo: botones de navegación
+  // Footer SIEMPRE sticky: los botones de navegación nunca se pierden de vista
   // ═══════════════════════════════════════════════════════
   &__footer {
     display: flex;
@@ -146,29 +151,18 @@
     border-top: 1px solid var(--ds-surface-dark);
     background: var(--ds-white);
     flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
 
     @include mobile-only {
       padding: var(--space-3) var(--space-4);
-      // Safe area para home indicator en iOS. Suma --ds-safe-bottom al padding
-      // base; en otros devices --ds-safe-bottom es 0, así que queda igual al
-      // horizontal. `max()` no servía: en iOS terminaba descartando el padding
-      // base cuando --ds-safe-bottom > --space-3, dejando los botones pegados.
+      // Safe area para home indicator en iOS.
       padding-bottom: calc(var(--space-3) + var(--ds-safe-bottom));
 
       // Ambos botones ocupan el mismo ancho en mobile
       .p-button { flex: 1; }
-    }
-
-    // Footer pegado al borde inferior del drawer cuando el wizard se renderiza
-    // como bottom-sheet (BreakpointService.isMobile = max-width 1023px). El
-    // breakpoint del TS abarca mobile + tablet, así que el sticky debe
-    // matchear ese mismo ancho — no el 767 del mixin mobile-only.
-    @media (max-width: 1023px) {
-      position: sticky;
-      bottom: 0;
-      z-index: 10;
-      // Sombra hacia arriba sutil para indicar contenido scrolleable detrás.
-      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
     }
   }
 }

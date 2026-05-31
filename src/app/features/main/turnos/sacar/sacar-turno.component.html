@@ -1,35 +1,40 @@
 <p-toast [position]="bp.isMobile() ? 'top-center' : 'top-right'" />
 <p-confirmDialog />
 
-<!-- ─── Adaptive: drawer en mobile, dialog en desktop ─── -->
-
+<!-- ─── Mobile: drawer bottom-sheet con el wizard ─── -->
 @if (bp.isMobile()) {
   <p-drawer
     [visible]="true"
     position="bottom"
-    styleClass="ui-bottom-sheet-drawer ui-wizard-sheet">
-    <ng-template pTemplate="headless">
-      <ng-container [ngTemplateOutlet]="wizardContent" />
-    </ng-template>
-  </p-drawer>
-} @else {
-  <p-dialog
-    [visible]="true"
     [modal]="true"
     [closable]="false"
     [closeOnEscape]="false"
-    [showHeader]="false"
-    [style]="{ width: '720px' }"
-    [draggable]="false"
-    [resizable]="false"
-    styleClass="ui-wizard-dialog">
+    styleClass="ui-bottom-sheet-drawer ui-wizard-sheet">
+    <ng-template pTemplate="headless">
+      <div class="ui-sacar-page ui-sacar-page--mobile">
+        <ng-container [ngTemplateOutlet]="wizardContent" />
+      </div>
+    </ng-template>
+  </p-drawer>
+} @else {
+  <!-- ─── Desktop: página con max-width ─── -->
+  <div class="ui-sacar-page">
     <ng-container [ngTemplateOutlet]="wizardContent" />
-  </p-dialog>
+  </div>
 }
 
-<!-- ─── Contenido del wizard (compartido por dialog y drawer) ─── -->
-
+<!-- Contenido compartido (header + wizard) -->
 <ng-template #wizardContent>
+  <header class="ui-sacar-page__header">
+    <button type="button"
+            class="ui-sacar-page__back-btn"
+            (click)="onCancel()"
+            aria-label="Volver a turnos">
+      <i class="pi pi-arrow-left"></i>
+    </button>
+    <h1>Nuevo turno</h1>
+  </header>
+
   <ui-wizard
     [steps]="steps()"
     [currentStep]="currentStep()"
@@ -66,21 +71,30 @@
 
       @case ('fecha') {
         <div class="ui-fecha-hora-step">
-          <h4>Seleccioná la fecha</h4>
-          <p-datepicker
-            [inline]="true"
-            [minDate]="minBookingDate"
-            [(ngModel)]="fechaModel"
-            (onSelect)="onFechaChange($event)" />
+          <div class="ui-fecha-hora-step__calendar">
+            <h4>Seleccioná la fecha</h4>
+            <p-datepicker
+              [inline]="true"
+              [minDate]="minBookingDate"
+              [(ngModel)]="fechaModel"
+              (onSelect)="onFechaChange($event)" />
+          </div>
 
-          @if (selectedFecha()) {
+          <div class="ui-fecha-hora-step__slots">
             <h4>Horarios disponibles</h4>
-            <ui-time-slots
-              [slots]="slots()"
-              [selectedHora]="selectedHora()"
-              [loading]="loadingSlots()"
-              (selectionChange)="selectedHora.set($event)" />
-          }
+            @if (selectedFecha()) {
+              <ui-time-slots
+                [slots]="slots()"
+                [selectedHora]="selectedHora()"
+                [loading]="loadingSlots()"
+                (selectionChange)="selectedHora.set($event)" />
+            } @else {
+              <div class="ui-fecha-hora-step__placeholder">
+                <i class="pi pi-calendar"></i>
+                <p>Seleccioná un día para ver los horarios disponibles</p>
+              </div>
+            }
+          </div>
         </div>
       }
 

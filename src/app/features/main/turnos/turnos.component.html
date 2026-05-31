@@ -11,90 +11,147 @@
     (onClick)="onSacarTurno()" />
 </ui-page-header>
 
+<!-- ─── Filtros: inline desktop / botón + drawer en mobile ─── -->
+@if (bp.isMobile()) {
+  <div class="ui-turnos-mobile-filterbar">
+    <p-button
+      [label]="activeFiltersCount() > 0 ? 'Filtros (' + activeFiltersCount() + ')' : 'Filtros'"
+      icon="pi pi-filter"
+      [outlined]="true"
+      severity="secondary"
+      (onClick)="filtersOpen.set(true)" />
+    @if (hasActiveFilters()) {
+      <p-button
+        label="Limpiar"
+        [text]="true"
+        severity="secondary"
+        icon="pi pi-times"
+        (onClick)="clearFilters()" />
+    }
+  </div>
+} @else {
+  <div class="ui-turnos-filters">
+    <ng-container [ngTemplateOutlet]="filtersContent" />
+  </div>
+}
+
+<!-- Contenido reutilizado en ambos -->
+<ng-template #filtersContent>
+  <div class="ui-turnos-filters__group">
+    <span class="ui-turnos-filters__label">Estado</span>
+    <p-selectbutton
+      [options]="estadoOptions"
+      [ngModel]="estadoFilter()"
+      (ngModelChange)="estadoFilter.set($event)"
+      [multiple]="true"
+      optionLabel="label"
+      optionValue="value"
+      [allowEmpty]="true" />
+  </div>
+
+  @if (familiares().length > 1) {
+    <div class="ui-turnos-filters__group">
+      <span class="ui-turnos-filters__label">Familiar</span>
+      <p-multiselect
+        [options]="familiares()"
+        [ngModel]="familiarFilter()"
+        (ngModelChange)="familiarFilter.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todos"
+        [showClear]="true"
+        styleClass="ui-turnos-filters__multiselect" />
+    </div>
+  }
+
+  <div class="ui-turnos-filters__group">
+    <span class="ui-turnos-filters__label">Fecha desde</span>
+    <p-datepicker
+      [ngModel]="fechaDesde()"
+      (ngModelChange)="fechaDesde.set($event)"
+      placeholder="Cualquier fecha"
+      dateFormat="dd/mm/yy"
+      [showButtonBar]="true"
+      appendTo="body"
+      styleClass="ui-turnos-filters__datepicker" />
+  </div>
+
+  <div class="ui-turnos-filters__group">
+    <span class="ui-turnos-filters__label">Fecha hasta</span>
+    <p-datepicker
+      [ngModel]="fechaHasta()"
+      (ngModelChange)="fechaHasta.set($event)"
+      placeholder="Cualquier fecha"
+      dateFormat="dd/mm/yy"
+      [showButtonBar]="true"
+      appendTo="body"
+      styleClass="ui-turnos-filters__datepicker" />
+  </div>
+
+  @if (!bp.isMobile() && hasActiveFilters()) {
+    <div class="ui-turnos-filters__clear">
+      <p-button
+        label="Limpiar"
+        [text]="true"
+        severity="secondary"
+        icon="pi pi-times"
+        (onClick)="clearFilters()" />
+    </div>
+  }
+</ng-template>
+
 <div class="ui-turnos-layout">
 
-  <!-- ─── Lista con tabs ─────────────────────────────── -->
+  <!-- ─── Lista: pendientes arriba + HR + resto abajo ─── -->
   <section class="ui-turnos-list">
-    <p-tabs
-      [value]="activeTab()"
-      (valueChange)="onTabChange($event)">
+    @if (cargando()) {
+      @for (i of [1, 2, 3]; track i) {
+        <p-skeleton height="96px" styleClass="mb-3" />
+      }
+    } @else if (visibleTurnos().length === 0) {
+      <ui-empty-state
+        icon="pi-calendar"
+        [heading]="hasActiveFilters() ? 'No hay turnos con esos filtros' : 'No tenés turnos'"
+        [message]="hasActiveFilters() ? 'Probá limpiar los filtros para ver más resultados.' : 'Cuando saques un turno va a aparecer acá.'" />
+    } @else {
+      @for (turno of pendientes(); track turno.id) {
+        <ui-event-card
+          [day]="turno.dia"
+          [month]="turno.mes"
+          [title]="turno.tipo"
+          [details]="[
+            { icon: 'pi-clock',      text: turno.hora + ' hs' },
+            { icon: 'pi-map-marker', text: turno.sede.nombre }
+          ]"
+          [statusKey]="turno.estado"
+          [statusLabel]="turno.estadoLabel"
+          [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"
+          [class.ui-card-selected]="selectedTurno()?.id === turno.id"
+          (click)="onTurnoClick(turno)"
+          style="cursor: pointer" />
+      }
 
-      <p-tablist>
-        <p-tab value="proximos">
-          Próximos
-          <span class="ui-tab-badge">{{ proximosTurnos().length }}</span>
-        </p-tab>
-        <p-tab value="anteriores">
-          Anteriores
-          <span class="ui-tab-badge">{{ anterioresTurnos().length }}</span>
-        </p-tab>
-      </p-tablist>
+      @if (pendientes().length > 0 && otrosTurnos().length > 0) {
+        <hr class="ui-turnos-list__divider" />
+      }
 
-      <p-tabpanels>
-
-        <!-- Tab: Próximos -->
-        <p-tabpanel value="proximos">
-          @if (cargando()) {
-            @for (i of [1, 2, 3]; track i) {
-              <p-skeleton height="80px" styleClass="mb-3" />
-            }
-          } @else if (proximosTurnos().length === 0) {
-            <ui-empty-state
-              icon="pi-calendar"
-              heading="No tenés turnos próximos"
-              message="Cuando saques un turno va a aparecer acá." />
-          } @else {
-            @for (turno of proximosTurnos(); track turno.id) {
-              <ui-event-card
-                [day]="turno.dia"
-                [month]="turno.mes"
-                [title]="turno.tipo"
-                [details]="[
-                  { icon: 'pi-clock',      text: turno.hora + ' hs' },
-                  { icon: 'pi-map-marker', text: turno.sede.nombre }
-                ]"
-                [statusKey]="turno.estado"
-                [statusLabel]="turno.estadoLabel"
-                [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"
-                [class.ui-card-selected]="selectedTurno()?.id === turno.id"
-                (click)="onTurnoClick(turno)"
-                style="cursor: pointer" />
-            }
-          }
-        </p-tabpanel>
-
-        <!-- Tab: Anteriores -->
-        <p-tabpanel value="anteriores">
-          @if (cargando()) {
-            @for (i of [1, 2, 3]; track i) {
-              <p-skeleton height="80px" styleClass="mb-3" />
-            }
-          } @else if (anterioresTurnos().length === 0) {
-            <ui-empty-state
-              icon="pi-history"
-              heading="No tenés turnos anteriores"
-              message="Tus turnos pasados van a aparecer acá." />
-          } @else {
-            @for (turno of anterioresTurnos(); track turno.id) {
-              <ui-event-card
-                [day]="turno.dia"
-                [month]="turno.mes"
-                [title]="turno.tipo"
-                [details]="[
-                  { icon: 'pi-clock',      text: turno.hora + ' hs' },
-                  { icon: 'pi-map-marker', text: turno.sede.nombre }
-                ]"
-                [statusKey]="turno.estado"
-                [statusLabel]="turno.estadoLabel"
-                [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"
-                (click)="onTurnoClick(turno)"
-                style="cursor: pointer" />
-            }
-          }
-        </p-tabpanel>
-
-      </p-tabpanels>
-    </p-tabs>
+      @for (turno of otrosTurnos(); track turno.id) {
+        <ui-event-card
+          [day]="turno.dia"
+          [month]="turno.mes"
+          [title]="turno.tipo"
+          [details]="[
+            { icon: 'pi-clock',      text: turno.hora + ' hs' },
+            { icon: 'pi-map-marker', text: turno.sede.nombre }
+          ]"
+          [statusKey]="turno.estado"
+          [statusLabel]="turno.estadoLabel"
+          [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"
+          [class.ui-card-selected]="selectedTurno()?.id === turno.id"
+          (click)="onTurnoClick(turno)"
+          style="cursor: pointer" />
+      }
+    }
   </section>
 
   <!-- ─── Aside desktop ─────────────────────────────── -->
@@ -116,7 +173,7 @@
 
 </div>
 
-<!-- ─── Bottom sheet mobile ───────────────────────── -->
+<!-- ─── Bottom sheet mobile: detalle del turno ────────── -->
 <p-drawer
   [visible]="mobileDetailOpen()"
   (visibleChange)="mobileDetailOpen.set($event)"
@@ -129,6 +186,49 @@
         (reprogramar)="onReprogramar($event)"
         (cancelar)="onCancelar($event)"
         (close)="mobileDetailOpen.set(false)" />
+    }
+  </ng-template>
+</p-drawer>
+
+<!-- ─── Bottom sheet mobile: filtros ─────────────────── -->
+<p-drawer
+  [visible]="filtersOpen()"
+  (visibleChange)="filtersOpen.set($event)"
+  position="bottom"
+  styleClass="ui-bottom-sheet-drawer ui-turnos-filters-sheet">
+  <ng-template pTemplate="headless">
+    <div class="ui-turnos-filters-sheet__header">
+      <h3>Filtros</h3>
+      <button type="button"
+              class="ui-turnos-filters-sheet__close"
+              aria-label="Cerrar filtros"
+              (click)="filtersOpen.set(false)">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+    <div class="ui-turnos-filters-sheet__body">
+      <ng-container [ngTemplateOutlet]="filtersContent" />
+    </div>
+    @if (hasActiveFilters()) {
+      <div class="ui-turnos-filters-sheet__footer">
+        <p-button
+          label="Limpiar filtros"
+          [text]="true"
+          severity="secondary"
+          icon="pi pi-times"
+          (onClick)="clearFilters()" />
+        <p-button
+          label="Aplicar"
+          severity="primary"
+          (onClick)="filtersOpen.set(false)" />
+      </div>
+    } @else {
+      <div class="ui-turnos-filters-sheet__footer">
+        <p-button
+          label="Cerrar"
+          severity="primary"
+          (onClick)="filtersOpen.set(false)" />
+      </div>
     }
   </ng-template>
 </p-drawer>

@@ -7,7 +7,6 @@ import { Subject, switchMap } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DatePickerModule } from 'primeng/datepicker';
-import { DialogModule } from 'primeng/dialog';
 import { DrawerModule } from 'primeng/drawer';
 import { ToastModule } from 'primeng/toast';
 import { WizardComponent } from '../../../../shared/ui/wizard/wizard/wizard.component';
@@ -34,7 +33,6 @@ import { SlotDisponible } from '../../../../core/models/slot-disponible.model';
     FormsModule,
     ConfirmDialogModule,
     DatePickerModule,
-    DialogModule,
     DrawerModule,
     ToastModule,
     WizardComponent,

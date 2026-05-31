@@ -1,112 +1,66 @@
-@use 'breakpoints' as *;
-
 :host {
   display: block;
 
-  &.is-selected .ui-family-card {
+  &.is-selected .family-card {
+    border-color: var(--brand-primary);
     outline: 2px solid var(--brand-primary);
-    box-shadow: var(--ds-shadow-md);
+    background: var(--brand-primary-light);
   }
 }
 
-.ui-family-card {
+.family-card {
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
   background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
   border-radius: var(--ds-radius-md);
-  box-shadow: var(--ds-shadow-sm);
-  // El color del borde se aplica via [style.border-top-color] en el template
-  border-top: 4px solid;
   display: flex;
   flex-direction: column;
-  transition: box-shadow 0.2s;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.2s, transform 0.1s;
+  padding: var(--space-6);
+  text-align: center;
+  font-family: var(--ds-font);
 
   &:hover {
-    box-shadow: var(--ds-shadow-md);
+    border-color: var(--brand-primary);
+    background: var(--brand-primary-light);
   }
 
-  &__body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: var(--space-5) var(--space-4) var(--space-4);
-    gap: var(--space-2);
+  &:active {
+    transform: scale(0.98);
   }
+}
 
-  &__avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    // El color de fondo se aplica via [style.background] en el template
-    color: var(--ds-white);
-    font-weight: 700;
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-bottom: var(--space-1);
-  }
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--brand-secondary-light);
+  color: var(--brand-secondary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-2);
+  flex-shrink: 0;
+}
 
-  &__name {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--ds-text);
-  }
+.name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ds-text);
+}
 
-  &__meta {
-    margin: 0;
-    font-size: 13px;
-    color: var(--ds-text-muted);
-  }
-
-  &__stats {
-    display: flex;
-    gap: var(--space-4);
-    font-size: 13px;
-    color: var(--ds-text-muted);
-    margin-top: var(--space-1);
-
-    span {
-      display: flex;
-      align-items: center;
-      gap: var(--space-1);
-    }
-
-    i { font-size: 13px; }
-  }
-
-  &__turno-box {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    width: 100%;
-    background: var(--ds-surface);
-    border-radius: var(--ds-radius-sm);
-    padding: var(--space-2) var(--space-3);
-    font-size: 13px;
-    color: var(--ds-text);
-    margin-top: var(--space-1);
-
-    i {
-      font-size: 13px;
-      flex-shrink: 0;
-    }
-  }
-
-  &__turno-vacio {
-    color: var(--ds-text-muted);
-    font-style: italic;
-  }
-
-  &__actions {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-1);
-    padding: var(--space-3) var(--space-4);
-    border-top: 1px solid var(--ds-surface);
-  }
+.meta {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ds-text-muted);
 }

@@ -1,12 +1,16 @@
-import { Component, OnInit, OnDestroy, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, effect, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DatePickerModule } from 'primeng/datepicker';
 import { DrawerModule } from 'primeng/drawer';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { SelectButtonModule } from 'primeng/selectbutton';
 import { SkeletonModule } from 'primeng/skeleton';
-import { TabsModule } from 'primeng/tabs';
 import { ToastModule } from 'primeng/toast';
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
 import { EmptyStateComponent } from '../../../shared/ui/components/empty-state/empty-state.component';
@@ -16,17 +20,21 @@ import { TurnoDetailComponent } from '../../../shared/ui/components/turno-detail
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { AppointmentService } from './services/appointment.service';
 import { mapApiError } from '../../../shared/utils/api-error-mapper';
-import { Turno } from '../../../core/models/turno.model';
+import { EstadoTurno, Turno } from '../../../core/models/turno.model';
 
 @Component({
   selector: 'app-turnos',
   standalone: true,
   imports: [
+    NgTemplateOutlet,
+    FormsModule,
     ButtonModule,
     ConfirmDialogModule,
+    DatePickerModule,
     DrawerModule,
+    MultiSelectModule,
+    SelectButtonModule,
     SkeletonModule,
-    TabsModule,
     ToastModule,
     PageHeaderComponent,
     EmptyStateComponent,
@@ -49,9 +57,103 @@ export class TurnosComponent implements OnInit, OnDestroy {
   anterioresTurnos = signal<Turno[]>([]);
   cargando         = signal(true);
 
-  activeTab        = signal<string>('proximos');
   selectedTurno    = signal<Turno | null>(null);
   mobileDetailOpen = signal(false);
+
+  // ─── Filtros seleccionables ──────────────────────────────
+  /** Chips de estado activos (estado local). Vacío = todos. */
+  estadoFilter   = signal<EstadoTurno[]>([]);
+  /** Familiares seleccionados. Vacío = todos. */
+  familiarFilter = signal<string[]>([]);
+  /** Fecha desde (filtro mínimo). null = sin tope inferior. */
+  fechaDesde     = signal<Date | null>(null);
+  /** Fecha hasta (filtro máximo). null = sin tope superior. */
+  fechaHasta     = signal<Date | null>(null);
+
+  /** Lista única de familiares presentes en los turnos. */
+  protected readonly familiares = computed(() => {
+    const all = [...this.proximosTurnos(), ...this.anterioresTurnos()];
+    const map = new Map<string, { label: string; value: string }>();
+    for (const t of all) {
+      if (!map.has(t.personaNombre)) {
+        map.set(t.personaNombre, { label: t.personaNombre, value: t.personaNombre });
+      }
+    }
+    return Array.from(map.values());
+  });
+
+  /** Chips de estado: 4 categorías user-facing fijas que agrupan los 7 estados
+   *  del backend (per appointment-to-turno.mapper.ts). Curado para UX:
+   *    - SCHEDULED / IN_PROGRESS / RESCHEDULED → "Pendiente"
+   *    - CONFIRMED                              → "Confirmado"
+   *    - COMPLETED                              → "Completado"
+   *    - CANCELLED / NO_SHOW                    → "Cancelado" */
+  /** 3 chips relevantes para el paciente. Confirmado se omite (back no lo setea hoy). */
+  protected readonly estadoOptions: { label: string; value: EstadoTurno }[] = [
+    { label: 'Pendiente', value: 'pendiente' },  // SCHEDULED + IN_PROGRESS + RESCHEDULED
+    { label: 'Asistido',  value: 'completado' }, // COMPLETED
+    { label: 'Cancelado', value: 'cancelado' },  // CANCELLED + NO_SHOW
+  ];
+
+  /** Lista combinada (próximos + anteriores) filtrada según los filtros activos. */
+  protected readonly visibleTurnos = computed(() => {
+    const all = [...this.proximosTurnos(), ...this.anterioresTurnos()];
+    return this.applyFilters(all);
+  });
+
+  /** Turnos pendientes (arriba, antes del HR). */
+  protected readonly pendientes = computed(() =>
+    this.visibleTurnos().filter(t => t.estado === 'pendiente')
+  );
+
+  /** Resto de turnos (después del HR): asistidos, cancelados, completados. */
+  protected readonly otrosTurnos = computed(() =>
+    this.visibleTurnos().filter(t => t.estado !== 'pendiente')
+  );
+
+  // ─── Drawer de filtros en mobile ─────────────────────────
+  filtersOpen = signal(false);
+
+  protected readonly activeFiltersCount = computed(() => {
+    let n = 0;
+    if (this.estadoFilter().length > 0) n++;
+    if (this.familiarFilter().length > 0) n++;
+    if (this.fechaDesde()) n++;
+    if (this.fechaHasta()) n++;
+    return n;
+  });
+
+  protected readonly hasActiveFilters = computed(() =>
+    this.familiarFilter().length > 0
+    || this.fechaDesde() !== null
+    || this.fechaHasta() !== null
+    || this.estadoFilter().length > 0
+  );
+
+  private applyFilters(list: Turno[]): Turno[] {
+    const estados = new Set(this.estadoFilter());
+    const fams = new Set(this.familiarFilter());
+    const desde = this.fechaDesde();
+    const hasta = this.fechaHasta();
+
+    return list.filter(t => {
+      if (estados.size > 0 && !estados.has(t.estado)) return false;
+      if (fams.size > 0 && !fams.has(t.personaNombre)) return false;
+      if (desde || hasta) {
+        const turnoDate = new Date(t.fechaCompleta);
+        if (desde && turnoDate < desde) return false;
+        if (hasta && turnoDate > hasta) return false;
+      }
+      return true;
+    });
+  }
+
+  clearFilters(): void {
+    this.estadoFilter.set([]);
+    this.familiarFilter.set([]);
+    this.fechaDesde.set(null);
+    this.fechaHasta.set(null);
+  }
 
   private subs = new Subscription();
 
@@ -84,10 +186,6 @@ export class TurnosComponent implements OnInit, OnDestroy {
         },
       }),
     );
-  }
-
-  onTabChange(value: string | number | undefined): void {
-    if (value != null) this.activeTab.set(value.toString());
   }
 
   onTurnoClick(turno: Turno): void {

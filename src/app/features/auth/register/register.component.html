@@ -25,25 +25,47 @@
       <!-- Formulario -->
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="register__form" novalidate>
 
-        <!-- Nombre completo -->
-        <div class="ui-field">
-          <p-floatlabel>
-            <input
-              pInputText
-              id="nombreCompleto"
-              formControlName="nombreCompleto"
-              autocomplete="name"
-              [class.ng-invalid]="hasError('nombreCompleto')"
-              [class.ng-dirty]="f.nombreCompleto.dirty"
-            />
-            <label for="nombreCompleto">Nombre completo</label>
-          </p-floatlabel>
-          @if (hasError('nombreCompleto')) {
-            <small class="p-error">
-              @if (f.nombreCompleto.errors?.['required'])   { El nombre es requerido. }
-              @if (f.nombreCompleto.errors?.['minlength'])  { Mínimo 3 caracteres. }
-            </small>
-          }
+        <!-- Nombre y Apellido (inputs separados, floating label para consistencia con el resto) -->
+        <div class="register__name-row">
+          <div class="ui-field">
+            <p-floatlabel>
+              <input
+                pInputText
+                id="firstName"
+                formControlName="firstName"
+                autocomplete="given-name"
+                [class.ng-invalid]="hasError('firstName')"
+                [class.ng-dirty]="f.firstName.dirty"
+              />
+              <label for="firstName">Nombre</label>
+            </p-floatlabel>
+            @if (hasError('firstName')) {
+              <small class="p-error">
+                @if (f.firstName.errors?.['required'])  { El nombre es requerido. }
+                @if (f.firstName.errors?.['minlength']) { Mínimo 2 caracteres. }
+              </small>
+            }
+          </div>
+
+          <div class="ui-field">
+            <p-floatlabel>
+              <input
+                pInputText
+                id="lastName"
+                formControlName="lastName"
+                autocomplete="family-name"
+                [class.ng-invalid]="hasError('lastName')"
+                [class.ng-dirty]="f.lastName.dirty"
+              />
+              <label for="lastName">Apellido</label>
+            </p-floatlabel>
+            @if (hasError('lastName')) {
+              <small class="p-error">
+                @if (f.lastName.errors?.['required'])  { El apellido es requerido. }
+                @if (f.lastName.errors?.['minlength']) { Mínimo 2 caracteres. }
+              </small>
+            }
+          </div>
         </div>
 
         <!-- DNI -->
@@ -148,7 +170,7 @@
           severity="primary"
           styleClass="w-full"
           [loading]="submitting()"
-          [disabled]="form.invalid && form.touched"
+          [disabled]="form.invalid || submitting()"
         />
 
       </form>

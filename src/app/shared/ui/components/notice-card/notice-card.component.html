@@ -1,0 +1,22 @@
+<div class="ui-notice-card">
+  <!-- Ícono con fondo suave de variant -->
+  <div class="ui-notice-card__icon-wrap" [ngClass]="'ui-notice-card__icon-wrap--' + variant">
+    <i class="pi" [class]="icon"></i>
+  </div>
+
+  <!-- Contenido textual -->
+  <div class="ui-notice-card__content">
+    @if (title) {
+      <h4 class="ui-notice-card__title">{{ title }}</h4>
+    }
+    <p class="ui-notice-card__text">
+      @for (part of parseBold(text); track $index) {
+        @if (part.bold) {
+          <strong>{{ part.text }}</strong>
+        } @else {
+          {{ part.text }}
+        }
+      }
+    </p>
+  </div>
+</div>

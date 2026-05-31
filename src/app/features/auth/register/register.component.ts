@@ -45,7 +45,8 @@ export class RegisterComponent {
   submitting = signal(false);
 
   form = this.fb.group({
-    nombreCompleto: ['', [Validators.required, Validators.minLength(3)]],
+    firstName:      ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+    lastName:       ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
     dni:            ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
     email:          ['', [Validators.required, Validators.email]],
     password:       ['', [
@@ -64,28 +65,19 @@ export class RegisterComponent {
     return !!(ctrl?.invalid && (ctrl.dirty || ctrl.touched));
   }
 
-  private splitName(full: string): { firstName: string; lastName: string } {
-    const parts = full.trim().split(/\s+/);
-    if (parts.length === 1) return { firstName: parts[0], lastName: '' };
-    const firstName = parts[0];
-    const lastName = parts.slice(1).join(' ');
-    return { firstName, lastName };
-  }
-
   onSubmit(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const v = this.form.getRawValue();
     const tenantSlug = this.tenant.config()?.id ?? '';
-    const { firstName, lastName } = this.splitName(v.nombreCompleto!);
 
     this.submitting.set(true);
     this.auth.register({
       tenantSlug,
-      firstName,
-      lastName,
-      dni: v.dni!,
-      email: v.email!,
-      password: v.password!,
+      firstName: v.firstName!.trim(),
+      lastName:  v.lastName!.trim(),
+      dni:       v.dni!,
+      email:     v.email!,
+      password:  v.password!,
     }).subscribe({
       next: () => {
         this.toast.add({
