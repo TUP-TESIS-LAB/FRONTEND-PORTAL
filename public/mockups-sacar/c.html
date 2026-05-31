@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mockup C — Back + título inline con stepper</title>
+  <link rel="stylesheet" href="_shared.css" />
+  <style>
+    /* C: el stepper-row combina back + stepper + título en una fila */
+    .mock-stepper-row {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px 20px;
+      background: var(--ds-bg);
+      border-bottom: 1px solid var(--ds-surface-dark);
+    }
+    .mock-stepper-row .back-btn { flex-shrink: 0; }
+    .mock-stepper-c { display: flex; align-items: flex-start; gap: 8px; flex: 1; min-width: 0; }
+    .mock-title-right {
+      font-size: 13px; font-weight: 500; color: var(--ds-text-muted);
+      flex-shrink: 0; white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="mock-shell">
+    <div class="mock-banner">OPCIÓN C — Back + stepper + título en UNA sola fila. Máximo aprovechamiento vertical (~50px ahorrados).</div>
+
+    <div class="mock-wizard">
+      <div class="mock-stepper-row">
+        <button class="back-btn" aria-label="Volver">←</button>
+
+        <div class="mock-stepper-c">
+          <div class="mock-step done"><div class="mock-step-circle">✓</div><div class="mock-step-label">Para quién</div></div>
+          <div class="mock-connector done"></div>
+          <div class="mock-step done"><div class="mock-step-circle">✓</div><div class="mock-step-label">Tipo</div></div>
+          <div class="mock-connector done"></div>
+          <div class="mock-step active"><div class="mock-step-circle">3</div><div class="mock-step-label">Sede</div></div>
+          <div class="mock-connector"></div>
+          <div class="mock-step"><div class="mock-step-circle">4</div><div class="mock-step-label">Fecha</div></div>
+          <div class="mock-connector"></div>
+          <div class="mock-step"><div class="mock-step-circle">5</div><div class="mock-step-label">Confirmar</div></div>
+        </div>
+
+        <span class="mock-title-right">Nuevo turno</span>
+      </div>
+
+      <div class="mock-content">
+        <h3 style="margin-top:0">Seleccioná una sede</h3>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>CENTRAL — Sede Central</b><small>—</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>NORTE — Sucursal Norte</b><small>—</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>SUR — Sucursal Sur</b><small>dsfs 343</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>ALTO VERDE — descripcion</b><small>sdf fsdf · 📞 43543534 · ⏰ Lun a Vie 09:00 — 17:00</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>asdsaasd — werwer</b><small>wer 343 · 📞 32423423</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>sdfsdf — sdfsd</b><small>sf 4234</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>xzcc — asdas</b><small>sad 123</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>asd — descripción</b><small>—</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>NUEVO — Otra Sede</b><small>—</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>TEST2 — Test2</b><small>—</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>OTRO — Otro</b><small>—</small></div></div>
+      </div>
+
+      <div class="mock-footer">
+        <button class="btn text">← Volver</button>
+        <button class="btn">Continuar →</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

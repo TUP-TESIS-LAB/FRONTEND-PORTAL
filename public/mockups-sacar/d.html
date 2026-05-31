@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mockup D — Header dentro del card</title>
+  <link rel="stylesheet" href="_shared.css" />
+  <style>
+    .mock-card-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--ds-surface-dark);
+      background: var(--ds-white);
+    }
+    .mock-card-header h2 {
+      margin: 0; font-size: 16px; font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="mock-shell">
+    <div class="mock-banner">OPCIÓN D — Header (back + título) DENTRO del card como primera fila, separado del stepper por línea sutil. Cohesivo.</div>
+
+    <div class="mock-wizard">
+      <header class="mock-card-header">
+        <button class="back-btn" aria-label="Volver">←</button>
+        <h2>Nuevo turno</h2>
+      </header>
+
+      <div class="mock-stepper">
+        <div class="mock-step done"><div class="mock-step-circle">✓</div><div class="mock-step-label">Para quién</div></div>
+        <div class="mock-connector done"></div>
+        <div class="mock-step done"><div class="mock-step-circle">✓</div><div class="mock-step-label">Tipo</div></div>
+        <div class="mock-connector done"></div>
+        <div class="mock-step active"><div class="mock-step-circle">3</div><div class="mock-step-label">Sede</div></div>
+        <div class="mock-connector"></div>
+        <div class="mock-step"><div class="mock-step-circle">4</div><div class="mock-step-label">Fecha</div></div>
+        <div class="mock-connector"></div>
+        <div class="mock-step"><div class="mock-step-circle">5</div><div class="mock-step-label">Confirmar</div></div>
+      </div>
+
+      <div class="mock-content">
+        <h3 style="margin-top:0">Seleccioná una sede</h3>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>CENTRAL — Sede Central</b><small>—</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>NORTE — Sucursal Norte</b><small>—</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>SUR — Sucursal Sur</b><small>dsfs 343</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>ALTO VERDE — descripcion</b><small>sdf fsdf · 📞 43543534 · ⏰ Lun a Vie 09:00 — 17:00</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>asdsaasd — werwer</b><small>wer 343 · 📞 32423423</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>sdfsdf — sdfsd</b><small>sf 4234</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>xzcc — asdas</b><small>sad 123</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>asd — descripción</b><small>—</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>NUEVO — Otra Sede</b><small>—</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>TEST2 — Test2</b><small>—</small></div></div>
+        <div class="mock-sede"><div class="mock-sede-icon">📍</div><div class="mock-sede-info"><b>OTRO — Otro</b><small>—</small></div></div>
+      </div>
+
+      <div class="mock-footer">
+        <button class="btn text">← Volver</button>
+        <button class="btn">Continuar →</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
