@@ -14,12 +14,20 @@ import { TenantService } from './core/tenant/tenant.service';
 import { resolveTenantIdFromUrl } from './core/tenant/tenant-resolver';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { AuthService } from './core/auth/auth.service';
+import { provideStore } from '@ngrx/store';
+import { provideEffects } from '@ngrx/effects';
+import { provideRouterStore, routerReducer } from '@ngrx/router-store';
+import { metaReducers } from './store/logger.meta-reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
+
+    provideStore({ router: routerReducer }, { metaReducers }),
+    provideEffects(),
+    provideRouterStore(),
 
     providePrimeNG({
       theme: {

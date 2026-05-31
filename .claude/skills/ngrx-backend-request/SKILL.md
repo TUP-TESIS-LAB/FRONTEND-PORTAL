@@ -768,4 +768,64 @@ Cuando entregues el código generado:
 4. Después del código, listá las verificaciones del self-check (sección 7) que aplicaste.
 5. Si encontraste alguna ambigüedad o tomaste una decisión por default (ej: campos de un modelo que el usuario no definió), declaralo explícitamente al final: "Asumí que `<Entity>` tiene los campos X, Y, Z. Si son distintos, ajustá el state."
 
+---
+
+## 11. Logging de store y routing — parte obligatoria del setup
+
+El setup base de la store **incluye logging**. No es opcional. Toda app del proyecto que use NgRx debe registrar un meta-reducer que, por cada action, loguea el estado previo, la action y el estado siguiente. Como el meta-reducer envuelve todos los reducers, el **routing también queda logueado** (vía `@ngrx/router-store`).
+
+### 11.1 Meta-reducer de logging
+
+```ts
+// src/app/store/logger.meta-reducer.ts
+import { ActionReducer, MetaReducer } from '@ngrx/store';
+import { isDevMode } from '@angular/core';
+
+function loggerMetaReducer<S, A extends { type: string }>(
+  reducer: ActionReducer<S, A>,
+): ActionReducer<S, A> {
+  return (state, action) => {
+    const prevState = state;
+    const nextState = reducer(state, action);
+    const time = new Date().toLocaleTimeString();
+
+    console.groupCollapsed(`action ${action.type} @ ${time}`);
+    console.log('prev state', prevState);
+    console.log('action   ', action);
+    console.log('next state', nextState);
+    console.groupEnd();
+
+    return nextState;
+  };
+}
+
+// Solo en desarrollo. En ng build (prod), isDevMode() === false → array vacío.
+// No requiere environments/: isDevMode() funciona out-of-the-box.
+export const metaReducers: MetaReducer[] = isDevMode() ? [loggerMetaReducer] : [];
+```
+
+### 11.2 Router-store y registro en app.config.ts
+
+El routing se conecta al store con `@ngrx/router-store`. Registrar en `app.config.ts`:
+
+```ts
+import { provideStore } from '@ngrx/store';
+import { provideEffects } from '@ngrx/effects';
+import { provideRouterStore, routerReducer } from '@ngrx/router-store';
+import { metaReducers } from './store/logger.meta-reducer';
+
+// dentro de providers: [...]
+provideStore({ router: routerReducer }, { metaReducers }),
+provideEffects(),       // los features registran los suyos con provideEffects(FeatureEffects)
+provideRouterStore(),   // conecta el Angular Router → emite router actions (y se loguean)
+```
+
+- `provideStore` arranca con el slice `router` y el meta-reducer de logging.
+- Cada feature agrega su slice con `provideState(FEATURE_KEY, reducer)` y sus effects con `provideEffects(FeatureEffects)`.
+- `provideRouterStore()` es lo que hace que las navegaciones emitan actions (`@ngrx/router-store/request`, `/navigation`, `/navigated`, ...), que el meta-reducer loguea como cualquier otra.
+
+### 11.3 Por qué isDevMode() y no environments
+
+El proyecto no usa carpeta `environments/` ni `fileReplacements` en `angular.json`. `isDevMode()` de `@angular/core` devuelve `true` en `ng serve` y `false` en `ng build` (producción) sin configuración extra. Por eso el guard del logging es `isDevMode()` y no `environment.production`.
+
 No expliques NgRx en cada respuesta. La skill ya está cargada; el usuario sabe el patrón. Tu trabajo es generar código consistente, no enseñar el modelo cada vez.
