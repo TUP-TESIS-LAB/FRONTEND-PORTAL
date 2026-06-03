@@ -17,6 +17,8 @@ import { EmptyStateComponent } from '../../../shared/ui/components/empty-state/e
 import { EventCardComponent } from '../../../shared/ui/components/event-card/event-card.component';
 import { PlaceholderCardComponent } from '../../../shared/ui/components/placeholder-card/placeholder-card.component';
 import { TurnoDetailComponent } from '../../../shared/ui/components/turno-detail/turno-detail.component';
+import { EstadoTurnoLabelPipe } from '../../../shared/pipes/estado-turno-label.pipe';
+import { EstadoTurnoKeyPipe } from '../../../shared/pipes/estado-turno-key.pipe';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { AppointmentService } from './services/appointment.service';
 import { mapApiError } from '../../../shared/utils/api-error-mapper';
@@ -41,6 +43,8 @@ import { EstadoTurno, Turno } from '../../../core/models/turno.model';
     EventCardComponent,
     PlaceholderCardComponent,
     TurnoDetailComponent,
+    EstadoTurnoLabelPipe,
+    EstadoTurnoKeyPipe,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './turnos.component.html',
@@ -90,9 +94,9 @@ export class TurnosComponent implements OnInit, OnDestroy {
    *    - CANCELLED / NO_SHOW                    → "Cancelado" */
   /** 3 chips relevantes para el paciente. Confirmado se omite (back no lo setea hoy). */
   protected readonly estadoOptions: { label: string; value: EstadoTurno }[] = [
-    { label: 'Pendiente', value: 'pendiente' },  // SCHEDULED + IN_PROGRESS + RESCHEDULED
-    { label: 'Asistido',  value: 'completado' }, // COMPLETED
-    { label: 'Cancelado', value: 'cancelado' },  // CANCELLED + NO_SHOW
+    { label: 'Programado', value: 'pendiente' },  // SCHEDULED + IN_PROGRESS + RESCHEDULED
+    { label: 'Asistido',   value: 'completado' }, // COMPLETED
+    { label: 'Cancelado',  value: 'cancelado' },  // CANCELLED + NO_SHOW
   ];
 
   /** Lista combinada (próximos + anteriores) filtrada según los filtros activos. */

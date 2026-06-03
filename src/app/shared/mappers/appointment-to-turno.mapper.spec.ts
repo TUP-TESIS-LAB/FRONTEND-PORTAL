@@ -26,7 +26,6 @@ describe('appointmentToTurno', () => {
     }, ctx);
 
     expect(t.estado).toBe('pendiente');
-    expect(t.estadoLabel).toBe('Pendiente');
     expect(t.personaNombre).toBe('María');
     expect(t.sede.nombre).toBe('Sede Centro');
     expect(t.estudios).toContain('Hemograma');
@@ -59,7 +58,6 @@ describe('appointmentToTurno', () => {
       prescriptionFileUrl: null, determinations: [],
     }, ctx);
     expect(t.estado).toBe('confirmado');
-    expect(t.estadoLabel).toBe('Confirmado');
   });
 
   it('maps COMPLETED status', () => {

@@ -83,8 +83,11 @@ ui-bottom-nav {
 .ui-patient-content {
   flex: 1;
   padding: var(--space-4);
-  // Espacio para el bottom nav fijo en mobile
-  padding-bottom: calc(var(--ds-bottom-nav-h) + var(--space-4) + var(--ds-safe-bottom));
+  // Clearance para el bottom-nav fijo en mobile: alto del nav + safe area
+  // + espacio visible. Margen generoso porque el box-shadow del nav se
+  // extiende hacia arriba y porque algunos browsers (Safari iOS) reservan
+  // espacio dinamico que recorta los ultimos px del scroll.
+  padding-bottom: calc(var(--ds-bottom-nav-h) + var(--ds-safe-bottom) + var(--space-10));
   background: var(--ds-bg);
 
   @include desktop-up {
