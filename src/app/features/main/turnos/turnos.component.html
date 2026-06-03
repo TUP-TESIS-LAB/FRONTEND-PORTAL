@@ -119,10 +119,7 @@
           [day]="turno.dia"
           [month]="turno.mes"
           [title]="turno.tipo"
-          [details]="[
-            { icon: 'pi-clock',      text: turno.hora + ' hs' },
-            { icon: 'pi-map-marker', text: turno.sede.nombre }
-          ]"
+          [details]="sedeDetailsFor(turno)"
           [statusKey]="turno.estado"
           [statusLabel]="turno.estadoLabel"
           [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"
@@ -140,10 +137,7 @@
           [day]="turno.dia"
           [month]="turno.mes"
           [title]="turno.tipo"
-          [details]="[
-            { icon: 'pi-clock',      text: turno.hora + ' hs' },
-            { icon: 'pi-map-marker', text: turno.sede.nombre }
-          ]"
+          [details]="sedeDetailsFor(turno)"
           [statusKey]="turno.estado"
           [statusLabel]="turno.estadoLabel"
           [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"

@@ -166,6 +166,29 @@ export class TurnosComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.cargarTurnos();
+    this.showPendingBookingToast();
+  }
+
+  /**
+   * Si el wizard de sacar turno dejo un flag en sessionStorage (porque el
+   * MessageService del wizard se destruye al navegar aca), lo levantamos y
+   * mostramos el toast en este componente.
+   */
+  private showPendingBookingToast(): void {
+    const raw = sessionStorage.getItem('portal.turnoJustBooked');
+    if (!raw) return;
+    sessionStorage.removeItem('portal.turnoJustBooked');
+    try {
+      const { detail } = JSON.parse(raw) as { detail: string };
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Turno reservado',
+        detail,
+        life: 5000,
+      });
+    } catch {
+      // sessionStorage corrupto - ignoramos silenciosamente
+    }
   }
 
   private cargarTurnos(): void {
@@ -239,6 +262,22 @@ export class TurnosComponent implements OnInit, OnDestroy {
 
   onSacarTurno(): void {
     this.router.navigate(['/turnos/sacar']);
+  }
+
+  /**
+   * Detalles que renderiza la `ui-event-card`: hora, sede + direccion (si existe).
+   * Si la sucursal viene sin direccion formateada ('—'), se omite esa fila.
+   */
+  protected sedeDetailsFor(turno: Turno): { icon: string; text: string }[] {
+    const details: { icon: string; text: string }[] = [
+      { icon: 'pi-clock', text: turno.hora + ' hs' },
+      { icon: 'pi-map-marker', text: turno.sede.nombre },
+    ];
+    const direccion = turno.sede.direccion?.trim();
+    if (direccion && direccion !== '—') {
+      details.push({ icon: 'pi-compass', text: direccion });
+    }
+    return details;
   }
 
   ngOnDestroy(): void {
