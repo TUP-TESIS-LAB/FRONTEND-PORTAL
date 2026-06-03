@@ -1,9 +1,11 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { SkeletonModule } from 'primeng/skeleton';
-import { signal } from '@angular/core';
+import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
+import { HeroCardComponent, HeroCardDetail } from '../../../shared/ui/components/hero-card/hero-card.component';
+import { PlaceholderCardComponent } from '../../../shared/ui/components/placeholder-card/placeholder-card.component';
 import { AppointmentService } from '../turnos/services/appointment.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Turno } from '../../../core/models/turno.model';
@@ -11,11 +13,17 @@ import { Turno } from '../../../core/models/turno.model';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [ButtonModule, SkeletonModule],
+  imports: [
+    ButtonModule,
+    SkeletonModule,
+    PageHeaderComponent,
+    HeroCardComponent,
+    PlaceholderCardComponent,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   private readonly appointmentSvc = inject(AppointmentService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
@@ -29,6 +37,24 @@ export class DashboardComponent implements OnInit {
     // El AuthUser tiene `nombre` ("Juan Perez") — extraemos solo el primer nombre
     // para un saludo casual ("Hola, Juan!").
     return u?.nombre?.split(' ')[0] ?? 'Paciente';
+  });
+
+  /**
+   * Detalles que renderiza ui-hero-card del próximo turno: hora, sede,
+   * dirección (si existe). Mismo patrón que TurnosComponent.sedeDetailsFor.
+   */
+  protected readonly heroDetails = computed<HeroCardDetail[]>(() => {
+    const t = this.proximoTurno();
+    if (!t) return [];
+    const details: HeroCardDetail[] = [
+      { icon: 'pi-clock', text: `${t.hora} hs · ${t.fechaCompleta}` },
+      { icon: 'pi-map-marker', text: t.sede.nombre },
+    ];
+    const direccion = t.sede.direccion?.trim();
+    if (direccion && direccion !== '—') {
+      details.push({ icon: 'pi-compass', text: direccion });
+    }
+    return details;
   });
 
   private subs = new Subscription();

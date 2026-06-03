@@ -1,88 +1,75 @@
-<section class="ui-dashboard">
+<ui-page-header
+  [title]="cargando() ? 'Hola 👋' : 'Hola, ' + nombrePaciente() + ' 👋'"
+  subtitle="Esto es lo que está pasando con tu cuenta.">
+  <p-button
+    label="Sacar turno"
+    icon="pi pi-plus"
+    severity="primary"
+    (onClick)="onSacarTurno()" />
+</ui-page-header>
 
-  <header class="ui-dashboard__hero">
-    <h1>Hola, {{ nombrePaciente() }}!</h1>
-    <p>Esto es lo que está pasando con tu cuenta.</p>
-  </header>
+<!-- Hero: próximo turno (siempre visible, con loading + empty state) -->
+@if (cargando()) {
+  <p-skeleton height="180px" styleClass="ui-dashboard__skeleton" />
+} @else if (proximoTurno(); as t) {
+  <ui-hero-card
+    label="Próximo turno"
+    [title]="t.tipo"
+    [details]="heroDetails()"
+    [chips]="t.estudios"
+    decorativeIcon="pi-calendar">
+    <p-button
+      label="Ver detalles"
+      severity="secondary"
+      (onClick)="onVerTurnos()" />
+  </ui-hero-card>
+} @else {
+  <ui-placeholder-card
+    icon="pi-calendar-plus"
+    title="No tenés turnos próximos"
+    description="Reservá tu próximo turno desde el botón Sacar turno." />
+}
 
-  <!-- Hero: próximo turno full-width arriba (siempre visible con empty state) -->
-  <div class="ui-dashboard__proximo">
-    <header class="ui-card__header">
+<!-- Accesos rápidos: cards grandes en grid -->
+<section class="ui-dashboard__accesos">
+  <h2 class="ui-dashboard__section-title">Accesos rápidos</h2>
+  <div class="ui-accesos-grid">
+
+    <button class="ui-acceso ui-acceso--primary" (click)="onSacarTurno()">
+      <i class="pi pi-plus-circle"></i>
+      <span class="ui-acceso__label">Sacar turno</span>
+      <span class="ui-acceso__desc">Reservá una atención</span>
+    </button>
+
+    <button class="ui-acceso" (click)="onVerTurnos()">
       <i class="pi pi-calendar"></i>
-      <h2>Próximo turno</h2>
-    </header>
+      <span class="ui-acceso__label">Mis turnos</span>
+      <span class="ui-acceso__desc">
+        @if (turnosCount() > 0) {
+          {{ turnosCount() }} próximo{{ turnosCount() === 1 ? '' : 's' }}
+        } @else {
+          Sin turnos próximos
+        }
+      </span>
+    </button>
 
-    @if (cargando()) {
-      <p-skeleton width="100%" height="120px" />
-    } @else if (proximoTurno(); as t) {
-      <div class="ui-proximo-turno">
-        <div class="ui-proximo-turno__fecha">
-          <span class="ui-proximo-turno__dia">{{ t.dia }}</span>
-          <span class="ui-proximo-turno__mes">{{ t.mes }}</span>
-        </div>
-        <div class="ui-proximo-turno__info">
-          <p class="ui-proximo-turno__tipo">{{ t.tipo }}</p>
-          <p><i class="pi pi-clock"></i> {{ t.hora }} hs</p>
-          <p><i class="pi pi-map-marker"></i> {{ t.sede.nombre }}</p>
-          @if (t.sede.direccion && t.sede.direccion !== '—') {
-            <p class="ui-proximo-turno__direccion"><i class="pi pi-compass"></i> {{ t.sede.direccion }}</p>
-          }
-        </div>
-        <div class="ui-proximo-turno__action">
-          <p-button label="Ver detalles" icon="pi pi-arrow-right" iconPos="right" (onClick)="onVerTurnos()" />
-        </div>
-      </div>
-    } @else {
-      <div class="ui-empty ui-empty--hero">
-        <i class="pi pi-calendar-plus ui-empty__icon"></i>
-        <p>Todavía no tenés turnos programados.</p>
-        <p-button label="Sacar mi primer turno" icon="pi pi-plus" (onClick)="onSacarTurno()" />
-      </div>
-    }
+    <button class="ui-acceso" (click)="onVerEstudios()">
+      <i class="pi pi-file"></i>
+      <span class="ui-acceso__label">Mis estudios</span>
+      <span class="ui-acceso__desc">Resultados y análisis</span>
+    </button>
+
+    <button class="ui-acceso" (click)="onVerFamilia()">
+      <i class="pi pi-users"></i>
+      <span class="ui-acceso__label">Mi familia</span>
+      <span class="ui-acceso__desc">Gestioná tu grupo familiar</span>
+    </button>
+
+    <button class="ui-acceso" (click)="onVerPerfil()">
+      <i class="pi pi-user"></i>
+      <span class="ui-acceso__label">Mi perfil</span>
+      <span class="ui-acceso__desc">Datos personales</span>
+    </button>
+
   </div>
-
-  <!-- Accesos rápidos: cards grandes en grid -->
-  <section class="ui-dashboard__accesos">
-    <h2 class="ui-dashboard__section-title">Accesos rápidos</h2>
-    <div class="ui-accesos-grid">
-
-      <button class="ui-acceso ui-acceso--primary" (click)="onSacarTurno()">
-        <i class="pi pi-plus-circle"></i>
-        <span class="ui-acceso__label">Sacar turno</span>
-        <span class="ui-acceso__desc">Reservá una atención</span>
-      </button>
-
-      <button class="ui-acceso" (click)="onVerTurnos()">
-        <i class="pi pi-calendar"></i>
-        <span class="ui-acceso__label">Mis turnos</span>
-        <span class="ui-acceso__desc">
-          @if (turnosCount() > 0) {
-            {{ turnosCount() }} próximo{{ turnosCount() === 1 ? '' : 's' }}
-          } @else {
-            Sin turnos próximos
-          }
-        </span>
-      </button>
-
-      <button class="ui-acceso" (click)="onVerEstudios()">
-        <i class="pi pi-file"></i>
-        <span class="ui-acceso__label">Mis estudios</span>
-        <span class="ui-acceso__desc">Resultados y análisis</span>
-      </button>
-
-      <button class="ui-acceso" (click)="onVerFamilia()">
-        <i class="pi pi-users"></i>
-        <span class="ui-acceso__label">Mi familia</span>
-        <span class="ui-acceso__desc">Gestioná tu grupo familiar</span>
-      </button>
-
-      <button class="ui-acceso" (click)="onVerPerfil()">
-        <i class="pi pi-user"></i>
-        <span class="ui-acceso__label">Mi perfil</span>
-        <span class="ui-acceso__desc">Datos personales</span>
-      </button>
-
-    </div>
-  </section>
-
 </section>
