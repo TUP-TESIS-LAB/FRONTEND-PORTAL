@@ -13,10 +13,10 @@ export const routes: Routes = [
       import('./features/auth/register/register.component').then(m => m.RegisterComponent),
   },
   {
+    // Legacy /dashboard: redirige al home real para no romper bookmarks.
     path: 'dashboard',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
+    redirectTo: '',
+    pathMatch: 'full',
   },
   {
     path: '',
@@ -30,8 +30,8 @@ export const routes: Routes = [
         path: '',
         pathMatch: 'full',
         loadComponent: () =>
-          import('./features/main/patient-placeholder.component').then(
-            m => m.PatientPlaceholderComponent,
+          import('./features/main/dashboard/dashboard.component').then(
+            m => m.DashboardComponent,
           ),
       },
       {
