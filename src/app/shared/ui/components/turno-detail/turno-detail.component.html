@@ -22,10 +22,16 @@
   <!-- Body -->
   <div class="ui-turno-detail__body">
 
-    <!-- Mapa placeholder -->
-    <div class="ui-turno-detail__map" aria-hidden="true">
-      <i class="pi pi-map-marker"></i>
-    </div>
+    <!-- Mapa embebido (Google Maps sin API key) — solo si hay direccion -->
+    @if (hasDireccion(turno.sede.direccion)) {
+      <iframe
+        [src]="mapaUrl(turno.sede.direccion)"
+        class="ui-turno-detail__map"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        title="Ubicación de la sede"
+        aria-label="Mapa con la ubicación de la sede"></iframe>
+    }
 
     <!-- Datos de la sede -->
     <div class="ui-turno-detail__sede">

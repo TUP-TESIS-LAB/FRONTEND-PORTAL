@@ -116,14 +116,24 @@
 
   &__footer {
     display: flex;
-    justify-content: space-between;
-    gap: var(--space-2);
+    // Centrado para que el caso de 1 solo boton (Cerrar) quede al medio
+    // y no anclado a la izquierda. Con 2 botones tambien se ven centrados
+    // como grupo, con el mismo ancho cada uno.
+    justify-content: center;
+    gap: var(--space-3);
     padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--ds-safe-bottom));
     border-top: 1px solid var(--ds-surface-dark);
     background: var(--ds-white);
     flex-shrink: 0;
 
-    .p-button { flex: 1; }
+    // El host <p-button> ocupa hasta 280px, parejo entre todos los botones
+    // que haya. La <button> interna toma 100% del host (necesita ::ng-deep
+    // porque vive en otro scope de Angular).
+    p-button { flex: 1; max-width: 280px; }
+    ::ng-deep .p-button {
+      width: 100%;
+      justify-content: center;
+    }
   }
 }
 
