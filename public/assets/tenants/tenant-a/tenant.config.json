@@ -1,0 +1,20 @@
+{
+  "id": "tenant-a",
+  "shortName": "TA",
+  "fullName": "E2E Tenant A",
+  "tagline": "Tenant de pruebas E2E full-stack",
+  "logo": {
+    "color": "/assets/tenants/castillo-chidiak/logo.svg",
+    "white": "/assets/tenants/castillo-chidiak/logo-white.svg",
+    "mark": "/assets/tenants/castillo-chidiak/logo-mark.svg"
+  },
+  "colors": {
+    "primary": "#0066CC",
+    "secondary": "#FF6600",
+    "accent": "#F59E0B"
+  },
+  "contact": {
+    "helpPhone": "0800-555-E2E",
+    "address": "E2E Address"
+  }
+}
