@@ -119,12 +119,9 @@
           [day]="turno.dia"
           [month]="turno.mes"
           [title]="turno.tipo"
-          [details]="[
-            { icon: 'pi-clock',      text: turno.hora + ' hs' },
-            { icon: 'pi-map-marker', text: turno.sede.nombre }
-          ]"
-          [statusKey]="turno.estado"
-          [statusLabel]="turno.estadoLabel"
+          [details]="sedeDetailsFor(turno)"
+          [statusKey]="turno.estado | estadoTurnoKey"
+          [statusLabel]="turno.estado | estadoTurnoLabel"
           [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"
           [class.ui-card-selected]="selectedTurno()?.id === turno.id"
           (click)="onTurnoClick(turno)"
@@ -140,12 +137,9 @@
           [day]="turno.dia"
           [month]="turno.mes"
           [title]="turno.tipo"
-          [details]="[
-            { icon: 'pi-clock',      text: turno.hora + ' hs' },
-            { icon: 'pi-map-marker', text: turno.sede.nombre }
-          ]"
-          [statusKey]="turno.estado"
-          [statusLabel]="turno.estadoLabel"
+          [details]="sedeDetailsFor(turno)"
+          [statusKey]="turno.estado | estadoTurnoKey"
+          [statusLabel]="turno.estado | estadoTurnoLabel"
           [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"
           [class.ui-card-selected]="selectedTurno()?.id === turno.id"
           (click)="onTurnoClick(turno)"
@@ -226,7 +220,8 @@
       <div class="ui-turnos-filters-sheet__footer">
         <p-button
           label="Cerrar"
-          severity="primary"
+          [text]="true"
+          severity="secondary"
           (onClick)="filtersOpen.set(false)" />
       </div>
     }

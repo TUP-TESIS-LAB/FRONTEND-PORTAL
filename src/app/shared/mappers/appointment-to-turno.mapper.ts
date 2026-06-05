@@ -22,14 +22,16 @@ export interface MapperContext {
   sedes: Map<string, Sede>;                  // key = Sede.id (string-coerced branchId)
 }
 
-const STATUS_MAP: Record<AppointmentResponse['status'], { estado: EstadoTurno; label: string }> = {
-  SCHEDULED:   { estado: 'pendiente',  label: 'Pendiente' },
-  CONFIRMED:   { estado: 'confirmado', label: 'Confirmado' },
-  IN_PROGRESS: { estado: 'pendiente',  label: 'En curso' },
-  COMPLETED:   { estado: 'completado', label: 'Completado' },
-  CANCELLED:   { estado: 'cancelado',  label: 'Cancelado' },
-  NO_SHOW:     { estado: 'cancelado',  label: 'No asistió' },
-  RESCHEDULED: { estado: 'pendiente',  label: 'Reprogramado' },
+// Solo mapeamos el bucket interno; el label visible al paciente lo
+// resuelve EstadoTurnoLabelPipe (Programado / Asistido / Cancelado).
+const STATUS_MAP: Record<AppointmentResponse['status'], EstadoTurno> = {
+  SCHEDULED:   'pendiente',
+  CONFIRMED:   'confirmado',
+  IN_PROGRESS: 'pendiente',
+  COMPLETED:   'completado',
+  CANCELLED:   'cancelado',
+  NO_SHOW:     'cancelado',
+  RESCHEDULED: 'pendiente',
 };
 
 const MESES_ABREV  = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
@@ -42,7 +44,7 @@ export function appointmentToTurno(ap: AppointmentResponse, ctx: MapperContext):
   const date = parseLocalDateTime(ap.scheduledAt) ?? new Date(NaN);
   const persona = ctx.family.get(ap.patientId);
   const sede    = ctx.sedes.get(String(ap.branchId));
-  const status  = STATUS_MAP[ap.status];
+  const estado  = STATUS_MAP[ap.status];
 
   const tipos: TipoAnalisis[] = [];
   for (const d of ap.determinations) {
@@ -61,11 +63,10 @@ export function appointmentToTurno(ap: AppointmentResponse, ctx: MapperContext):
     mes:             MESES_ABREV[date.getMonth()],
     fechaCompleta:   `${DIAS_SEMANA[date.getDay()]} ${date.getDate()} de ${MESES_FULL[date.getMonth()]} de ${date.getFullYear()}`,
     hora:            `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`,
-    tipo:            estudios.join(' + ') || '—',
+    tipo:            estudios.join(' + ') || 'Análisis clínicos',
     estudios,
     sede:            sede ?? { id: '0', nombre: 'Sede sin asignar', direccion: '' } as Sede,
-    estado:          status.estado,
-    estadoLabel:     status.label,
+    estado,
     preparacion,
     llegarMinAntes:  10,
     ordenCargada:    !!ap.prescriptionFileUrl,

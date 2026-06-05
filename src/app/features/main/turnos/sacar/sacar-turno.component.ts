@@ -268,13 +268,13 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
       determinations,
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Turno reservado',
+        // El MessageService local del wizard se destruye al navegar, asi que
+        // el toast no llega a renderizarse. Pasamos el aviso por sessionStorage
+        // para que la pantalla de Mis Turnos lo muestre en su propio toast.
+        sessionStorage.setItem('portal.turnoJustBooked', JSON.stringify({
           detail: `Tu turno quedó confirmado para el ${fecha.getDate()} de ${
             this.MESES_FULL[fecha.getMonth()]} a las ${hora} hs.`,
-          life: 5000,
-        });
+        }));
         this.router.navigate(['/turnos']);
       },
       error: (err) => {

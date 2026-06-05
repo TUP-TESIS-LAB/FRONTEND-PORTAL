@@ -17,6 +17,8 @@ import { EmptyStateComponent } from '../../../shared/ui/components/empty-state/e
 import { EventCardComponent } from '../../../shared/ui/components/event-card/event-card.component';
 import { PlaceholderCardComponent } from '../../../shared/ui/components/placeholder-card/placeholder-card.component';
 import { TurnoDetailComponent } from '../../../shared/ui/components/turno-detail/turno-detail.component';
+import { EstadoTurnoLabelPipe } from '../../../shared/pipes/estado-turno-label.pipe';
+import { EstadoTurnoKeyPipe } from '../../../shared/pipes/estado-turno-key.pipe';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { AppointmentService } from './services/appointment.service';
 import { mapApiError } from '../../../shared/utils/api-error-mapper';
@@ -41,6 +43,8 @@ import { EstadoTurno, Turno } from '../../../core/models/turno.model';
     EventCardComponent,
     PlaceholderCardComponent,
     TurnoDetailComponent,
+    EstadoTurnoLabelPipe,
+    EstadoTurnoKeyPipe,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './turnos.component.html',
@@ -90,9 +94,9 @@ export class TurnosComponent implements OnInit, OnDestroy {
    *    - CANCELLED / NO_SHOW                    → "Cancelado" */
   /** 3 chips relevantes para el paciente. Confirmado se omite (back no lo setea hoy). */
   protected readonly estadoOptions: { label: string; value: EstadoTurno }[] = [
-    { label: 'Pendiente', value: 'pendiente' },  // SCHEDULED + IN_PROGRESS + RESCHEDULED
-    { label: 'Asistido',  value: 'completado' }, // COMPLETED
-    { label: 'Cancelado', value: 'cancelado' },  // CANCELLED + NO_SHOW
+    { label: 'Programado', value: 'pendiente' },  // SCHEDULED + IN_PROGRESS + RESCHEDULED
+    { label: 'Asistido',   value: 'completado' }, // COMPLETED
+    { label: 'Cancelado',  value: 'cancelado' },  // CANCELLED + NO_SHOW
   ];
 
   /** Lista combinada (próximos + anteriores) filtrada según los filtros activos. */
@@ -166,6 +170,29 @@ export class TurnosComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.cargarTurnos();
+    this.showPendingBookingToast();
+  }
+
+  /**
+   * Si el wizard de sacar turno dejo un flag en sessionStorage (porque el
+   * MessageService del wizard se destruye al navegar aca), lo levantamos y
+   * mostramos el toast en este componente.
+   */
+  private showPendingBookingToast(): void {
+    const raw = sessionStorage.getItem('portal.turnoJustBooked');
+    if (!raw) return;
+    sessionStorage.removeItem('portal.turnoJustBooked');
+    try {
+      const { detail } = JSON.parse(raw) as { detail: string };
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Turno reservado',
+        detail,
+        life: 5000,
+      });
+    } catch {
+      // sessionStorage corrupto - ignoramos silenciosamente
+    }
   }
 
   private cargarTurnos(): void {
@@ -239,6 +266,22 @@ export class TurnosComponent implements OnInit, OnDestroy {
 
   onSacarTurno(): void {
     this.router.navigate(['/turnos/sacar']);
+  }
+
+  /**
+   * Detalles que renderiza la `ui-event-card`: hora, sede + direccion (si existe).
+   * Si la sucursal viene sin direccion formateada ('—'), se omite esa fila.
+   */
+  protected sedeDetailsFor(turno: Turno): { icon: string; text: string }[] {
+    const details: { icon: string; text: string }[] = [
+      { icon: 'pi-clock', text: turno.hora + ' hs' },
+      { icon: 'pi-map-marker', text: turno.sede.nombre },
+    ];
+    const direccion = turno.sede.direccion?.trim();
+    if (direccion && direccion !== '—') {
+      details.push({ icon: 'pi-compass', text: direccion });
+    }
+    return details;
   }
 
   ngOnDestroy(): void {

@@ -1,0 +1,83 @@
+// El contenedor + max-width + padding viene del shell (.ui-patient-content).
+// Acá solo definimos espaciado entre secciones y el grid de accesos.
+
+:host {
+  display: block;
+}
+
+.ui-dashboard__skeleton {
+  display: block;
+  margin-bottom: var(--space-4);
+  border-radius: var(--ds-radius-lg);
+}
+
+// ─── Accesos rápidos (cards grandes) ────────────────────────────
+.ui-dashboard__accesos {
+  margin-top: var(--space-5);
+}
+
+.ui-dashboard__section-title {
+  margin: 0 0 var(--space-3);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--ds-text);
+}
+
+.ui-accesos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+.ui-acceso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-3);
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-lg);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  min-height: 160px;
+  text-align: center;
+  font-family: inherit;
+
+  i {
+    font-size: 2rem;
+    color: var(--brand-primary);
+    margin-bottom: 0.25rem;
+  }
+  .ui-acceso__label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ds-text);
+  }
+  .ui-acceso__desc {
+    font-size: 0.8125rem;
+    color: var(--ds-text-muted);
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ds-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.08));
+    border-color: var(--brand-primary);
+  }
+}
+
+.ui-acceso--primary {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary, var(--brand-primary)));
+  border-color: var(--brand-primary);
+  color: var(--ds-white);
+  i { color: var(--ds-white); }
+  .ui-acceso__label,
+  .ui-acceso__desc { color: var(--ds-white); }
+  .ui-acceso__desc { opacity: 0.9; }
+  &:hover {
+    border-color: var(--brand-primary);
+  }
+}

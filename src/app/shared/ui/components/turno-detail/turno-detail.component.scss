@@ -71,19 +71,15 @@
   }
 
   // ─── Mapa placeholder ────────────────────────────────
+  // Iframe del mapa: ancho completo, altura util para ver el barrio,
+  // bg gris mientras carga.
   &__map {
-    height: 80px;
-    background: var(--ds-surface);
+    display: block;
+    width: 100%;
+    height: 180px;
+    border: none;
     border-radius: var(--ds-radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    .pi {
-      font-size: 1.5rem;
-      color: var(--ds-text-disabled);
-      opacity: 0.4;
-    }
+    background: var(--ds-surface);
   }
 
   // ─── Sede ────────────────────────────────────────────
@@ -158,8 +154,18 @@
 
     @include mobile-only {
       flex-direction: column;
+      // stretch hace que los <p-button> ocupen el cross-axis completo.
+      // align-items: center los dejaba como pildoras chiquitas centradas.
+      align-items: stretch;
 
-      .p-button { width: 100%; }
+      // El host <p-button> queda alcanzable por tag (mismo encapsulation
+      // del padre). Pero el <button class="p-button"> interno vive en otro
+      // scope — para que tambien sea full width necesitamos ::ng-deep.
+      p-button { width: 100%; }
+      ::ng-deep .p-button {
+        width: 100%;
+        justify-content: center;
+      }
     }
   }
 }

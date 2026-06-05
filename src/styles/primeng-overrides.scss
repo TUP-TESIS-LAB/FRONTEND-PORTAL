@@ -485,6 +485,80 @@
   padding: 0;
 }
 
+// ─── p-dialog / p-confirmdialog (padding restore) ────
+// Tailwind v4 resetea botones, divs y el padding default de PrimeNG no
+// sobrevive — el modal queda sin aire interno (titulo y mensaje pegados
+// al borde, botones sin separacion). Restauramos padding generoso.
+// Excepcion: .ui-wizard-dialog que sobreescribe a 0 mas arriba.
+.p-dialog {
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-lg);
+  border: 1px solid var(--ds-surface-dark);
+  font-family: var(--ds-font);
+  // Por default Aura no acota ancho; sin esto el confirm-dialog queda
+  // edge-to-edge en mobile y muy ancho en desktop si el texto es largo.
+  max-width: min(480px, 92vw);
+  width: auto;
+
+  .p-dialog-header {
+    padding: var(--space-5) var(--space-6) var(--space-3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    color: var(--ds-text);
+    font-weight: 600;
+  }
+
+  .p-dialog-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ds-text);
+    margin: 0;
+  }
+
+  .p-dialog-header-icons {
+    display: inline-flex;
+    gap: var(--space-1);
+  }
+
+  .p-dialog-content {
+    padding: var(--space-3) var(--space-6) var(--space-5);
+    color: var(--ds-text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .p-dialog-footer {
+    padding: var(--space-3) var(--space-6) var(--space-5);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    border-top: 1px solid var(--ds-surface-dark);
+  }
+}
+
+// p-confirmdialog: layout del mensaje (icono + texto)
+.p-confirmdialog .p-dialog-content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+
+  .p-confirm-dialog-icon,
+  .p-dialog-icon {
+    font-size: 22px;
+    color: var(--ds-warning);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .p-confirm-dialog-message {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 // ─── Tabla: celdas ───────────────────────────────────
 // Tailwind v4 resetea padding de td/th a 0; PrimeNG @layer no gana.
 .p-datatable {

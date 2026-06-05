@@ -144,19 +144,6 @@
   @include desktop-up { padding: var(--space-6); }
 }
 
-.ui-patient-content {
-  padding: var(--space-4);
-  padding-bottom: calc(var(--ds-bottom-nav-h) + var(--space-4) + var(--ds-safe-bottom));
-  background: var(--ds-bg);
-  min-height: 100vh;
-
-  @include desktop-up {
-    max-width: var(--ds-content-max);
-    margin: 0 auto;
-    padding: var(--space-6);
-  }
-}
-
 .ui-page-header {
   margin-bottom: var(--space-5);
 
@@ -227,6 +214,11 @@
 .ui-tag-cancelado  { background: var(--ds-danger-light);  color: var(--ds-danger);  }
 .ui-tag-completado { background: var(--brand-primary-light); color: var(--brand-primary); }
 .ui-tag-info       { background: var(--ds-info-light);    color: var(--ds-info);    }
+
+// Tags de los 3 estados visibles al paciente en /turnos (matchean
+// EstadoTurnoKeyPipe: programado, asistido, cancelado).
+.ui-tag-programado { background: var(--ds-success-light);    color: var(--ds-success);    }
+.ui-tag-asistido   { background: var(--brand-primary-light); color: var(--brand-primary); }
 
 // ─── Formularios ─────────────────────────────────────
 .ui-form-grid {

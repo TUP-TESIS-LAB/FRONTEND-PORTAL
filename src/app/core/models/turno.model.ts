@@ -22,7 +22,6 @@ export interface Turno {
   };
 
   estado: EstadoTurno;
-  estadoLabel: string;
 
   preparacion: string[];
   llegarMinAntes: number;
