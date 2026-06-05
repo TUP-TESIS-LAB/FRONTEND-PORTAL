@@ -1,0 +1,51 @@
+<p-drawer
+  [visible]="visible"
+  (visibleChange)="onVisibleChange($event)"
+  position="top"
+  styleClass="ui-top-sheet-drawer"
+  [style]="{ height: 'auto' }"
+  [showCloseIcon]="false">
+
+  <ng-template pTemplate="headless">
+    <div class="ui-top-sheet">
+
+      @if (title) {
+        <p class="ui-top-sheet__title">{{ title }}</p>
+      }
+
+      @if (items.length === 0) {
+        <div class="ui-top-sheet__empty">
+          <i class="pi pi-bell-slash"></i>
+          <span>No tenés notificaciones</span>
+        </div>
+      } @else {
+        <ul class="ui-top-sheet__list" role="menu">
+          @for (item of items; track item.id) {
+            <li role="none">
+              <button
+                type="button"
+                class="ui-top-sheet__btn"
+                role="menuitem"
+                (click)="onItemClick(item)">
+                <i class="pi {{ item.icon }}"></i>
+                <div class="ui-top-sheet__body">
+                  <span class="ui-top-sheet__label">{{ item.label }}</span>
+                  @if (item.message) {
+                    <span class="ui-top-sheet__message">{{ item.message }}</span>
+                  }
+                </div>
+                @if (item.route) {
+                  <i class="pi pi-chevron-right ui-top-sheet__chevron"></i>
+                }
+              </button>
+            </li>
+          }
+        </ul>
+      }
+
+      <!-- Handle visual al final (drag indicator espejo del bottom-sheet) -->
+      <div class="ui-top-sheet__handle"></div>
+
+    </div>
+  </ng-template>
+</p-drawer>

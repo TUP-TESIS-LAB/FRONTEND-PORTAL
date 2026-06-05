@@ -1,12 +1,24 @@
 <ui-page-header
   [title]="cargando() ? 'Hola 👋' : 'Hola, ' + nombrePaciente() + ' 👋'"
   subtitle="Esto es lo que está pasando con tu cuenta.">
-  <p-button
-    label="Sacar turno"
-    icon="pi pi-plus"
-    severity="primary"
-    (onClick)="onSacarTurno()" />
+  <button
+    type="button"
+    class="ui-dashboard__bell"
+    [attr.aria-label]="'Notificaciones (' + notifications().length + ')'"
+    (click)="notificationsOpen.set(true)">
+    <i class="pi pi-bell"></i>
+    @if (notifications().length > 0) {
+      <span class="ui-dashboard__bell-badge">{{ notifications().length }}</span>
+    }
+  </button>
 </ui-page-header>
+
+<!-- Top-sheet: notificaciones (mobile only, espejo del bottom-sheet) -->
+<ui-top-sheet
+  [visible]="notificationsOpen()"
+  (visibleChange)="notificationsOpen.set($event)"
+  title="Notificaciones"
+  [items]="notifications()" />
 
 <!-- Hero: próximo turno (siempre visible, con loading + empty state) -->
 @if (cargando()) {

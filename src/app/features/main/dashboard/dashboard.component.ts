@@ -6,6 +6,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
 import { HeroCardComponent, HeroCardDetail } from '../../../shared/ui/components/hero-card/hero-card.component';
 import { PlaceholderCardComponent } from '../../../shared/ui/components/placeholder-card/placeholder-card.component';
+import { TopSheetComponent, TopSheetItem } from '../../../shared/ui/overlays/top-sheet/top-sheet.component';
 import { AppointmentService } from '../turnos/services/appointment.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Turno } from '../../../core/models/turno.model';
@@ -19,6 +20,7 @@ import { Turno } from '../../../core/models/turno.model';
     PageHeaderComponent,
     HeroCardComponent,
     PlaceholderCardComponent,
+    TopSheetComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -31,6 +33,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
   protected readonly cargando = signal(true);
   protected readonly proximoTurno = signal<Turno | null>(null);
   protected readonly turnosCount = signal(0);
+
+  /** Sheet de notificaciones (campanita en el header del dashboard). */
+  protected readonly notificationsOpen = signal(false);
+
+  /**
+   * Mock de notificaciones para la presentación. Cuando exista backend de
+   * notifs reemplazar por un selector NgRx + endpoint /me/notifications.
+   */
+  protected readonly notifications = signal<TopSheetItem[]>([
+    {
+      id: 'n1',
+      icon: 'pi-calendar-check',
+      label: 'Turno confirmado',
+      message: 'Tu turno del 7/6 a las 10:30 hs fue confirmado por la sucursal Sede Central.',
+      route: ['/turnos'],
+    },
+    {
+      id: 'n2',
+      icon: 'pi-file',
+      label: 'Resultados disponibles',
+      message: 'Los resultados del estudio del 1/6 ya están listos para ver.',
+      route: ['/estudios'],
+    },
+    {
+      id: 'n3',
+      icon: 'pi-clock',
+      label: 'Recordatorio',
+      message: 'Mañana a las 09:00 hs tenés un turno programado.',
+    },
+  ]);
 
   protected readonly nombrePaciente = computed(() => {
     const u = this.auth.currentUser();
