@@ -1,0 +1,108 @@
+@use 'breakpoints' as *;
+
+// Solo se usa en mobile (igual que bottom-sheet).
+:host {
+  @include desktop-up {
+    display: none;
+  }
+}
+
+.ui-top-sheet {
+  padding-top: calc(var(--space-3) + env(safe-area-inset-top, 0px));
+
+  &__title {
+    padding: 0 var(--space-5) var(--space-3);
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ds-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--ds-surface);
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      border-bottom: 1px solid var(--ds-surface);
+
+      &:last-child { border-bottom: none; }
+    }
+  }
+
+  &__btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-5);
+    min-height: 64px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--ds-font);
+    color: var(--ds-text);
+    text-align: left;
+    transition: background 0.12s;
+    -webkit-tap-highlight-color: transparent;
+
+    > i:first-child {
+      font-size: 20px;
+      color: var(--brand-primary, var(--ds-text-muted));
+      flex-shrink: 0;
+      width: 24px;
+      text-align: center;
+    }
+
+    &:active { background: var(--ds-surface); }
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ds-text);
+  }
+
+  &__message {
+    font-size: 12px;
+    color: var(--ds-text-muted);
+    line-height: 1.4;
+  }
+
+  &__chevron {
+    font-size: 13px;
+    color: var(--ds-text-muted);
+    flex-shrink: 0;
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-6) var(--space-4);
+    color: var(--ds-text-muted);
+    font-size: 14px;
+
+    .pi { font-size: 2rem; color: var(--ds-text-disabled); }
+  }
+
+  &__handle {
+    width: 40px;
+    height: 4px;
+    background: var(--ds-surface-dark);
+    border-radius: 999px;
+    margin: var(--space-4) auto var(--space-2);
+  }
+}

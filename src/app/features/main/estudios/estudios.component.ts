@@ -183,6 +183,34 @@ export class EstudiosComponent implements OnInit, OnDestroy {
     return AVATAR_COLOR_MAP[personaId] ?? 'neutral';
   }
 
+  /**
+   * Estado simplificado para el paciente: solo "disponible" o "pendiente".
+   * Cualquier estado interno (en-proceso, etc.) se muestra como pendiente
+   * porque el paciente no tiene contexto operativo para distinguirlos.
+   */
+  displayEstado(e: Estudio): 'disponible' | 'pendiente' {
+    return e.estado === 'disponible' ? 'disponible' : 'pendiente';
+  }
+
+  displayEstadoLabel(e: Estudio): string {
+    return this.displayEstado(e) === 'disponible' ? 'Disponible' : 'Pendiente';
+  }
+
+  isAvailable(e: Estudio): boolean {
+    return e.estado === 'disponible';
+  }
+
+  /** Click en la card → ver detalle SOLO si está disponible. */
+  onCardClick(e: Estudio): void {
+    if (this.isAvailable(e)) this.onVerEstudio(e);
+  }
+
+  /** Click en el botón de descargar (mobile) sin propagar al card. */
+  onDescargarFromCard(e: Estudio, event: Event): void {
+    event.stopPropagation();
+    this.onDescargar(e);
+  }
+
   ngOnInit(): void {
     this.subs.add(
       this.service.getEstudios().subscribe(lista => {

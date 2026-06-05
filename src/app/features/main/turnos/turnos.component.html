@@ -4,7 +4,17 @@
 <ui-page-header
   title="Mis turnos"
   subtitle="Próximos turnos y tu historial reciente.">
+  <!-- Mobile: solo ícono circular (homogéneo con Familia) -->
   <p-button
+    class="ui-show-mobile"
+    icon="pi pi-plus"
+    severity="primary"
+    [rounded]="true"
+    ariaLabel="Sacar turno"
+    (onClick)="onSacarTurno()" />
+  <!-- Desktop: botón con label -->
+  <p-button
+    class="ui-show-desktop"
     label="Sacar turno"
     icon="pi pi-plus"
     severity="primary"

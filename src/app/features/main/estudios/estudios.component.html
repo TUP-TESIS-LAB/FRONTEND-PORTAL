@@ -120,8 +120,8 @@
               </td>
               <td>
                 <p-tag
-                  [value]="e.estadoLabel"
-                  [styleClass]="'ui-tag-' + e.estado" />
+                  [value]="displayEstadoLabel(e)"
+                  [styleClass]="'ui-tag-' + displayEstado(e)" />
               </td>
               <td>
                 <p-button
@@ -130,7 +130,7 @@
                   [text]="true"
                   ariaLabel="Descargar"
                   pTooltip="Descargar"
-                  [disabled]="e.estado !== 'disponible'"
+                  [disabled]="!isAvailable(e)"
                   (onClick)="onDescargar(e)" />
                 <p-button
                   icon="pi pi-eye"
@@ -138,7 +138,7 @@
                   [text]="true"
                   ariaLabel="Ver estudio"
                   pTooltip="Ver"
-                  [disabled]="e.estado !== 'disponible'"
+                  [disabled]="!isAvailable(e)"
                   (onClick)="onVerEstudio(e)" />
               </td>
             </tr>
@@ -146,31 +146,60 @@
         </p-table>
       </div>
 
-      <!-- Mobile: cards -->
+      <!-- Mobile: cards (más altas, con sede y acción descargar inline) -->
       <div class="ui-show-mobile ui-estudios-cards">
         @for (e of estudiosFiltrados(); track e.id) {
           <div
-            class="ui-list-card"
-            [class.ui-list-card--disabled]="e.estado !== 'disponible'"
-            (click)="onVerEstudio(e)"
+            class="ui-estudio-card"
+            [class.ui-estudio-card--disabled]="!isAvailable(e)"
+            (click)="onCardClick(e)"
             role="button"
-            [attr.tabindex]="e.estado === 'disponible' ? 0 : -1"
+            [attr.tabindex]="isAvailable(e) ? 0 : -1"
             [attr.aria-label]="e.nombre">
-            <span class="ui-avatar-mini ui-avatar-{{ getAvatarColor(e.personaId) }}">
-              {{ e.personaIniciales }}
-            </span>
-            <div class="ui-list-card__info">
-              <strong>
+
+            <!-- Header: avatar + persona + estado -->
+            <div class="ui-estudio-card__header">
+              <span class="ui-avatar-mini ui-avatar-{{ getAvatarColor(e.personaId) }}">
+                {{ e.personaIniciales }}
+              </span>
+              <span class="ui-estudio-card__persona-name">{{ e.personaNombre }}</span>
+              <p-tag
+                [value]="displayEstadoLabel(e)"
+                [styleClass]="'ui-tag-' + displayEstado(e)" />
+            </div>
+
+            <!-- Nombre del estudio + badge nuevo -->
+            <div class="ui-estudio-card__title">
+              <span class="ui-categoria-icon ui-categoria-{{ e.categoria }}">
+                <i [class]="getIconForCategoria(e.categoria)"></i>
+              </span>
+              <span class="ui-estudio-card__title-text">
                 {{ e.nombre }}
                 @if (e.esNuevo) {
                   <span class="ui-badge-nuevo">NUEVO</span>
                 }
-              </strong>
-              <span class="ui-text-muted">{{ e.fecha }} · {{ e.personaNombre }}</span>
+              </span>
             </div>
-            <p-tag
-              [value]="e.estadoLabel"
-              [styleClass]="'ui-tag-' + e.estado" />
+
+            <!-- Meta: fecha + sede -->
+            <div class="ui-estudio-card__meta">
+              <span><i class="pi pi-calendar"></i>{{ e.fecha }}</span>
+              @if (e.sede) {
+                <span><i class="pi pi-map-marker"></i>{{ e.sede }}</span>
+              }
+            </div>
+
+            <!-- Acción: descargar (siempre visible; disabled si no disponible) -->
+            <div class="ui-estudio-card__actions">
+              <p-button
+                label="Descargar"
+                icon="pi pi-download"
+                severity="primary"
+                size="small"
+                [outlined]="true"
+                [disabled]="!isAvailable(e)"
+                (onClick)="onDescargarFromCard(e, $event)" />
+            </div>
           </div>
         }
       </div>

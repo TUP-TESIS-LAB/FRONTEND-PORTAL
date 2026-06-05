@@ -1,14 +1,26 @@
 <ui-page-header
   [title]="cargando() ? 'Hola 👋' : 'Hola, ' + nombrePaciente() + ' 👋'"
   subtitle="Esto es lo que está pasando con tu cuenta.">
-  <p-button
-    label="Sacar turno"
-    icon="pi pi-plus"
-    severity="primary"
-    (onClick)="onSacarTurno()" />
+  <button
+    type="button"
+    class="ui-dashboard__bell"
+    [attr.aria-label]="'Notificaciones (' + notifications().length + ')'"
+    (click)="notificationsOpen.set(true)">
+    <i class="pi pi-bell"></i>
+    @if (notifications().length > 0) {
+      <span class="ui-dashboard__bell-badge">{{ notifications().length }}</span>
+    }
+  </button>
 </ui-page-header>
 
-<!-- Hero: próximo turno (siempre visible, con loading + empty state) -->
+<!-- Top-sheet: notificaciones (mobile only, espejo del bottom-sheet) -->
+<ui-top-sheet
+  [visible]="notificationsOpen()"
+  (visibleChange)="notificationsOpen.set($event)"
+  title="Notificaciones"
+  [items]="notifications()" />
+
+<!-- Hero: prioridad próximo turno → último estudio → empty state -->
 @if (cargando()) {
   <p-skeleton height="180px" styleClass="ui-dashboard__skeleton" />
 } @else if (proximoTurno(); as t) {
@@ -22,6 +34,17 @@
       label="Ver detalles"
       severity="secondary"
       (onClick)="onVerTurnos()" />
+  </ui-hero-card>
+} @else if (ultimoEstudio(); as e) {
+  <ui-hero-card
+    label="Último estudio"
+    [title]="e.nombre"
+    [details]="estudioHeroDetails()"
+    decorativeIcon="pi-file">
+    <p-button
+      label="Ver estudios"
+      severity="secondary"
+      (onClick)="onVerEstudios()" />
   </ui-hero-card>
 } @else {
   <ui-placeholder-card
