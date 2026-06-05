@@ -20,7 +20,7 @@
   title="Notificaciones"
   [items]="notifications()" />
 
-<!-- Hero: próximo turno (siempre visible, con loading + empty state) -->
+<!-- Hero: prioridad próximo turno → último estudio → empty state -->
 @if (cargando()) {
   <p-skeleton height="180px" styleClass="ui-dashboard__skeleton" />
 } @else if (proximoTurno(); as t) {
@@ -34,6 +34,17 @@
       label="Ver detalles"
       severity="secondary"
       (onClick)="onVerTurnos()" />
+  </ui-hero-card>
+} @else if (ultimoEstudio(); as e) {
+  <ui-hero-card
+    label="Último estudio"
+    [title]="e.nombre"
+    [details]="estudioHeroDetails()"
+    decorativeIcon="pi-file">
+    <p-button
+      label="Ver estudios"
+      severity="secondary"
+      (onClick)="onVerEstudios()" />
   </ui-hero-card>
 } @else {
   <ui-placeholder-card
