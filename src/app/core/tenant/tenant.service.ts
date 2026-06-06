@@ -3,6 +3,16 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { TenantConfig } from './tenant-config.model';
 
+/** Shape de GET /public/tenants/{slug}/white-label (backend). */
+interface BackendWhiteLabel {
+  tenantSlug: string;
+  systemName: string;
+  primaryColor: string;
+  secondaryColor: string;
+  lightLogoUrl?: string;
+  darkLogoUrl?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TenantService {
   private http = inject(HttpClient);
@@ -29,19 +39,53 @@ export class TenantService {
   });
 
   async loadTenant(tenantId: string): Promise<void> {
-    // En desarrollo: lee desde public/assets.
-    // TODO: en producción reemplazar por GET /api/tenants/${tenantId}/config
-    const url = `/assets/tenants/${tenantId}/tenant.config.json`;
-
+    // 1) Carga base estática (assets) — necesaria para campos que el backend
+    //    no expone todavía (shortName, tagline, contact, accent color, mark logo).
+    const staticUrl = `/assets/tenants/${tenantId}/tenant.config.json`;
+    let baseConfig: TenantConfig;
     try {
-      const config = await firstValueFrom(
-        this.http.get<TenantConfig>(url)
-      );
-      this._config.set(config);
-      this.applyTheme(config);
+      baseConfig = await firstValueFrom(this.http.get<TenantConfig>(staticUrl));
     } catch {
       throw new Error(`No se pudo cargar la configuración del tenant "${tenantId}"`);
     }
+
+    // 2) Trae el white-label real del backend (colores + systemName + logos).
+    //    Si falla por red o el tenant no tiene white-label seedeado, sigue con
+    //    el estático sin error — el portal es funcional con cualquiera de los dos.
+    let finalConfig = baseConfig;
+    try {
+      const wl = await firstValueFrom(
+        this.http.get<BackendWhiteLabel>(`/public/tenants/${tenantId}/white-label`),
+      );
+      finalConfig = this.mergeWhiteLabel(baseConfig, wl);
+    } catch {
+      // Fallback silencioso al estático.
+    }
+
+    this._config.set(finalConfig);
+    this.applyTheme(finalConfig);
+  }
+
+  /**
+   * Mezcla el white-label del backend (colores + systemName + logos) sobre la
+   * config estática. El backend gana para visual (colores, nombre); la config
+   * estática provee accent (todavía no en backend), contact, tagline, mark.
+   */
+  private mergeWhiteLabel(base: TenantConfig, wl: BackendWhiteLabel): TenantConfig {
+    return {
+      ...base,
+      fullName: wl.systemName || base.fullName,
+      colors: {
+        primary:   wl.primaryColor   || base.colors.primary,
+        secondary: wl.secondaryColor || base.colors.secondary,
+        accent:    base.colors.accent,
+      },
+      logo: {
+        color: wl.lightLogoUrl || base.logo.color,
+        white: wl.darkLogoUrl  || base.logo.white,
+        mark:  base.logo.mark,
+      },
+    };
   }
 
   private applyTheme(config: TenantConfig): void {
