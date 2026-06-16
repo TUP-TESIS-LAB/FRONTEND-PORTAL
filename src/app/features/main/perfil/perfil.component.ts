@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { SkeletonModule } from 'primeng/skeleton';
@@ -20,6 +21,7 @@ import {
   imports: [
     ReactiveFormsModule,
     ButtonModule,
+    DialogModule,
     InputTextModule,
     PasswordModule,
     SkeletonModule,
@@ -104,8 +106,14 @@ export class PerfilComponent implements OnInit {
     this.store.dispatch(A.loadProfile());
   }
 
-  toggleCambioPass(): void {
-    this.mostrarCambioPass.update(v => !v);
+  abrirCambioPass(): void {
+    this.passForm.reset({ currentPassword: '', newPassword: '' });
+    this.mostrarCambioPass.set(true);
+  }
+
+  cerrarCambioPass(): void {
+    this.mostrarCambioPass.set(false);
+    this.passForm.reset({ currentPassword: '', newPassword: '' });
   }
 
   guardarPassword(): void {

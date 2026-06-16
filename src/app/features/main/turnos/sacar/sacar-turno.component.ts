@@ -6,13 +6,12 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Subject, switchMap } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { DatePickerModule } from 'primeng/datepicker';
 import { DrawerModule } from 'primeng/drawer';
 import { ToastModule } from 'primeng/toast';
 import { WizardComponent } from '../../../../shared/ui/wizard/wizard/wizard.component';
 import { AnalysisCardGridComponent } from '../../../../shared/ui/components/analysis-card-grid/analysis-card-grid.component';
 import { SedeListComponent } from '../../../../shared/ui/components/sede-list/sede-list.component';
-import { TimeSlotsComponent } from '../../../../shared/ui/components/time-slots/time-slots.component';
+import { SlotPickerComponent } from '../../../../shared/ui/components/slot-picker/slot-picker.component';
 import { TurnoResumenComponent } from '../../../../shared/ui/components/turno-resumen/turno-resumen.component';
 import { StepParaQuienComponent } from './steps/step-para-quien/step-para-quien.component';
 import { BreakpointService } from '../../../../shared/utils/breakpoint.service';
@@ -32,13 +31,12 @@ import { SlotDisponible } from '../../../../core/models/slot-disponible.model';
     NgTemplateOutlet,
     FormsModule,
     ConfirmDialogModule,
-    DatePickerModule,
     DrawerModule,
     ToastModule,
     WizardComponent,
     AnalysisCardGridComponent,
     SedeListComponent,
-    TimeSlotsComponent,
+    SlotPickerComponent,
     TurnoResumenComponent,
     StepParaQuienComponent,
   ],
@@ -76,7 +74,6 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
   readonly selectedHora      = signal<string | null>(null);
 
   // ─── ngModel del datepicker (visual, no lógica) ──────
-  fechaModel: Date | null = null;
 
   // ─── Paso actual del wizard ───────────────────────────
   readonly currentStep = signal(0);

@@ -187,3 +187,108 @@
   padding-left: 0;
   padding-right: 0;
 }
+
+// ─── Reprogramar turno (drawer desktop / bottom sheet mobile) ───
+.ui-reprogramar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+
+  &__handle { display: none; }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+
+    h3 { margin: 0; font-size: 16px; font-weight: 600; color: var(--ds-text); }
+  }
+
+  &__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--ds-touch-target);
+    height: var(--ds-touch-target);
+    border: none;
+    background: transparent;
+    color: var(--ds-text-muted);
+    border-radius: var(--ds-radius-md);
+    cursor: pointer;
+    &:hover { background: var(--ds-surface); }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  &__footer {
+    margin-top: auto;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--ds-surface);
+    ::ng-deep .p-button { width: 100%; }
+  }
+
+  // Compactar el slot-picker dentro del drawer: menos gaps/márgenes y celdas
+  // de calendario más chicas, para que entre justo sin scroll en pantallas normales.
+  ::ng-deep .ui-fecha-hora-step {
+    gap: var(--space-3);
+
+    h4 { margin-bottom: var(--space-1); font-size: 13px; }
+
+    .p-datepicker {
+      font-size: 14px;
+      th, td { padding: 1px 0; }
+      .p-datepicker-day { width: 30px; height: 30px; }
+      .p-datepicker-header { padding: var(--space-1) var(--space-2); }
+    }
+
+    // Placeholder compacto (no el cuadro de 280px de sacar-turno) para no generar scroll.
+    .ui-fecha-hora-step__placeholder {
+      min-height: 0;
+      padding: var(--space-3);
+      i { font-size: 1.25rem; }
+      p { font-size: 13px; }
+    }
+  }
+
+  // Desktop (drawer lateral): si en una pantalla baja no entra, el cuerpo scrollea
+  // (salvaguarda) y el footer queda fijo abajo.
+  @include desktop-up {
+    height: 100%;
+
+    &__body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+    }
+
+    // Slots más bajos en desktop (no es contexto táctil; en mobile se mantienen 48px).
+    ::ng-deep .ui-time-slot {
+      min-height: 40px;
+      padding: var(--space-1) var(--space-2);
+    }
+  }
+}
+
+@include mobile-only {
+  .ui-reprogramar {
+    padding: var(--space-2) var(--space-4) calc(var(--space-4) + var(--ds-safe-bottom));
+    gap: var(--space-3);
+
+    &__handle {
+      display: block;
+      width: 40px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--ds-surface-dark);
+      margin: 0 auto var(--space-1);
+    }
+
+    &__body { gap: var(--space-4); }
+  }
+}

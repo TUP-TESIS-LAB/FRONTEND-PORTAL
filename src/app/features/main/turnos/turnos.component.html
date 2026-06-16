@@ -238,40 +238,43 @@
   </ng-template>
 </p-drawer>
 
-<!-- ─── Drawer: reprogramar turno (picker de slots) ───── -->
+<!-- ─── Reprogramar turno: drawer lateral en desktop, bottom sheet en mobile ───── -->
 <p-drawer
   [visible]="reprogramarOpen()"
   (visibleChange)="reprogramarOpen.set($event)"
-  position="right"
-  header="Reprogramar turno"
-  styleClass="ui-reprogramar-drawer">
-  <div class="ui-reprogramar">
-    <div class="ui-reprogramar__calendar">
-      <h4>Elegí la nueva fecha</h4>
-      <p-datepicker
-        [inline]="true"
-        [minDate]="minBookingDate"
-        [ngModel]="reprogramarFecha()"
-        (onSelect)="onReprogramarFecha($event)" />
-    </div>
+  [position]="bp.isMobile() ? 'bottom' : 'right'"
+  [style]="bp.isMobile() ? {} : { width: '440px' }"
+  [styleClass]="bp.isMobile() ? 'ui-bottom-sheet-drawer ui-reprogramar-sheet' : 'ui-reprogramar-drawer'">
+  <ng-template pTemplate="headless">
+    <div class="ui-reprogramar">
+      <div class="ui-reprogramar__handle"></div>
 
-    @if (reprogramarFecha()) {
-      <div class="ui-reprogramar__slots">
-        <h4>Horarios disponibles</h4>
-        <ui-time-slots
-          [slots]="reprogramarSlots()"
-          [selectedHora]="reprogramarHora()"
-          (selectionChange)="reprogramarHora.set($event)" />
+      <div class="ui-reprogramar__header">
+        <h3>Reprogramar turno</h3>
+        <button type="button" class="ui-reprogramar__close" aria-label="Cerrar" (click)="reprogramarOpen.set(false)">
+          <i class="pi pi-times"></i>
+        </button>
       </div>
-    }
 
-    <div class="ui-reprogramar__footer">
-      <p-button
-        label="Confirmar reprogramación"
-        severity="primary"
-        [disabled]="!reprogramarHora()"
-        [loading]="rescheduling()"
-        (onClick)="confirmReprogramar()" />
+      <div class="ui-reprogramar__body">
+        <ui-slot-picker
+          layout="stacked"
+          [fecha]="reprogramarFecha()"
+          [selectedHora]="reprogramarHora()"
+          [slots]="reprogramarSlots()"
+          [minDate]="minBookingDate"
+          (fechaChange)="onReprogramarFecha($event)"
+          (horaChange)="reprogramarHora.set($event)" />
+      </div>
+
+      <div class="ui-reprogramar__footer">
+        <p-button
+          label="Confirmar reprogramación"
+          severity="primary"
+          [disabled]="!reprogramarHora()"
+          [loading]="rescheduling()"
+          (onClick)="confirmReprogramar()" />
+      </div>
     </div>
-  </div>
+  </ng-template>
 </p-drawer>

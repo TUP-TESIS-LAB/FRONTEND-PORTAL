@@ -377,6 +377,26 @@
   }
 }
 
+// ─── Reprogramar turno: drawer lateral (desktop) ─────
+// Headless: el contenido (.ui-reprogramar) maneja su propio padding.
+.ui-reprogramar-drawer {
+  .p-drawer-content { padding: 0; height: 100%; }
+}
+
+// ─── Reprogramar turno: bottom sheet (mobile) ────────
+// Variante de altura acotada + scroll, sobre .ui-bottom-sheet-drawer.
+.ui-reprogramar-sheet {
+  max-height: 92dvh !important;
+
+  .p-drawer-content {
+    padding: 0;
+    max-height: 92dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
+
 // ─── Tabs ────────────────────────────────────────────
 // Aura pone los estilos de tabs dentro de @layer primeng.
 // Las siguientes reglas son unlayered → ganan en cascada sin !important.
@@ -533,9 +553,13 @@
   .p-dialog-footer {
     padding: var(--space-3) var(--space-6) var(--space-5);
     display: flex;
+    align-items: center;
     justify-content: flex-end;
     gap: var(--space-2);
     border-top: 1px solid var(--ds-surface-dark);
+
+    // botones a la misma altura aunque uno sea [text] y otro sólido
+    .p-button { margin: 0; }
   }
 }
 

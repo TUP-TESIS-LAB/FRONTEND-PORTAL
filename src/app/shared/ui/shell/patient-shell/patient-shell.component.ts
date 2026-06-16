@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { DrawerModule } from 'primeng/drawer';
 import { ButtonModule } from 'primeng/button';
@@ -6,6 +6,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 import { BottomNavComponent } from '../bottom-nav/bottom-nav.component';
 import { BottomSheetComponent, BottomSheetItem } from '../../overlays/bottom-sheet/bottom-sheet.component';
 import { TenantService } from '../../../../core/tenant/tenant.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { NavGroup, NavItem, UserSummary } from '../../types';
 
 @Component({
@@ -25,6 +26,7 @@ import { NavGroup, NavItem, UserSummary } from '../../types';
 export class PatientShellComponent {
   private readonly tenantSvc = inject(TenantService);
   private readonly router    = inject(Router);
+  private readonly auth      = inject(AuthService);
 
   tenant = this.tenantSvc.config;
 
@@ -33,13 +35,16 @@ export class PatientShellComponent {
   // Bottom sheet: se abre desde el botón "Más" del bottom-nav
   moreSheetOpen = signal(false);
 
-  // Usuario mockeado hasta que exista AuthService
-  mockUser: UserSummary = {
-    iniciales: 'MF',
-    nombre: 'María',
-    apellido: 'Fernández',
-    dni: '32.456.789',
-  };
+  // Usuario real del JWT (AuthService). Deriva nombre/apellido/iniciales del nombre completo.
+  readonly user = computed<UserSummary>(() => {
+    const u = this.auth.currentUser();
+    const full = (u?.nombre ?? '').trim();
+    const parts = full.split(/\s+/).filter(Boolean);
+    const nombre = parts[0] ?? '';
+    const apellido = parts.slice(1).join(' ');
+    const iniciales = ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase();
+    return { iniciales, nombre, apellido, dni: u?.dni ?? '' };
+  });
 
   navGroups: NavGroup[] = [
     {
@@ -77,9 +82,8 @@ export class PatientShellComponent {
     // Este handler queda disponible para side-effects adicionales si se necesitan.
   }
 
-  // TODO: reemplazar por AuthService.logout() cuando exista
-  private logout(): void {
-    localStorage.clear();
+  logout(): void {
+    this.auth.logout();
     this.router.navigate(['/login']);
   }
 }
