@@ -1,7 +1,9 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { User } from '../../../core/models/user.model';
+import { AuthService } from '../../../core/auth/auth.service';
 
 const USER_MOCK: User = {
   id: 1,
@@ -49,7 +51,14 @@ const USER_MOCK: User = {
 
 @Injectable({ providedIn: 'root' })
 export class PerfilService {
+  private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
+
   getPerfil(): Observable<User> {
     return of(USER_MOCK).pipe(delay(300));
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.http.put<void>(`/api/v1/user/${this.auth.userId()}/password`, { currentPassword, newPassword });
   }
 }

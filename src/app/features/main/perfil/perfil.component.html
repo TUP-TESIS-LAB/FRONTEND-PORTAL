@@ -204,6 +204,42 @@
 
   </div>
 
+  <!-- Seguridad: cambiar contraseña -->
+  <div class="ui-perfil__seguridad">
+    <p-button
+      [label]="mostrarCambioPass() ? 'Cancelar' : 'Cambiar contraseña'"
+      [icon]="mostrarCambioPass() ? 'pi pi-times' : 'pi pi-lock'"
+      severity="secondary"
+      [text]="true"
+      (onClick)="toggleCambioPass()" />
+
+    @if (mostrarCambioPass()) {
+      <form class="ui-perfil__pass-form" [formGroup]="passForm" (ngSubmit)="guardarPassword()">
+        <div class="ui-field-list">
+          <label class="ui-pass-label">Contraseña actual</label>
+          <p-password
+            formControlName="currentPassword"
+            [feedback]="false"
+            [toggleMask]="true"
+            placeholder="Contraseña actual" />
+
+          <label class="ui-pass-label">Nueva contraseña</label>
+          <p-password
+            formControlName="newPassword"
+            [toggleMask]="true"
+            placeholder="Nueva contraseña (mín. 8 caracteres)" />
+        </div>
+
+        <p-button
+          type="submit"
+          label="Guardar"
+          icon="pi pi-check"
+          severity="primary"
+          [loading]="passwordChanging()" />
+      </form>
+    }
+  </div>
+
   <!-- Banner informativo inferior -->
   <div class="ui-perfil__banner">
     <i class="pi pi-shield ui-perfil__banner-icon"></i>

@@ -1,0 +1,28 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { PerfilService } from './perfil.service';
+import { AuthService } from '../../../core/auth/auth.service';
+
+describe('PerfilService', () => {
+  let service: PerfilService; let http: HttpTestingController;
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(), provideHttpClientTesting(),
+        { provide: AuthService, useValue: { userId: () => 500 } },
+        PerfilService,
+      ],
+    });
+    service = TestBed.inject(PerfilService);
+    http = TestBed.inject(HttpTestingController);
+  });
+  it('changePassword PUTs to /user/{id}/password', () => {
+    service.changePassword('old12345', 'new12345').subscribe();
+    const req = http.expectOne('/api/v1/user/500/password');
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ currentPassword: 'old12345', newPassword: 'new12345' });
+    req.flush(null);
+  });
+});
