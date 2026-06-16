@@ -125,11 +125,12 @@
     </div>
     <div class="ui-field">
       <label class="ui-field__label" for="new-pass">Nueva contraseña</label>
-      <p-password inputId="new-pass" formControlName="newPassword" [toggleMask]="true"
-                  placeholder="Mínimo 8 caracteres" styleClass="ui-w-full" />
-      @if (passForm.controls.newPassword.invalid && passForm.controls.newPassword.touched) {
-        <small class="p-error">La nueva contraseña debe tener al menos 8 caracteres.</small>
-      }
+      <p-password inputId="new-pass" formControlName="newPassword" [feedback]="false" [toggleMask]="true"
+                  placeholder="Nueva contraseña" styleClass="ui-w-full" />
+      <small class="ui-field__hint"
+             [class.p-error]="passForm.controls.newPassword.invalid && passForm.controls.newPassword.touched">
+        Mínimo 8 caracteres.
+      </small>
     </div>
   </form>
   <ng-template pTemplate="footer">

@@ -81,6 +81,12 @@
     color: var(--ds-text);
   }
 
+  .ui-field__hint {
+    font-size: 12px;
+    color: var(--ds-text-muted);
+    &.p-error { color: var(--ds-danger); }
+  }
+
   input,
   ::ng-deep .p-inputtext { width: 100%; }
   // p-password envuelve el input en un span; ambos a full-width
