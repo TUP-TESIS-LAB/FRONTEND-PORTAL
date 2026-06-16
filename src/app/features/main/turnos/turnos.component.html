@@ -257,24 +257,14 @@
       </div>
 
       <div class="ui-reprogramar__body">
-        <div class="ui-reprogramar__calendar">
-          <h4>Elegí la nueva fecha</h4>
-          <p-datepicker
-            [inline]="true"
-            [minDate]="minBookingDate"
-            [ngModel]="reprogramarFecha()"
-            (onSelect)="onReprogramarFecha($event)" />
-        </div>
-
-        @if (reprogramarFecha()) {
-          <div class="ui-reprogramar__slots">
-            <h4>Horarios disponibles</h4>
-            <ui-time-slots
-              [slots]="reprogramarSlots()"
-              [selectedHora]="reprogramarHora()"
-              (selectionChange)="reprogramarHora.set($event)" />
-          </div>
-        }
+        <ui-slot-picker
+          layout="stacked"
+          [fecha]="reprogramarFecha()"
+          [selectedHora]="reprogramarHora()"
+          [slots]="reprogramarSlots()"
+          [minDate]="minBookingDate"
+          (fechaChange)="onReprogramarFecha($event)"
+          (horaChange)="reprogramarHora.set($event)" />
       </div>
 
       <div class="ui-reprogramar__footer">

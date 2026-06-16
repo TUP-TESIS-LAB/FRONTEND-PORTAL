@@ -18,7 +18,7 @@ import { EmptyStateComponent } from '../../../shared/ui/components/empty-state/e
 import { EventCardComponent } from '../../../shared/ui/components/event-card/event-card.component';
 import { PlaceholderCardComponent } from '../../../shared/ui/components/placeholder-card/placeholder-card.component';
 import { TurnoDetailComponent } from '../../../shared/ui/components/turno-detail/turno-detail.component';
-import { TimeSlotsComponent } from '../../../shared/ui/components/time-slots/time-slots.component';
+import { SlotPickerComponent } from '../../../shared/ui/components/slot-picker/slot-picker.component';
 import { EstadoTurnoLabelPipe } from '../../../shared/pipes/estado-turno-label.pipe';
 import { EstadoTurnoKeyPipe } from '../../../shared/pipes/estado-turno-key.pipe';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
@@ -49,7 +49,7 @@ import * as TurnosActions from './store/turnos.actions';
     EventCardComponent,
     PlaceholderCardComponent,
     TurnoDetailComponent,
-    TimeSlotsComponent,
+    SlotPickerComponent,
     EstadoTurnoLabelPipe,
     EstadoTurnoKeyPipe,
   ],
