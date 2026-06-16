@@ -13,6 +13,16 @@ export const routes: Routes = [
       import('./features/auth/register/register.component').then(m => m.RegisterComponent),
   },
   {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./features/auth/password-recovery/forgot-password.component').then(m => m.ForgotPasswordComponent),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./features/auth/password-recovery/reset-password.component').then(m => m.ResetPasswordComponent),
+  },
+  {
     // Legacy /dashboard: redirige al home real para no romper bookmarks.
     path: 'dashboard',
     redirectTo: '',

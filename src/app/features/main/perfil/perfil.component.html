@@ -2,206 +2,126 @@
 
 <ui-page-header
   title="Mi perfil"
-  subtitle="Tus datos personales, cobertura e información médica.">
+  subtitle="Tus datos personales y de contacto.">
   <p-button
     label="Editar perfil"
     icon="pi pi-pencil"
     severity="primary"
-    (onClick)="onEditar()" />
+    [disabled]="!user()"
+    (onClick)="abrirEdicion()" />
 </ui-page-header>
 
 <!-- Estado loading -->
-@if (loading()) {
+@if (loading() && !user()) {
   <div class="ui-perfil__layout">
     <div><p-skeleton height="320px" /></div>
-    <div><p-skeleton height="400px" /></div>
   </div>
-} @else {
-  <div class="ui-perfil__layout">
+} @else if (user(); as u) {
+  <div class="ui-perfil__content">
 
-    <!-- Columna izquierda: hero + cobertura + datos críticos -->
-    <div class="ui-perfil__sidebar">
-      <ui-profile-summary
-        [user]="user()!"
-        (subirCredencial)="onSubirCredencial()" />
+    <!-- Datos del perfil -->
+    <div class="ui-field-list">
+      <div class="ui-field">
+        <span class="ui-field__label"><i class="pi pi-user"></i> Nombre completo</span>
+        <span class="ui-field__value">{{ u.firstName }} {{ u.lastName }}</span>
+      </div>
+      <div class="ui-field">
+        <span class="ui-field__label"><i class="pi pi-id-card"></i> DNI</span>
+        <span class="ui-field__value">{{ u.dni }}</span>
+      </div>
+      <div class="ui-field">
+        <span class="ui-field__label"><i class="pi pi-envelope"></i> Email</span>
+        <span class="ui-field__value">{{ u.email || '—' }}</span>
+      </div>
+      <div class="ui-field">
+        <span class="ui-field__label"><i class="pi pi-phone"></i> Teléfono</span>
+        <span class="ui-field__value">{{ u.phone || '—' }}</span>
+      </div>
+      <div class="ui-field">
+        <span class="ui-field__label"><i class="pi pi-map-marker"></i> Dirección</span>
+        <span class="ui-field__value">{{ u.address || '—' }}</span>
+      </div>
+      <div class="ui-field">
+        <span class="ui-field__label"><i class="pi pi-building"></i> Cobertura</span>
+        <span class="ui-field__value">{{ u.coverageName || '—' }}</span>
+      </div>
     </div>
 
-    <!-- Columna derecha: 4 tabs con grupos de datos -->
-    <div class="ui-perfil__content">
-      <p-tabs value="datos-personales">
-        <p-tablist>
-          <p-tab value="datos-personales">Datos personales</p-tab>
-          <p-tab value="contacto">Contacto</p-tab>
-          <p-tab value="cobertura">Cobertura</p-tab>
-          <p-tab value="datos-medicos">Datos médicos</p-tab>
-        </p-tablist>
+    <!-- Edición de datos de contacto -->
+    @if (mostrarEdicion()) {
+      <form class="ui-perfil__edit-form" [formGroup]="editForm" (ngSubmit)="guardarEdicion()">
+        <h4 class="ui-grupo-titulo">Editar datos de contacto</h4>
 
-        <p-tabpanels>
+        <div class="ui-field">
+          <label class="ui-field__label" for="edit-email">Email</label>
+          <input pInputText id="edit-email" type="email" formControlName="email" placeholder="Email" />
+          @if (editForm.controls.email.invalid && editForm.controls.email.touched) {
+            <small class="p-error">Ingresá un email válido.</small>
+          }
+        </div>
 
-          <!-- Datos personales -->
-          <p-tabpanel value="datos-personales">
-            <div class="ui-field-list">
-              <ui-data-field
-                icon="pi-user"
-                label="Nombre completo"
-                [value]="user()!.nombre + ' ' + user()!.apellido"
-                [editable]="true"
-                (edit)="onEditCampo('nombre completo')" />
-              <ui-data-field
-                icon="pi-id-card"
-                label="DNI"
-                [value]="user()!.dni" />
-              <ui-data-field
-                icon="pi-calendar"
-                label="Fecha de nacimiento"
-                [value]="user()!.fechaNac" />
-              <ui-data-field
-                icon="pi-hashtag"
-                label="Edad"
-                [value]="user()!.edad + ' años'" />
-              <ui-data-field
-                icon="pi-venus"
-                label="Sexo"
-                [value]="user()!.sexo" />
-              <ui-data-field
-                icon="pi-map-marker"
-                label="Ciudad"
-                [value]="user()!.ciudad"
-                [editable]="true"
-                (edit)="onEditCampo('ciudad')" />
-            </div>
-          </p-tabpanel>
+        <div class="ui-field">
+          <label class="ui-field__label" for="edit-phone">Teléfono</label>
+          <input pInputText id="edit-phone" formControlName="phone" placeholder="Teléfono" />
+        </div>
 
-          <!-- Contacto -->
-          <p-tabpanel value="contacto">
-            <div class="ui-field-list">
-              <ui-data-field
-                icon="pi-envelope"
-                label="Email"
-                [value]="user()!.email"
-                [editable]="true"
-                (edit)="onEditCampo('email')" />
-              <ui-data-field
-                icon="pi-phone"
-                label="Teléfono"
-                [value]="user()!.telefono"
-                [editable]="true"
-                (edit)="onEditCampo('teléfono')" />
-              <ui-data-field
-                icon="pi-map"
-                label="Dirección"
-                [value]="user()!.direccion || ''"
-                [editable]="true"
-                [multiline]="true"
-                (edit)="onEditCampo('dirección')" />
+        <div class="ui-field">
+          <label class="ui-field__label" for="edit-address">Dirección</label>
+          <input pInputText id="edit-address" formControlName="address" placeholder="Dirección" />
+        </div>
 
-              <h4 class="ui-grupo-titulo">Contacto de emergencia</h4>
-              <ui-data-field
-                icon="pi-user"
-                label="Nombre"
-                [value]="user()!.contactoEmergencia?.nombre || ''"
-                [editable]="true"
-                (edit)="onEditCampo('contacto de emergencia')" />
-              <ui-data-field
-                icon="pi-users"
-                label="Vínculo"
-                [value]="user()!.contactoEmergencia?.vinculo || ''"
-                [editable]="true"
-                (edit)="onEditCampo('contacto de emergencia')" />
-              <ui-data-field
-                icon="pi-phone"
-                label="Teléfono de emergencia"
-                [value]="user()!.contactoEmergencia?.telefono || ''"
-                [editable]="true"
-                (edit)="onEditCampo('contacto de emergencia')" />
-            </div>
-          </p-tabpanel>
+        <div class="ui-perfil__edit-actions">
+          <p-button
+            type="button"
+            label="Cancelar"
+            severity="secondary"
+            [text]="true"
+            (onClick)="cancelarEdicion()" />
+          <p-button
+            type="submit"
+            label="Guardar"
+            icon="pi pi-check"
+            severity="primary"
+            [loading]="saving()" />
+        </div>
+      </form>
+    }
+  </div>
 
-          <!-- Cobertura -->
-          <p-tabpanel value="cobertura">
-            <div class="ui-field-list">
-              <ui-data-field
-                icon="pi-tag"
-                label="Tipo de cobertura"
-                [value]="user()!.cobertura.tipo" />
-              <ui-data-field
-                icon="pi-building"
-                label="Obra social / Prepaga"
-                [value]="user()!.cobertura.nombre"
-                [editable]="true"
-                (edit)="onEditCampo('cobertura')" />
-              <ui-data-field
-                icon="pi-star"
-                label="Plan"
-                [value]="user()!.cobertura.plan || ''"
-                [editable]="true"
-                (edit)="onEditCampo('cobertura')" />
-              <ui-data-field
-                icon="pi-hashtag"
-                label="N° de afiliado"
-                [value]="user()!.cobertura.afiliado || ''"
-                [editable]="true"
-                (edit)="onEditCampo('número de afiliado')" />
-              <ui-data-field
-                icon="pi-clock"
-                label="Vencimiento"
-                [value]="user()!.cobertura.venceEn || ''" />
-            </div>
-          </p-tabpanel>
+  <!-- Seguridad: cambiar contraseña -->
+  <div class="ui-perfil__seguridad">
+    <p-button
+      [label]="mostrarCambioPass() ? 'Cancelar' : 'Cambiar contraseña'"
+      [icon]="mostrarCambioPass() ? 'pi pi-times' : 'pi pi-lock'"
+      severity="secondary"
+      [text]="true"
+      (onClick)="toggleCambioPass()" />
 
-          <!-- Datos médicos -->
-          <p-tabpanel value="datos-medicos">
-            <div class="ui-field-list">
+    @if (mostrarCambioPass()) {
+      <form class="ui-perfil__pass-form" [formGroup]="passForm" (ngSubmit)="guardarPassword()">
+        <div class="ui-field-list">
+          <label class="ui-pass-label">Contraseña actual</label>
+          <p-password
+            formControlName="currentPassword"
+            [feedback]="false"
+            [toggleMask]="true"
+            placeholder="Contraseña actual" />
 
-              <h4 class="ui-grupo-titulo">Antecedentes</h4>
-              <ui-data-field
-                icon="pi-heart"
-                label="Condiciones"
-                [value]="user()!.datosMedicos.condiciones.length
-                  ? user()!.datosMedicos.condiciones.join(', ')
-                  : ''"
-                [editable]="true"
-                [multiline]="true"
-                (edit)="onEditCampo('antecedentes')" />
-              <ui-data-field
-                icon="pi-bolt"
-                label="Cirugías previas"
-                [value]="user()!.datosMedicos.cirugiasPrevias.length
-                  ? user()!.datosMedicos.cirugiasPrevias.join(', ')
-                  : ''"
-                [multiline]="true" />
+          <label class="ui-pass-label">Nueva contraseña</label>
+          <p-password
+            formControlName="newPassword"
+            [toggleMask]="true"
+            placeholder="Nueva contraseña (mín. 8 caracteres)" />
+        </div>
 
-              <h4 class="ui-grupo-titulo">Hábitos</h4>
-              <ui-data-field
-                icon="pi-ban"
-                label="Tabaco"
-                [value]="user()!.datosMedicos.habitos?.fuma || ''"
-                [editable]="true"
-                (edit)="onEditCampo('hábitos')" />
-              <ui-data-field
-                icon="pi-star-fill"
-                label="Alcohol"
-                [value]="user()!.datosMedicos.habitos?.alcohol || ''"
-                [editable]="true"
-                (edit)="onEditCampo('hábitos')" />
-              <ui-data-field
-                icon="pi-bolt"
-                label="Actividad física"
-                [value]="user()!.datosMedicos.habitos?.actividadFisica || ''"
-                [editable]="true"
-                (edit)="onEditCampo('hábitos')" />
-              <ui-data-field
-                icon="pi-calendar-clock"
-                label="Última revisión"
-                [value]="user()!.datosMedicos.ultimaRevision || ''" />
-
-            </div>
-          </p-tabpanel>
-
-        </p-tabpanels>
-      </p-tabs>
-    </div>
-
+        <p-button
+          type="submit"
+          label="Guardar"
+          icon="pi pi-check"
+          severity="primary"
+          [loading]="passwordChanging()" />
+      </form>
+    }
   </div>
 
   <!-- Banner informativo inferior -->

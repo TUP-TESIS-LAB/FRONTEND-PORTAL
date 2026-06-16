@@ -4,7 +4,7 @@ import { catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 
-const SKIP_PATTERNS = ['/auth/login-patient', '/auth/register-patient', '/sucursales/public', '/tenants/'];
+const SKIP_PATTERNS = ['/auth/login-patient', '/auth/register-patient', '/auth/password', '/sucursales/public', '/tenants/'];
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
