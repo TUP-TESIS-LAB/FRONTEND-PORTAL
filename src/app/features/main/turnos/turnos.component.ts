@@ -210,6 +210,9 @@ export class TurnosComponent implements OnInit, OnDestroy {
         severity: 'success', summary: 'Turno reprogramado',
         detail: 'Tu turno fue reprogramado correctamente.', life: 4000,
       });
+      // One-shot: consumimos el id pasando rescheduledId a null. Reprogramar el
+      // mismo turno de nuevo vuelve a disparar (pasa por null en la request).
+      this.store.dispatch(TurnosActions.rescheduleHandled());
       return;
     }
     const err = this.rescheduleError();

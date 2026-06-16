@@ -10,7 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
 import * as A from './store/perfil.actions';
 import {
-  selectUser, selectLoading, selectSaving,
+  selectUser, selectLoading, selectSaving, selectProfileSaved,
   selectPasswordChanging, selectPasswordChanged, selectError,
 } from './store/perfil.selectors';
 
@@ -38,6 +38,7 @@ export class PerfilComponent implements OnInit {
   readonly user    = this.store.selectSignal(selectUser);
   readonly loading = this.store.selectSignal(selectLoading);
   readonly saving  = this.store.selectSignal(selectSaving);
+  private readonly profileSaved = this.store.selectSignal(selectProfileSaved);
 
   readonly passwordChanging = this.store.selectSignal(selectPasswordChanging);
   private readonly passwordChanged = this.store.selectSignal(selectPasswordChanged);
@@ -58,6 +59,7 @@ export class PerfilComponent implements OnInit {
   });
 
   constructor() {
+    // One-shot: reacciona SOLO al flag passwordChanged y lo consume despachando el reset.
     effect(() => {
       if (this.passwordChanged()) {
         this.messageService.add({
@@ -68,13 +70,13 @@ export class PerfilComponent implements OnInit {
         });
         this.passForm.reset({ currentPassword: '', newPassword: '' });
         this.mostrarCambioPass.set(false);
+        this.store.dispatch(A.passwordChangeHandled());
       }
     });
 
-    // Cierra la edición y avisa cuando el perfil se guardó (saving false sin error con la edición abierta).
+    // One-shot: reacciona SOLO al flag profileSaved (no a saving/mostrarEdicion) y lo consume con el reset.
     effect(() => {
-      const saving = this.saving();
-      if (!saving && this.mostrarEdicion() && !this.error()) {
+      if (this.profileSaved()) {
         this.messageService.add({
           severity: 'success',
           summary: 'Perfil actualizado',
@@ -82,6 +84,7 @@ export class PerfilComponent implements OnInit {
           life: 3000,
         });
         this.mostrarEdicion.set(false);
+        this.store.dispatch(A.profileSavedHandled());
       }
     });
 

@@ -9,7 +9,9 @@ export const loadProfileFailure = createAction('[Perfil API] Load Profile Failur
 export const updateProfile = createAction('[Perfil Page] Update Profile', props<{ payload: UpdatePerfilPayload }>());
 export const updateProfileSuccess = createAction('[Perfil API] Update Profile Success', props<{ profile: PerfilPaciente }>());
 export const updateProfileFailure = createAction('[Perfil API] Update Profile Failure', props<{ error: HttpErrorResponse }>());
+export const profileSavedHandled = createAction('[Perfil Page] Profile Saved Handled');
 
 export const changePassword = createAction('[Perfil Page] Change Password', props<{ currentPassword: string; newPassword: string }>());
 export const changePasswordSuccess = createAction('[Perfil API] Change Password Success');
 export const changePasswordFailure = createAction('[Perfil API] Change Password Failure', props<{ error: HttpErrorResponse }>());
+export const passwordChangeHandled = createAction('[Perfil Page] Password Change Handled');

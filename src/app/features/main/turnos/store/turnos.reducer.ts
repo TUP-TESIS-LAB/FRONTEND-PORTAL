@@ -7,4 +7,5 @@ export const turnosReducer = createReducer(
   on(A.reschedule, s => ({ ...s, rescheduling: true, rescheduledId: null, error: null })),
   on(A.rescheduleSuccess, (s, { id }) => ({ ...s, rescheduling: false, rescheduledId: id })),
   on(A.rescheduleFailure, (s, { error }) => ({ ...s, rescheduling: false, error })),
+  on(A.rescheduleHandled, s => ({ ...s, rescheduledId: null })),
 );
