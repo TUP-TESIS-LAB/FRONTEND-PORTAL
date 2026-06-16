@@ -6,6 +6,7 @@ import {
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 
@@ -84,7 +85,11 @@ export const appConfig: ApplicationConfig = {
       provide: APP_INITIALIZER,
       multi: true,
       deps: [AuthService],
-      useFactory: (auth: AuthService) => () => { auth.loadFromStorage(); },
+      useFactory: (auth: AuthService) => () => {
+        auth.loadFromStorage();
+        // Si quedó sesión sin user en memoria, lo trae de /me/profile antes de renderizar.
+        return firstValueFrom(auth.hydrateUserIfNeeded());
+      },
     },
   ],
 };

@@ -38,7 +38,7 @@
       @if (user.iniciales) { {{ user.iniciales }} } @else { <i class="pi pi-user"></i> }
     </div>
     <div class="ui-sidebar__footer-name">
-      <strong>{{ user.nombre ? (user.nombre + ' ' + user.apellido) : 'Mi cuenta' }}</strong>
+      <strong>{{ user.nombre }} {{ user.apellido }}</strong>
       @if (user.dni) { <span>{{ user.dni }}</span> }
     </div>
     <button type="button"

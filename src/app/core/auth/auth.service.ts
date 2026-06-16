@@ -1,11 +1,19 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, map } from 'rxjs';
+import { Observable, of, tap, map, catchError } from 'rxjs';
 import { TenantService } from '../tenant/tenant.service';
 import { AuthUser, RegisterPayload, RegisterResponse, LoginPatientResponse } from './auth.types';
 import { tokenStorage } from './token-storage';
 
 const USER_KEY = 'portal_auth_user';
+
+/** Shape parcial de GET /api/v1/me/profile usado para rehidratar el usuario logueado. */
+interface MeProfile {
+  firstName: string;
+  lastName: string;
+  dni: string;
+  email: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -66,6 +74,34 @@ export class AuthService {
       }), map(() => void 0));
   }
 
+  /**
+   * Si hay token válido pero no tenemos el usuario en memoria (sesión previa a la persistencia,
+   * o localStorage limpiado), lo trae de /me/profile y lo completa. Para el portal del paciente.
+   */
+  hydrateUserIfNeeded(): Observable<void> {
+    const token = this._token();
+    if (!token || this._currentUser()) {
+      return of(void 0);
+    }
+    const claims = this.decodePayload(token);
+    return this.http.get<MeProfile>('/api/v1/me/profile').pipe(
+      tap(p => {
+        const user: AuthUser = {
+          id: Number(claims?.['userId']) || 0,
+          nombre: `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim(),
+          dni: p.dni ?? '',
+          email: p.email ?? '',
+          roles: (claims?.['roles'] as string[] | undefined) ?? [],
+          tenantSlug: this.tenant.config()?.id ?? '',
+        };
+        localStorage.setItem(USER_KEY, JSON.stringify(user));
+        this._currentUser.set(user);
+      }),
+      map(() => void 0),
+      catchError(() => of(void 0)),
+    );
+  }
+
   logout(): void {
     this._currentUser.set(null);
     this._token.set(null);
@@ -81,16 +117,20 @@ export class AuthService {
   }
 
   private isExpired(token: string): boolean {
+    const payload = this.decodePayload(token);
+    return !!(payload?.['exp'] && (payload['exp'] as number) * 1000 < Date.now());
+  }
+
+  /** Decodifica el payload (claims) de un JWT base64url, o null si no se puede. */
+  private decodePayload(token: string): Record<string, unknown> | null {
     try {
       const part = token.split('.')[1];
-      if (!part) return false;
-      // JWT payload is base64url; normalize to base64 (replace -/_ and pad).
+      if (!part) return null;
       const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
       const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
-      const payload = JSON.parse(atob(padded));
-      return payload.exp && payload.exp * 1000 < Date.now();
+      return JSON.parse(atob(padded)) as Record<string, unknown>;
     } catch {
-      return false;
+      return null;
     }
   }
 }
