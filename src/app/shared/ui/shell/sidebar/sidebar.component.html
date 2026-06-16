@@ -34,10 +34,12 @@
 
   <!-- Footer: usuario logueado + salir -->
   <div class="ui-sidebar__footer">
-    <div class="ui-sidebar__footer-avatar">{{ user.iniciales }}</div>
+    <div class="ui-sidebar__footer-avatar">
+      @if (user.iniciales) { {{ user.iniciales }} } @else { <i class="pi pi-user"></i> }
+    </div>
     <div class="ui-sidebar__footer-name">
-      <strong>{{ user.nombre }} {{ user.apellido }}</strong>
-      <span>{{ user.dni }}</span>
+      <strong>{{ user.nombre ? (user.nombre + ' ' + user.apellido) : 'Mi cuenta' }}</strong>
+      @if (user.dni) { <span>{{ user.dni }}</span> }
     </div>
     <button type="button"
             class="ui-sidebar__footer-action"

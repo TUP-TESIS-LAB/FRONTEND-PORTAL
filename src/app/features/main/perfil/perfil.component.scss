@@ -57,23 +57,20 @@
   word-break: break-word;
 }
 
-// ─── Formularios (editar contacto / cambiar contraseña) ─────
-.ui-perfil__edit-form,
-.ui-perfil__pass-form {
+// ─── Formularios dentro de los modales (editar / contraseña) ─
+.ui-perfil__form {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  margin-top: var(--space-5);
-  padding-top: var(--space-5);
-  border-top: 1px solid var(--ds-surface);
+  padding-top: var(--space-2);
 
-  // dentro de un form los campos siempre stackean y el input ocupa todo el ancho
+  // campos stackeados, input full-width
   .ui-field {
     flex-direction: column;
     align-items: stretch;
     border-bottom: none;
     padding: 0;
-    gap: var(--space-1);
+    gap: var(--space-2);
   }
 
   .ui-field__label {
@@ -85,41 +82,34 @@
   }
 
   input,
-  ::ng-deep .p-inputtext,
-  ::ng-deep .p-password { width: 100%; }
-  ::ng-deep .p-password input { width: 100%; }
+  ::ng-deep .p-inputtext { width: 100%; }
+  // p-password envuelve el input en un span; ambos a full-width
+  ::ng-deep .ui-w-full,
+  ::ng-deep .ui-w-full .p-password,
+  ::ng-deep .ui-w-full input { width: 100%; }
 }
 
-.ui-grupo-titulo {
-  margin: 0 0 var(--space-2);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ds-text);
-}
-
-.ui-perfil__edit-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-2);
-}
-
-.ui-pass-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ds-text-muted);
-}
-
-// ─── Sección de seguridad (cambiar contraseña) ──────────────
+// ─── Fila de seguridad (cambiar contraseña) ─────────────────
 .ui-perfil__seguridad {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--space-3);
   background: var(--ds-white);
   border-radius: var(--ds-radius-lg);
   box-shadow: var(--ds-shadow-sm);
   padding: var(--space-5);
   margin-bottom: var(--space-5);
+}
+
+.ui-perfil__seguridad-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong { font-size: 14px; color: var(--ds-text); }
+  span { font-size: 13px; color: var(--ds-text-muted); }
 }
 
 // ─── Banner informativo inferior ────────────────────────────

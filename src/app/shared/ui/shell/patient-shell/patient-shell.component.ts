@@ -42,8 +42,7 @@ export class PatientShellComponent {
     const parts = full.split(/\s+/).filter(Boolean);
     const nombre = parts[0] ?? '';
     const apellido = parts.slice(1).join(' ');
-    const iniciales = ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase()
-      || (nombre[0] ?? '?').toUpperCase();
+    const iniciales = ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase();
     return { iniciales, nombre, apellido, dni: u?.dni ?? '' };
   });
 
