@@ -31,11 +31,19 @@
     min-width: 0;
   }
 
-  // Datepicker inline: full-width de su columna con día cells distribuidos parejo.
-  ::ng-deep .p-datepicker {
+  // El borde va en el panel (lo que se ve), no en el wrapper, para evitar el
+  // doble borde desfasado del datepicker inline.
+  ::ng-deep .p-datepicker-panel {
     width: 100%;
     border: 1px solid var(--ds-surface-dark);
     border-radius: var(--ds-radius-md);
+    box-shadow: none;
+  }
+
+  // Datepicker inline: full-width de su columna con día cells distribuidos parejo.
+  ::ng-deep .p-datepicker {
+    width: 100%;
+    border: none;
     box-shadow: none;
     font-size: 15px;
 
