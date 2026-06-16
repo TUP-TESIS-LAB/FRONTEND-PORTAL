@@ -3,8 +3,9 @@
   <!-- Desktop: sidebar fija oscura -->
   <ui-sidebar
     [navGroups]="navGroups"
-    [user]="mockUser"
-    [tenant]="tenant()!">
+    [user]="user()"
+    [tenant]="tenant()!"
+    (logout)="logout()">
   </ui-sidebar>
 
   <!-- Mobile/tablet: mismo sidebar dentro de un drawer off-canvas -->
@@ -17,9 +18,10 @@
     <ng-template pTemplate="headless">
       <ui-sidebar
         [navGroups]="navGroups"
-        [user]="mockUser"
+        [user]="user()"
         [tenant]="tenant()!"
-        (itemClick)="drawerOpen.set(false)">
+        (itemClick)="drawerOpen.set(false)"
+        (logout)="logout()">
       </ui-sidebar>
     </ng-template>
   </p-drawer>

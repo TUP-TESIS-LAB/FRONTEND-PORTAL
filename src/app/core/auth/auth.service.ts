@@ -5,6 +5,8 @@ import { TenantService } from '../tenant/tenant.service';
 import { AuthUser, RegisterPayload, RegisterResponse, LoginPatientResponse } from './auth.types';
 import { tokenStorage } from './token-storage';
 
+const USER_KEY = 'portal_auth_user';
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -23,8 +25,13 @@ export class AuthService {
     const t = tokenStorage.get();
     if (t && !this.isExpired(t)) {
       this._token.set(t);
+      const raw = localStorage.getItem(USER_KEY);
+      if (raw) {
+        try { this._currentUser.set(JSON.parse(raw) as AuthUser); } catch { /* corrupto: se ignora */ }
+      }
     } else if (t) {
       tokenStorage.clear();
+      localStorage.removeItem(USER_KEY);
     }
   }
 
@@ -63,10 +70,12 @@ export class AuthService {
     this._currentUser.set(null);
     this._token.set(null);
     tokenStorage.clear();
+    localStorage.removeItem(USER_KEY);
   }
 
   private persistAuth(token: string, user: AuthUser): void {
     tokenStorage.set(token);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
     this._token.set(token);
     this._currentUser.set(user);
   }

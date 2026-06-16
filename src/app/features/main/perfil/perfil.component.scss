@@ -1,49 +1,128 @@
 @use 'breakpoints' as *;
 
-// ─── Layout principal 2 columnas ───────────────────────────
-.ui-perfil__layout {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-  margin-bottom: var(--space-5);
-
-  @include desktop-up {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: var(--space-6);
-  }
-}
-
-.ui-perfil__sidebar {
-  @include desktop-up {
-    width: 360px;
-    flex-shrink: 0;
-    position: sticky;
-    top: var(--space-4);
-  }
-}
-
+// ─── Card de datos del perfil ───────────────────────────────
 .ui-perfil__content {
-  flex: 1;
   min-width: 0;
   background: var(--ds-white);
   border-radius: var(--ds-radius-lg);
   box-shadow: var(--ds-shadow-sm);
-  // clip recorta el border-radius sin crear un scroll context
-  overflow: clip;
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+}
 
-  // Tabs scrolleables en mobile cuando no entran
-  ::ng-deep .p-tablist {
-    @include mobile-only {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      &::-webkit-scrollbar { display: none; }
-    }
+// ─── Lista de datos clave-valor (patrón <dl>) ───────────────
+.ui-field-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--ds-surface);
+
+  &:first-child { padding-top: 0; }
+  &:last-child { border-bottom: none; padding-bottom: 0; }
+
+  @include desktop-up {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--space-4);
   }
 }
 
-// ─── Banner inferior ────────────────────────────────────────
+.ui-field__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  i { color: var(--brand-secondary); font-size: 14px; }
+
+  @include desktop-up {
+    width: 200px;
+    flex-shrink: 0;
+  }
+}
+
+.ui-field__value {
+  font-size: 14px;
+  color: var(--ds-text);
+  word-break: break-word;
+}
+
+// ─── Formularios (editar contacto / cambiar contraseña) ─────
+.ui-perfil__edit-form,
+.ui-perfil__pass-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--ds-surface);
+
+  // dentro de un form los campos siempre stackean y el input ocupa todo el ancho
+  .ui-field {
+    flex-direction: column;
+    align-items: stretch;
+    border-bottom: none;
+    padding: 0;
+    gap: var(--space-1);
+  }
+
+  .ui-field__label {
+    width: auto;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 13px;
+    color: var(--ds-text);
+  }
+
+  input,
+  ::ng-deep .p-inputtext,
+  ::ng-deep .p-password { width: 100%; }
+  ::ng-deep .p-password input { width: 100%; }
+}
+
+.ui-grupo-titulo {
+  margin: 0 0 var(--space-2);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ds-text);
+}
+
+.ui-perfil__edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.ui-pass-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-text-muted);
+}
+
+// ─── Sección de seguridad (cambiar contraseña) ──────────────
+.ui-perfil__seguridad {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-sm);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+// ─── Banner informativo inferior ────────────────────────────
 .ui-perfil__banner {
   display: flex;
   align-items: flex-start;
@@ -51,7 +130,6 @@
   padding: var(--space-4);
   background: var(--ds-info-light);
   border-radius: var(--ds-radius-md);
-  margin-top: var(--space-2);
 }
 
 .ui-perfil__banner-icon {
