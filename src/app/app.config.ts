@@ -18,6 +18,8 @@ import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { provideRouterStore, routerReducer } from '@ngrx/router-store';
 import { metaReducers } from './store/logger.meta-reducer';
+import { passwordRecoveryReducer } from './features/auth/password-recovery/store/password-recovery.reducer';
+import { PasswordRecoveryEffects } from './features/auth/password-recovery/store/password-recovery.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -25,8 +27,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
 
-    provideStore({ router: routerReducer }, { metaReducers }),
-    provideEffects(),
+    provideStore({ router: routerReducer, passwordRecovery: passwordRecoveryReducer }, { metaReducers }),
+    provideEffects(PasswordRecoveryEffects),
     provideRouterStore(),
 
     providePrimeNG({
