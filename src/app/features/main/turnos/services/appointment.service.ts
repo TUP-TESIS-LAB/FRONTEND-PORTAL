@@ -92,6 +92,10 @@ export class AppointmentService {
     });
   }
 
+  reschedule(id: number, newScheduledAt: string): Observable<void> {
+    return this.http.patch<void>(`/api/v1/turnos/appointments/${id}/reschedule`, { newScheduledAt });
+  }
+
   getAvailability(branchId: number, date: Date): Observable<SlotDisponible[]> {
     const iso = toLocalDateString(date);
     return this.http

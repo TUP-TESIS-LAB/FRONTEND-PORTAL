@@ -3,6 +3,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { Store } from '@ngrx/store';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -17,12 +18,17 @@ import { EmptyStateComponent } from '../../../shared/ui/components/empty-state/e
 import { EventCardComponent } from '../../../shared/ui/components/event-card/event-card.component';
 import { PlaceholderCardComponent } from '../../../shared/ui/components/placeholder-card/placeholder-card.component';
 import { TurnoDetailComponent } from '../../../shared/ui/components/turno-detail/turno-detail.component';
+import { TimeSlotsComponent } from '../../../shared/ui/components/time-slots/time-slots.component';
 import { EstadoTurnoLabelPipe } from '../../../shared/pipes/estado-turno-label.pipe';
 import { EstadoTurnoKeyPipe } from '../../../shared/pipes/estado-turno-key.pipe';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { AppointmentService } from './services/appointment.service';
 import { mapApiError } from '../../../shared/utils/api-error-mapper';
+import { toLocalDateTimeString } from '../../../shared/utils/local-datetime';
 import { EstadoTurno, Turno } from '../../../core/models/turno.model';
+import { SlotDisponible } from '../../../core/models/slot-disponible.model';
+import { selectRescheduling, selectRescheduledId, selectRescheduleError } from './store/turnos.selectors';
+import * as TurnosActions from './store/turnos.actions';
 
 @Component({
   selector: 'app-turnos',
@@ -43,6 +49,7 @@ import { EstadoTurno, Turno } from '../../../core/models/turno.model';
     EventCardComponent,
     PlaceholderCardComponent,
     TurnoDetailComponent,
+    TimeSlotsComponent,
     EstadoTurnoLabelPipe,
     EstadoTurnoKeyPipe,
   ],
@@ -55,7 +62,26 @@ export class TurnosComponent implements OnInit, OnDestroy {
   private readonly messageService = inject(MessageService);
   private readonly confirmService = inject(ConfirmationService);
   private readonly router         = inject(Router);
+  private readonly store          = inject(Store);
   readonly bp                     = inject(BreakpointService);
+
+  readonly rescheduling = this.store.selectSignal(selectRescheduling);
+
+  // ─── Reprogramar: estado del drawer (picker de slots) ─────
+  reprogramarOpen     = signal(false);
+  reprogramarTurnoId  = signal<number | null>(null);
+  reprogramarBranchId = signal<number | null>(null);
+  reprogramarFecha    = signal<Date | null>(null);
+  reprogramarHora     = signal<string | null>(null);
+  reprogramarSlots    = signal<SlotDisponible[]>([]);
+
+  // El backend exige fecha del turno >= hoy + 2 días (igual que sacar-turno).
+  readonly minBookingDate = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  })();
 
   proximosTurnos   = signal<Turno[]>([]);
   anterioresTurnos = signal<Turno[]>([]);
@@ -168,6 +194,33 @@ export class TurnosComponent implements OnInit, OnDestroy {
     }
   });
 
+  private readonly rescheduledId    = this.store.selectSignal(selectRescheduledId);
+  private readonly rescheduleError  = this.store.selectSignal(selectRescheduleError);
+
+  /** Reacciona al resultado de la reprogramación (éxito/fallo) desde la store. */
+  private readonly rescheduleResultEffect = effect(() => {
+    const id = this.rescheduledId();
+    if (id !== null) {
+      this.reprogramarOpen.set(false);
+      this.reprogramarTurnoId.set(null);
+      this.mobileDetailOpen.set(false);
+      this.selectedTurno.set(null);
+      this.cargarTurnos();
+      this.messageService.add({
+        severity: 'success', summary: 'Turno reprogramado',
+        detail: 'Tu turno fue reprogramado correctamente.', life: 4000,
+      });
+      return;
+    }
+    const err = this.rescheduleError();
+    if (err) {
+      this.messageService.add({
+        severity: 'error', summary: 'Error',
+        detail: mapApiError(err), life: 4000,
+      });
+    }
+  });
+
   ngOnInit(): void {
     this.cargarTurnos();
     this.showPendingBookingToast();
@@ -222,13 +275,45 @@ export class TurnosComponent implements OnInit, OnDestroy {
     }
   }
 
-  onReprogramar(_turno: Turno): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Próximamente',
-      detail: 'La función de reprogramar estará disponible pronto.',
-      life: 3000,
-    });
+  /** Abre el drawer de reprogramación para el turno dado. */
+  onReprogramar(turno: Turno): void {
+    this.reprogramarTurnoId.set(turno.id);
+    this.reprogramarBranchId.set(Number(turno.sede.id));
+    this.reprogramarFecha.set(null);
+    this.reprogramarHora.set(null);
+    this.reprogramarSlots.set([]);
+    this.reprogramarOpen.set(true);
+  }
+
+  /** El paciente eligió una fecha: limpiamos hora y cargamos slots de esa sede/fecha. */
+  onReprogramarFecha(fecha: Date): void {
+    this.reprogramarFecha.set(fecha);
+    this.reprogramarHora.set(null);
+    this.reprogramarSlots.set([]);
+    const branchId = this.reprogramarBranchId();
+    if (branchId === null) return;
+    this.subs.add(
+      this.appointmentSvc.getAvailability(branchId, fecha).subscribe({
+        next: (slots) => this.reprogramarSlots.set(slots),
+        error: (err) => {
+          this.messageService.add({
+            severity: 'error', summary: 'Error',
+            detail: mapApiError(err), life: 4000,
+          });
+        },
+      }),
+    );
+  }
+
+  /** Compone fecha + hora y despacha la reprogramación a la store. */
+  confirmReprogramar(): void {
+    const id = this.reprogramarTurnoId();
+    const fecha = this.reprogramarFecha();
+    const hora = this.reprogramarHora();
+    if (id === null || !fecha || !hora) return;
+    const [h, m] = hora.split(':').map(Number);
+    const dt = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate(), h, m, 0);
+    this.store.dispatch(TurnosActions.reschedule({ id, newScheduledAt: toLocalDateTimeString(dt) }));
   }
 
   onCancelar(turno: Turno): void {
@@ -286,6 +371,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.autoSelectEffect.destroy();
+    this.rescheduleResultEffect.destroy();
     this.subs.unsubscribe();
   }
 }
