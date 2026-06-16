@@ -25,4 +25,18 @@ describe('PerfilService', () => {
     expect(req.request.body).toEqual({ currentPassword: 'old12345', newPassword: 'new12345' });
     req.flush(null);
   });
+  it('getPerfil GETs /me/profile', () => {
+    service.getPerfil().subscribe();
+    const req = http.expectOne('/api/v1/me/profile');
+    expect(req.request.method).toBe('GET');
+    req.flush({});
+  });
+  it('updatePerfil PUTs /me/profile with body', () => {
+    const payload = { email: 'a@b.com', phone: '123', address: 'calle 1' };
+    service.updatePerfil(payload).subscribe();
+    const req = http.expectOne('/api/v1/me/profile');
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual(payload);
+    req.flush({});
+  });
 });

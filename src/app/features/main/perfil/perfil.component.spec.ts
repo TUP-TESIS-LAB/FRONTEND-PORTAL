@@ -9,14 +9,16 @@ import { PerfilService } from './perfil.service';
 import { initialPerfilState } from './store/perfil.state';
 import * as A from './store/perfil.actions';
 
-describe('PerfilComponent cambiar contraseña', () => {
+const USER = { patientId: 1, firstName: 'Ana', lastName: 'Lopez', dni: '123', email: 'a@b.com', phone: '111', address: 'calle 1', coverageName: 'OSDE' };
+
+describe('PerfilComponent', () => {
   let store: MockStore; let injector: Injector;
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideMockStore({ initialState: { perfil: initialPerfilState } }),
+        provideMockStore({ initialState: { perfil: { ...initialPerfilState, user: USER } } }),
         MessageService,
-        { provide: PerfilService, useValue: { getPerfil: () => of(null) } },
+        { provide: PerfilService, useValue: { getPerfil: () => of(USER) } },
       ],
     });
     store = TestBed.inject(MockStore);
@@ -35,5 +37,13 @@ describe('PerfilComponent cambiar contraseña', () => {
     cmp.passForm.setValue({ currentPassword: 'x', newPassword: 'y' });
     cmp.guardarPassword();
     expect(spy).not.toHaveBeenCalled();
+  });
+  it('guardarEdicion dispatches updateProfile', () => {
+    const cmp = runInInjectionContext(injector, () => new PerfilComponent());
+    const spy = vi.spyOn(store, 'dispatch');
+    cmp.abrirEdicion();
+    cmp.editForm.setValue({ email: 'n@n', phone: '9', address: 'b' });
+    cmp.guardarEdicion();
+    expect(spy).toHaveBeenCalledWith(A.updateProfile({ payload: { email: 'n@n', phone: '9', address: 'b' } }));
   });
 });

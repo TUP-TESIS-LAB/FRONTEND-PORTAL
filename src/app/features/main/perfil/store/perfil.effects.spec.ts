@@ -14,7 +14,18 @@ function setup(svc: Partial<PerfilService>, action: Action) {
   return TestBed.inject(PerfilEffects);
 }
 
-describe('PerfilEffects (password)', () => {
+const PROFILE = { patientId: 1, firstName: 'Ana', lastName: 'Lopez', dni: '123', email: 'a@b.com', phone: '111', address: 'calle 1', coverageName: 'OSDE' };
+
+describe('PerfilEffects', () => {
+  it('loadProfile → success', () => new Promise<void>(done => {
+    const eff = setup({ getPerfil: () => of(PROFILE) }, A.loadProfile());
+    eff.loadProfile$.subscribe(a => { expect(a).toEqual(A.loadProfileSuccess({ profile: PROFILE })); done(); });
+  }));
+  it('updateProfile → success', () => new Promise<void>(done => {
+    const payload = { email: 'a@b.com', phone: '111', address: 'calle 1' };
+    const eff = setup({ updatePerfil: () => of(PROFILE) }, A.updateProfile({ payload }));
+    eff.updateProfile$.subscribe(a => { expect(a).toEqual(A.updateProfileSuccess({ profile: PROFILE })); done(); });
+  }));
   it('changePassword → success', () => new Promise<void>(done => {
     const eff = setup({ changePassword: () => of(void 0) }, A.changePassword({ currentPassword: 'old12345', newPassword: 'new12345' }));
     eff.changePassword$.subscribe(a => { expect(a).toEqual(A.changePasswordSuccess()); done(); });

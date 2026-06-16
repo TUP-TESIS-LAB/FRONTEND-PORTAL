@@ -1,19 +1,18 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { SkeletonModule } from 'primeng/skeleton';
-import { TabsModule } from 'primeng/tabs';
 import { ToastModule } from 'primeng/toast';
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
-import { ProfileSummaryComponent } from '../../../shared/ui/components/profile-summary/profile-summary.component';
-import { DataFieldComponent } from '../../../shared/ui/components/data-field/data-field.component';
-import { PerfilService } from './perfil.service';
 import * as A from './store/perfil.actions';
-import { selectPasswordChanging, selectPasswordChanged, selectError } from './store/perfil.selectors';
+import {
+  selectUser, selectLoading, selectSaving,
+  selectPasswordChanging, selectPasswordChanged, selectError,
+} from './store/perfil.selectors';
 
 @Component({
   selector: 'app-perfil',
@@ -21,36 +20,41 @@ import { selectPasswordChanging, selectPasswordChanged, selectError } from './st
   imports: [
     ReactiveFormsModule,
     ButtonModule,
+    InputTextModule,
     PasswordModule,
     SkeletonModule,
-    TabsModule,
     ToastModule,
     PageHeaderComponent,
-    ProfileSummaryComponent,
-    DataFieldComponent,
   ],
   providers: [MessageService],
   templateUrl: './perfil.component.html',
   styleUrl: './perfil.component.scss',
 })
-export class PerfilComponent {
-  private readonly perfilService  = inject(PerfilService);
+export class PerfilComponent implements OnInit {
   private readonly messageService = inject(MessageService);
   private readonly store          = inject(Store);
   private readonly fb             = inject(FormBuilder);
 
-  user    = toSignal(this.perfilService.getPerfil(), { initialValue: null });
-  loading = computed(() => this.user() === null);
+  readonly user    = this.store.selectSignal(selectUser);
+  readonly loading = this.store.selectSignal(selectLoading);
+  readonly saving  = this.store.selectSignal(selectSaving);
 
   readonly passwordChanging = this.store.selectSignal(selectPasswordChanging);
   private readonly passwordChanged = this.store.selectSignal(selectPasswordChanged);
   private readonly error = this.store.selectSignal(selectError);
 
   mostrarCambioPass = signal(false);
+  mostrarEdicion = signal(false);
 
   passForm = this.fb.group({
     currentPassword: ['', [Validators.required, Validators.minLength(8)]],
     newPassword: ['', [Validators.required, Validators.minLength(8)]],
+  });
+
+  editForm = this.fb.group({
+    email: ['', [Validators.email]],
+    phone: [''],
+    address: [''],
   });
 
   constructor() {
@@ -67,16 +71,34 @@ export class PerfilComponent {
       }
     });
 
+    // Cierra la edición y avisa cuando el perfil se guardó (saving false sin error con la edición abierta).
+    effect(() => {
+      const saving = this.saving();
+      if (!saving && this.mostrarEdicion() && !this.error()) {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Perfil actualizado',
+          detail: 'Tus datos se guardaron correctamente.',
+          life: 3000,
+        });
+        this.mostrarEdicion.set(false);
+      }
+    });
+
     effect(() => {
       if (this.error()) {
         this.messageService.add({
           severity: 'error',
-          summary: 'No se pudo cambiar la contraseña',
-          detail: 'Verificá tu contraseña actual e intentá de nuevo.',
+          summary: 'No se pudo completar la operación',
+          detail: 'Verificá los datos e intentá de nuevo.',
           life: 4000,
         });
       }
     });
+  }
+
+  ngOnInit(): void {
+    this.store.dispatch(A.loadProfile());
   }
 
   toggleCambioPass(): void {
@@ -89,30 +111,23 @@ export class PerfilComponent {
     this.store.dispatch(A.changePassword({ currentPassword: currentPassword!, newPassword: newPassword! }));
   }
 
-  onEditar(): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Próximamente',
-      detail: 'La edición del perfil estará disponible pronto.',
-      life: 3000,
+  abrirEdicion(): void {
+    const u = this.user();
+    this.editForm.reset({
+      email: u?.email ?? '',
+      phone: u?.phone ?? '',
+      address: u?.address ?? '',
     });
+    this.mostrarEdicion.set(true);
   }
 
-  onSubirCredencial(): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Próximamente',
-      detail: 'La subida de credencial estará disponible pronto.',
-      life: 3000,
-    });
+  cancelarEdicion(): void {
+    this.mostrarEdicion.set(false);
   }
 
-  onEditCampo(campo: string): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Próximamente',
-      detail: `Editar ${campo} estará disponible pronto.`,
-      life: 3000,
-    });
+  guardarEdicion(): void {
+    if (this.editForm.invalid) { this.editForm.markAllAsTouched(); return; }
+    const { email, phone, address } = this.editForm.getRawValue();
+    this.store.dispatch(A.updateProfile({ payload: { email: email!, phone: phone!, address: address! } }));
   }
 }
