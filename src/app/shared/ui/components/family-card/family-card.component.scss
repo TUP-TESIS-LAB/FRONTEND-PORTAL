@@ -64,3 +64,12 @@
   font-size: 13px;
   color: var(--ds-text-muted);
 }
+
+::ng-deep .family-card__pending-badge {
+  font-size: 11px;
+  margin-top: var(--space-1);
+}
+
+::ng-deep .family-card__remove-btn {
+  margin-top: var(--space-1);
+}
