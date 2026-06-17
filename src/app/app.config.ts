@@ -25,6 +25,9 @@ import { perfilReducer } from './features/main/perfil/store/perfil.reducer';
 import { PerfilEffects } from './features/main/perfil/store/perfil.effects';
 import { turnosReducer } from './features/main/turnos/store/turnos.reducer';
 import { TurnosEffects } from './features/main/turnos/store/turnos.effects';
+import { familyReducer } from './features/main/familia/store/family.reducer';
+import { FamilyEffects } from './features/main/familia/store/family.effects';
+import { FAMILY_KEY } from './features/main/familia/store/family.state';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -32,8 +35,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
 
-    provideStore({ router: routerReducer, passwordRecovery: passwordRecoveryReducer, perfil: perfilReducer, turnos: turnosReducer }, { metaReducers }),
-    provideEffects(PasswordRecoveryEffects, PerfilEffects, TurnosEffects),
+    provideStore({ router: routerReducer, passwordRecovery: passwordRecoveryReducer, perfil: perfilReducer, turnos: turnosReducer, [FAMILY_KEY]: familyReducer }, { metaReducers }),
+    provideEffects(PasswordRecoveryEffects, PerfilEffects, TurnosEffects, FamilyEffects),
     provideRouterStore(),
 
     providePrimeNG({

@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, of, tap, throwError } from 'rxjs';
+import { Observable, map, of, tap } from 'rxjs';
 import { Familiar } from '../models/familiar.model';
 
 interface PatientFamilyResponse {
@@ -11,6 +11,17 @@ interface PatientFamilyResponse {
   birthDate: string;
   bond: string;        // PROPIO | MADRE | PADRE | HIJO | HIJA | HERMANO | HERMANA | TUTOR | OTROS
   isOwner: boolean;
+  status: string;
+  userPatientId: number;
+}
+
+export interface AddFamilyMemberPayload {
+  firstName: string;
+  lastName: string;
+  dni: string;
+  birthDate: string | null;
+  gender: string | null;
+  bond: string;
 }
 
 const ACCENT_COLORS: Array<'primary' | 'secondary' | 'accent'> = ['primary', 'secondary', 'accent'];
@@ -30,11 +41,15 @@ export class FamilyService {
       );
   }
 
-  refresh(): void { this.cached.set(null); }
-
-  agregar(): Observable<never> {
-    return throwError(() => new Error('Próximamente'));
+  addFamilyMember(payload: AddFamilyMemberPayload): Observable<void> {
+    return this.http.post<void>('/api/v1/empresa/patients/me/family', payload);
   }
+
+  removeFamilyMember(userPatientId: number): Observable<void> {
+    return this.http.delete<void>(`/api/v1/empresa/patients/me/family/${userPatientId}`);
+  }
+
+  refresh(): void { this.cached.set(null); }
 
   private toFamiliar(p: PatientFamilyResponse, idx: number): Familiar {
     const edad = Math.floor(
@@ -44,6 +59,8 @@ export class FamilyService {
       p.bond === 'PROPIO' ? 'Yo' : this.normalizeBond(p.bond);
     return {
       id: p.patientId,
+      userPatientId: p.userPatientId,
+      status: p.status as Familiar['status'],
       nombre: p.firstName,
       apellido: p.lastName,
       iniciales: (p.firstName[0] ?? '?').toUpperCase(),

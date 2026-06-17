@@ -1,6 +1,5 @@
-import { Component, computed, inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, OnInit, inject } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { SkeletonModule } from 'primeng/skeleton';
@@ -9,8 +8,9 @@ import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-
 import { FamilyCardComponent } from '../../../shared/ui/components/family-card/family-card.component';
 import { FamilyGridComponent } from '../../../shared/ui/components/family-grid/family-grid.component';
 import { AddFamilyCardComponent } from '../../../shared/ui/components/add-family-card/add-family-card.component';
-import { FamilyService } from '../../../core/family/family.service';
 import { Familiar } from '../../../core/models/familiar.model';
+import { selectAllFamily, selectFamilyPending } from './store/family.selectors';
+import { loadFamily } from './store/family.actions';
 
 @Component({
   selector: 'app-familia',
@@ -28,14 +28,16 @@ import { Familiar } from '../../../core/models/familiar.model';
   templateUrl: './familia.component.html',
   styleUrl: './familia.component.scss',
 })
-export class FamiliaComponent {
-  private readonly router         = inject(Router);
-  private readonly familyService  = inject(FamilyService);
+export class FamiliaComponent implements OnInit {
+  private readonly store         = inject(Store);
   private readonly messageService = inject(MessageService);
 
-  familiares = toSignal(this.familyService.getFamily(), { initialValue: [] });
+  familiares = this.store.selectSignal(selectAllFamily);
+  loading    = this.store.selectSignal(selectFamilyPending);
 
-  loading = computed(() => false);
+  ngOnInit(): void {
+    this.store.dispatch(loadFamily());
+  }
 
   onSelectFamiliar(f: Familiar): void {
     // TODO: cuando exista la ruta de edición de familiar (/familia/:id/editar),

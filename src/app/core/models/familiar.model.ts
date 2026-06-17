@@ -2,6 +2,8 @@ export type Vinculo = 'Yo' | 'Hijo' | 'Hija' | 'Madre' | 'Padre' | 'Cónyuge' | 
 
 export interface Familiar {
   id: number;
+  userPatientId: number;
+  status: 'CREATED' | 'VERIFIED' | 'REJECTED';
   nombre: string;
   apellido: string;
   iniciales: string;
