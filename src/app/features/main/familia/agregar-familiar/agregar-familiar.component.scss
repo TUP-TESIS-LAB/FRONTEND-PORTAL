@@ -1,0 +1,26 @@
+:host {
+  display: contents;
+}
+
+.af-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding-top: var(--space-4);
+}
+
+.af-field {
+  width: 100%;
+}
+
+.af-input {
+  width: 100%;
+  min-height: var(--ds-touch-target);
+}
+
+.af-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}

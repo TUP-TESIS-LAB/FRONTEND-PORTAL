@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -8,6 +8,7 @@ import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-
 import { FamilyCardComponent } from '../../../shared/ui/components/family-card/family-card.component';
 import { FamilyGridComponent } from '../../../shared/ui/components/family-grid/family-grid.component';
 import { AddFamilyCardComponent } from '../../../shared/ui/components/add-family-card/add-family-card.component';
+import { AgregarFamiliarComponent } from './agregar-familiar/agregar-familiar.component';
 import { Familiar } from '../../../core/models/familiar.model';
 import { selectAllFamily, selectFamilyPending } from './store/family.selectors';
 import { loadFamily } from './store/family.actions';
@@ -23,14 +24,17 @@ import { loadFamily } from './store/family.actions';
     FamilyCardComponent,
     FamilyGridComponent,
     AddFamilyCardComponent,
+    AgregarFamiliarComponent,
   ],
   providers: [MessageService],
   templateUrl: './familia.component.html',
   styleUrl: './familia.component.scss',
 })
 export class FamiliaComponent implements OnInit {
-  private readonly store         = inject(Store);
+  private readonly store          = inject(Store);
   private readonly messageService = inject(MessageService);
+
+  @ViewChild(AgregarFamiliarComponent) private agregarDialog!: AgregarFamiliarComponent;
 
   familiares = this.store.selectSignal(selectAllFamily);
   loading    = this.store.selectSignal(selectFamilyPending);
@@ -51,11 +55,6 @@ export class FamiliaComponent implements OnInit {
   }
 
   onAddFamily(): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Próximamente',
-      detail: 'Esta funcionalidad estará disponible pronto.',
-      life: 3000,
-    });
+    this.agregarDialog.open();
   }
 }

@@ -1,0 +1,113 @@
+<p-dialog
+  [(visible)]="visible"
+  header="Agregar familiar"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="ui-dialog-fullscreen-mobile"
+  [breakpoints]="{ '768px': '100vw' }"
+  [style]="{ width: '520px' }"
+  (onHide)="onHide()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="af-form">
+
+    <!-- Nombre -->
+    <p-floatlabel class="af-field" variant="on">
+      <input
+        id="firstName"
+        pInputText
+        formControlName="firstName"
+        autocomplete="given-name"
+        class="af-input"
+      />
+      <label for="firstName">Nombre *</label>
+    </p-floatlabel>
+
+    <!-- Apellido -->
+    <p-floatlabel class="af-field" variant="on">
+      <input
+        id="lastName"
+        pInputText
+        formControlName="lastName"
+        autocomplete="family-name"
+        class="af-input"
+      />
+      <label for="lastName">Apellido *</label>
+    </p-floatlabel>
+
+    <!-- DNI -->
+    <p-floatlabel class="af-field" variant="on">
+      <input
+        id="dni"
+        pInputText
+        formControlName="dni"
+        inputmode="numeric"
+        autocomplete="off"
+        class="af-input"
+      />
+      <label for="dni">DNI *</label>
+    </p-floatlabel>
+
+    <!-- Fecha de nacimiento -->
+    <p-floatlabel class="af-field" variant="on">
+      <p-datepicker
+        inputId="birthDate"
+        formControlName="birthDate"
+        [showIcon]="true"
+        dateFormat="dd/mm/yy"
+        [maxDate]="today"
+        class="af-input"
+      />
+      <label for="birthDate">Fecha de nacimiento</label>
+    </p-floatlabel>
+
+    <!-- Género -->
+    <p-floatlabel class="af-field" variant="on">
+      <p-select
+        inputId="gender"
+        formControlName="gender"
+        [options]="genderOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Seleccioná un género"
+        [showClear]="true"
+        class="af-input"
+      />
+      <label for="gender">Género</label>
+    </p-floatlabel>
+
+    <!-- Parentesco -->
+    <p-floatlabel class="af-field" variant="on">
+      <p-select
+        inputId="bond"
+        formControlName="bond"
+        [options]="bondOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Seleccioná el parentesco"
+        class="af-input"
+      />
+      <label for="bond">Parentesco *</label>
+    </p-floatlabel>
+
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="af-footer">
+      <p-button
+        label="Cancelar"
+        [text]="true"
+        severity="secondary"
+        type="button"
+        (onClick)="close()"
+      />
+      <p-button
+        label="Agregar"
+        severity="primary"
+        type="submit"
+        [disabled]="!canSubmit()"
+        (onClick)="onSubmit()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>
