@@ -72,16 +72,28 @@ describe('FamilyEffects', () => {
     const payload = { firstName: 'Juan', lastName: 'Perez', dni: '99999999', birthDate: '1990-01-01', gender: 'MALE', bond: 'HIJO' };
 
     it('dispatches addFamilyMemberSuccess on success', () => new Promise<void>(done => {
-      const eff = setup({ addFamilyMember: () => of(void 0) }, addFamilyMember({ payload }));
+      const eff = setup({ addFamilyMember: () => of(void 0), refresh: () => {} }, addFamilyMember({ payload }));
       eff.addFamilyMember$.subscribe(a => {
         expect(a).toEqual(addFamilyMemberSuccess());
         done();
       });
     }));
 
+    it('calls familyService.refresh() on success', () => new Promise<void>(done => {
+      let refreshCalled = false;
+      const eff = setup(
+        { addFamilyMember: () => of(void 0), refresh: () => { refreshCalled = true; } },
+        addFamilyMember({ payload }),
+      );
+      eff.addFamilyMember$.subscribe(() => {
+        expect(refreshCalled).toBe(true);
+        done();
+      });
+    }));
+
     it('dispatches addFamilyMemberFailure on error', () => new Promise<void>(done => {
       const error = new HttpErrorResponse({ status: 400 });
-      const eff = setup({ addFamilyMember: () => throwError(() => error) }, addFamilyMember({ payload }));
+      const eff = setup({ addFamilyMember: () => throwError(() => error), refresh: () => {} }, addFamilyMember({ payload }));
       eff.addFamilyMember$.subscribe(a => {
         expect(a).toEqual(addFamilyMemberFailure({ error }));
         done();
@@ -102,16 +114,28 @@ describe('FamilyEffects', () => {
 
   describe('removeFamilyMember$', () => {
     it('dispatches removeFamilyMemberSuccess with userPatientId on success', () => new Promise<void>(done => {
-      const eff = setup({ removeFamilyMember: () => of(void 0) }, removeFamilyMember({ userPatientId: 10 }));
+      const eff = setup({ removeFamilyMember: () => of(void 0), refresh: () => {} }, removeFamilyMember({ userPatientId: 10 }));
       eff.removeFamilyMember$.subscribe(a => {
         expect(a).toEqual(removeFamilyMemberSuccess({ userPatientId: 10 }));
         done();
       });
     }));
 
+    it('calls familyService.refresh() on remove success', () => new Promise<void>(done => {
+      let refreshCalled = false;
+      const eff = setup(
+        { removeFamilyMember: () => of(void 0), refresh: () => { refreshCalled = true; } },
+        removeFamilyMember({ userPatientId: 10 }),
+      );
+      eff.removeFamilyMember$.subscribe(() => {
+        expect(refreshCalled).toBe(true);
+        done();
+      });
+    }));
+
     it('dispatches removeFamilyMemberFailure on error', () => new Promise<void>(done => {
       const error = new HttpErrorResponse({ status: 404 });
-      const eff = setup({ removeFamilyMember: () => throwError(() => error) }, removeFamilyMember({ userPatientId: 10 }));
+      const eff = setup({ removeFamilyMember: () => throwError(() => error), refresh: () => {} }, removeFamilyMember({ userPatientId: 10 }));
       eff.removeFamilyMember$.subscribe(a => {
         expect(a).toEqual(removeFamilyMemberFailure({ error }));
         done();

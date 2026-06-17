@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, concatMap, map, of, switchMap } from 'rxjs';
+import { catchError, concatMap, map, of, switchMap, tap } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FamilyService } from '../../../../core/family/family.service';
 import {
@@ -39,6 +39,7 @@ export class FamilyEffects {
       ofType(addFamilyMember),
       concatMap(({ payload }) =>
         this.familyService.addFamilyMember(payload).pipe(
+          tap(() => this.familyService.refresh()),
           map(() => addFamilyMemberSuccess()),
           catchError((error: HttpErrorResponse) =>
             of(addFamilyMemberFailure({ error })),
@@ -60,6 +61,7 @@ export class FamilyEffects {
       ofType(removeFamilyMember),
       concatMap(({ userPatientId }) =>
         this.familyService.removeFamilyMember(userPatientId).pipe(
+          tap(() => this.familyService.refresh()),
           map(() => removeFamilyMemberSuccess({ userPatientId })),
           catchError((error: HttpErrorResponse) =>
             of(removeFamilyMemberFailure({ error })),
