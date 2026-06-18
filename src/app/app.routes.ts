@@ -23,6 +23,11 @@ export const routes: Routes = [
       import('./features/auth/password-recovery/reset-password.component').then(m => m.ResetPasswordComponent),
   },
   {
+    path: 'primer-acceso',
+    loadComponent: () =>
+      import('./features/auth/first-login/first-login.component').then(m => m.FirstLoginComponent),
+  },
+  {
     // Legacy /dashboard: redirige al home real para no romper bookmarks.
     path: 'dashboard',
     redirectTo: '',

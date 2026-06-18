@@ -28,6 +28,9 @@ import { TurnosEffects } from './features/main/turnos/store/turnos.effects';
 import { familyReducer } from './features/main/familia/store/family.reducer';
 import { FamilyEffects } from './features/main/familia/store/family.effects';
 import { FAMILY_KEY } from './features/main/familia/store/family.state';
+import { firstLoginReducer } from './features/auth/first-login/store/first-login.reducer';
+import { FirstLoginEffects } from './features/auth/first-login/store/first-login.effects';
+import { FIRST_LOGIN_KEY } from './features/auth/first-login/store/first-login.state';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -35,8 +38,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
 
-    provideStore({ router: routerReducer, passwordRecovery: passwordRecoveryReducer, perfil: perfilReducer, turnos: turnosReducer, [FAMILY_KEY]: familyReducer }, { metaReducers }),
-    provideEffects(PasswordRecoveryEffects, PerfilEffects, TurnosEffects, FamilyEffects),
+    provideStore({ router: routerReducer, passwordRecovery: passwordRecoveryReducer, perfil: perfilReducer, turnos: turnosReducer, [FAMILY_KEY]: familyReducer, [FIRST_LOGIN_KEY]: firstLoginReducer }, { metaReducers }),
+    provideEffects(PasswordRecoveryEffects, PerfilEffects, TurnosEffects, FamilyEffects, FirstLoginEffects),
     provideRouterStore(),
 
     providePrimeNG({
