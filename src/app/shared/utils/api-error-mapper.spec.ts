@@ -34,6 +34,18 @@ describe('mapApiError', () => {
     expect(mapApiError(build(409, {}))).toBe('Esos datos ya están registrados.');
   });
 
+  it('surfaces the backend 409 message verbatim over the generic fallback (self-register blocked)', () => {
+    // KAN-116 A9: un paciente ya existente que intenta autorregistrarse recibe
+    // el mensaje del backend que lo deriva al laboratorio, NO el genérico del 409.
+    const msg = 'Ya estás registrado como paciente. Acercate al laboratorio para activar tu cuenta.';
+    expect(mapApiError(build(409, { message: msg }))).toBe(msg);
+  });
+
+  it('surfaces the backend 409 message for an existing account by DNI', () => {
+    const msg = 'Ya existe una cuenta con ese DNI. Probá iniciar sesión.';
+    expect(mapApiError(build(409, { message: msg }))).toBe(msg);
+  });
+
   it('concatenates fieldErrors', () => {
     const result = mapApiError(build(400, {
       message: 'Validation failed',
