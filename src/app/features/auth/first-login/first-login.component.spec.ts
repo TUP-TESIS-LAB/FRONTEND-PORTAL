@@ -44,26 +44,33 @@ describe('FirstLoginComponent', () => {
   });
 
   it('does not dispatch when form is invalid (empty token)', () => {
-    const spy = vi.spyOn(store, 'dispatch');
     const cmp = runInInjectionContext(injector, () => new FirstLoginComponent());
+    // Spy after construction so the constructor's resetFirstLogin() is not counted.
+    const spy = vi.spyOn(store, 'dispatch');
     cmp.form.setValue({ token: '', password: 'Password1', confirm: 'Password1' });
     cmp.submit();
-    expect(spy).not.toHaveBeenCalled();
+    expect(spy).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: A.setFirstLoginPassword.type }),
+    );
   });
 
   it('does not dispatch when passwords do not match', () => {
-    const spy = vi.spyOn(store, 'dispatch');
     const cmp = runInInjectionContext(injector, () => new FirstLoginComponent());
+    const spy = vi.spyOn(store, 'dispatch');
     cmp.form.setValue({ token: 'tok12345', password: 'Password1', confirm: 'Different1' });
     cmp.submit();
-    expect(spy).not.toHaveBeenCalled();
+    expect(spy).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: A.setFirstLoginPassword.type }),
+    );
   });
 
   it('does not dispatch when password is too short', () => {
-    const spy = vi.spyOn(store, 'dispatch');
     const cmp = runInInjectionContext(injector, () => new FirstLoginComponent());
+    const spy = vi.spyOn(store, 'dispatch');
     cmp.form.setValue({ token: 'tok12345', password: 'short', confirm: 'short' });
     cmp.submit();
-    expect(spy).not.toHaveBeenCalled();
+    expect(spy).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: A.setFirstLoginPassword.type }),
+    );
   });
 });

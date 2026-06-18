@@ -1,6 +1,8 @@
 import { createAction, props } from '@ngrx/store';
 import { HttpErrorResponse } from '@angular/common/http';
 
+export const resetFirstLogin = createAction('[First Login] Reset');
+
 export const setFirstLoginPassword = createAction(
   '[First Login Page] Set Password',
   props<{ token: string; newPassword: string }>(),

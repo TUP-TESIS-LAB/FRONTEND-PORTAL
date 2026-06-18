@@ -28,4 +28,14 @@ describe('firstLoginReducer', () => {
     expect(state.error).toBe(err);
     expect(state.done).toBe(false);
   });
+
+  it('resetFirstLogin → returns initial state from a dirty state', () => {
+    const dirty = {
+      submitting: true,
+      done: true,
+      error: new HttpErrorResponse({ status: 500 }),
+    };
+    const state = firstLoginReducer(dirty, A.resetFirstLogin());
+    expect(state).toEqual(initialFirstLoginState);
+  });
 });

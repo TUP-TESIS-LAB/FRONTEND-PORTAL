@@ -10,7 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { PublicTopbarComponent } from '../ui/public-topbar/public-topbar.component';
 import { TenantService } from '../../../core/tenant/tenant.service';
-import { setFirstLoginPassword } from './store/first-login.actions';
+import { resetFirstLogin, setFirstLoginPassword } from './store/first-login.actions';
 import {
   selectFirstLoginSubmitting,
   selectFirstLoginDone,
@@ -57,6 +57,10 @@ export class FirstLoginComponent {
   });
 
   constructor() {
+    // Reset stale state BEFORE registering effects so the `done` effect
+    // cannot observe a leftover `done === true` from a previous visit.
+    this.store.dispatch(resetFirstLogin());
+
     effect(() => {
       if (this.done()) {
         this.toast.add({
