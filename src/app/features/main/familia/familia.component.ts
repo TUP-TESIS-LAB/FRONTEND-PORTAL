@@ -1,5 +1,7 @@
 import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
+import { Actions, ofType } from '@ngrx/effects';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -12,7 +14,7 @@ import { AddFamilyCardComponent } from '../../../shared/ui/components/add-family
 import { AgregarFamiliarComponent } from './agregar-familiar/agregar-familiar.component';
 import { Familiar } from '../../../core/models/familiar.model';
 import { selectAllFamily, selectFamilyPending } from './store/family.selectors';
-import { loadFamily, removeFamilyMember } from './store/family.actions';
+import { loadFamily, removeFamilyMember, removeFamilyMemberSuccess, removeFamilyMemberFailure } from './store/family.actions';
 
 @Component({
   selector: 'app-familia',
@@ -34,6 +36,7 @@ import { loadFamily, removeFamilyMember } from './store/family.actions';
 })
 export class FamiliaComponent implements OnInit {
   private readonly store           = inject(Store);
+  private readonly actions$        = inject(Actions);
   private readonly messageService  = inject(MessageService);
   private readonly confirmService  = inject(ConfirmationService);
 
@@ -41,6 +44,32 @@ export class FamiliaComponent implements OnInit {
 
   familiares = this.store.selectSignal(selectAllFamily);
   loading    = this.store.selectSignal(selectFamilyPending);
+
+  constructor() {
+    this.actions$.pipe(
+      ofType(removeFamilyMemberSuccess),
+      takeUntilDestroyed(),
+    ).subscribe(({ userPatientId: _ }) => {
+      this.messageService.add({
+        severity: 'success',
+        summary:  'Familiar quitado',
+        detail:   'El familiar fue eliminado del grupo familiar.',
+        life:     3000,
+      });
+    });
+
+    this.actions$.pipe(
+      ofType(removeFamilyMemberFailure),
+      takeUntilDestroyed(),
+    ).subscribe(() => {
+      this.messageService.add({
+        severity: 'error',
+        summary:  'Error',
+        detail:   'No se pudo quitar el familiar.',
+        life:     5000,
+      });
+    });
+  }
 
   ngOnInit(): void {
     this.store.dispatch(loadFamily());
@@ -67,12 +96,6 @@ export class FamiliaComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
         this.store.dispatch(removeFamilyMember({ userPatientId: f.userPatientId }));
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Familiar quitado',
-          detail: `${f.nombre} ${f.apellido} fue eliminado del grupo familiar.`,
-          life: 3000,
-        });
       },
     });
   }

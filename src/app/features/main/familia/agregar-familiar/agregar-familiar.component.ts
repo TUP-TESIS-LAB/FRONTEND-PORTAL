@@ -4,11 +4,13 @@ import {
   EventEmitter,
   inject,
   Output,
+  signal,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { computed } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { Actions, ofType } from '@ngrx/effects';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -16,7 +18,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
-import { addFamilyMember } from '../store/family.actions';
+import { addFamilyMember, addFamilyMemberSuccess, addFamilyMemberFailure } from '../store/family.actions';
 import { AddFamilyMemberPayload } from '../../../../core/family/family.service';
 
 export interface GenderOption {
@@ -48,11 +50,42 @@ export interface BondOption {
 export class AgregarFamiliarComponent {
   private readonly fb             = inject(FormBuilder);
   private readonly store          = inject(Store);
+  private readonly actions$       = inject(Actions);
   private readonly messageService = inject(MessageService);
 
   @Output() closed = new EventEmitter<void>();
 
-  visible = false;
+  visible    = false;
+  submitting = signal(false);
+
+  constructor() {
+    this.actions$.pipe(
+      ofType(addFamilyMemberSuccess),
+      takeUntilDestroyed(),
+    ).subscribe(() => {
+      this.submitting.set(false);
+      this.visible = false;
+      this.messageService.add({
+        severity: 'info',
+        summary:  'Familiar agregado',
+        detail:   'Queda pendiente de verificación.',
+        life:     4000,
+      });
+    });
+
+    this.actions$.pipe(
+      ofType(addFamilyMemberFailure),
+      takeUntilDestroyed(),
+    ).subscribe(() => {
+      this.submitting.set(false);
+      this.messageService.add({
+        severity: 'error',
+        summary:  'Error',
+        detail:   'No se pudo agregar el familiar.',
+        life:     5000,
+      });
+    });
+  }
 
   readonly genderOptions: GenderOption[] = [
     { label: 'Masculino',      value: 'MALE'          },
@@ -84,7 +117,7 @@ export class AgregarFamiliarComponent {
   });
 
   private readonly status   = toSignal(this.form.statusChanges, { initialValue: this.form.status });
-  readonly canSubmit = computed(() => this.status() === 'VALID');
+  readonly canSubmit = computed(() => this.status() === 'VALID' && !this.submitting());
 
   open(): void {
     this.form.reset();
@@ -116,14 +149,8 @@ export class AgregarFamiliarComponent {
       bond:      raw.bond!,
     };
 
+    this.submitting.set(true);
     this.store.dispatch(addFamilyMember({ payload }));
-    this.visible = false;
-    this.messageService.add({
-      severity: 'info',
-      summary:  'Familiar agregado',
-      detail:   'Queda pendiente de verificación.',
-      life:     4000,
-    });
   }
 
   private formatDate(date: Date): string {

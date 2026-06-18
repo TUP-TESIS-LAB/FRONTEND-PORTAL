@@ -7,9 +7,10 @@ const ctx: MapperContext = {
             descripcionCorta: '', categoria: 'h', icono: '', determinationIds: [101] }],
   ]),
   family: new Map([
-    [10, { id: 10, nombre: 'María', apellido: 'García', iniciales: 'M',
-           edad: 35, vinculo: 'Yo', dni: '30000000', cobertura: '',
-           totalTurnos: 0, totalEstudios: 0, accentColor: 'primary' }],
+    [10, { id: 10, userPatientId: 10, status: 'VERIFIED' as const,
+           nombre: 'María', apellido: 'García', iniciales: 'M',
+           edad: 35, vinculo: 'Yo' as const, dni: '30000000', cobertura: '',
+           totalTurnos: 0, totalEstudios: 0, accentColor: 'primary' as const }],
   ]),
   sedes: new Map([
     ['5', { id: '5', nombre: 'Sede Centro', direccion: 'Av. Colón 450' }],

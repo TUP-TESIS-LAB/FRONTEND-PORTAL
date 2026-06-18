@@ -2,30 +2,37 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { runInInjectionContext, Injector } from '@angular/core';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { provideMockActions } from '@ngrx/effects/testing';
+import { ReplaySubject } from 'rxjs';
+import { Action } from '@ngrx/store';
 import { MessageService } from 'primeng/api';
 import { AgregarFamiliarComponent } from './agregar-familiar.component';
-import { addFamilyMember } from '../store/family.actions';
+import { addFamilyMember, addFamilyMemberSuccess, addFamilyMemberFailure } from '../store/family.actions';
 import { initialFamilyState } from '../store/family.state';
+import { AddFamilyMemberPayload } from '../../../../core/family/family.service';
 
 function setup() {
+  const actions$ = new ReplaySubject<Action>(1);
   TestBed.configureTestingModule({
     providers: [
       provideMockStore({ initialState: { family: initialFamilyState } }),
+      provideMockActions(() => actions$),
       MessageService,
     ],
   });
   const store    = TestBed.inject(MockStore);
   const injector = TestBed.inject(Injector);
   const cmp      = runInInjectionContext(injector, () => new AgregarFamiliarComponent());
-  return { cmp, store };
+  return { cmp, store, actions$ };
 }
 
 describe('AgregarFamiliarComponent — onSubmit', () => {
   let cmp: AgregarFamiliarComponent;
   let store: MockStore;
+  let actions$: ReplaySubject<Action>;
 
   beforeEach(() => {
-    ({ cmp, store } = setup());
+    ({ cmp, store, actions$ } = setup());
   });
 
   it('dispatches addFamilyMember with full payload when form is valid', () => {
@@ -93,7 +100,7 @@ describe('AgregarFamiliarComponent — onSubmit', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
-  it('closes the dialog after a successful submit', () => {
+  it('keeps dialog open after dispatch and closes it only on addFamilyMemberSuccess', () => {
     cmp.open();
     expect(cmp.visible).toBe(true);
 
@@ -108,7 +115,57 @@ describe('AgregarFamiliarComponent — onSubmit', () => {
 
     cmp.onSubmit();
 
+    // Dialog must NOT close eagerly on dispatch
+    expect(cmp.visible).toBe(true);
+
+    // Fire the success action — dialog should close now
+    actions$.next(addFamilyMemberSuccess());
     expect(cmp.visible).toBe(false);
+  });
+
+  it('shows success toast and closes dialog on addFamilyMemberSuccess', () => {
+    const msgSpy = vi.spyOn(TestBed.inject(MessageService), 'add');
+
+    cmp.open();
+    cmp.form.setValue({
+      firstName: 'Carlos',
+      lastName:  'Gomez',
+      dni:       '20000000',
+      birthDate: null,
+      gender:    null,
+      bond:      'PADRE',
+    });
+    cmp.onSubmit();
+
+    actions$.next(addFamilyMemberSuccess());
+
+    expect(cmp.visible).toBe(false);
+    expect(msgSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ severity: 'info' }),
+    );
+  });
+
+  it('shows error toast and keeps dialog open on addFamilyMemberFailure', () => {
+    const msgSpy = vi.spyOn(TestBed.inject(MessageService), 'add');
+
+    cmp.open();
+    cmp.form.setValue({
+      firstName: 'Carlos',
+      lastName:  'Gomez',
+      dni:       '20000000',
+      birthDate: null,
+      gender:    null,
+      bond:      'PADRE',
+    });
+    cmp.onSubmit();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    actions$.next(addFamilyMemberFailure({ error: {} as any }));
+
+    expect(cmp.visible).toBe(true);
+    expect(msgSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ severity: 'error' }),
+    );
   });
 
   it('formats Date correctly to yyyy-MM-dd', () => {
@@ -125,7 +182,7 @@ describe('AgregarFamiliarComponent — onSubmit', () => {
 
     cmp.onSubmit();
 
-    const dispatchedPayload = (spy.mock.calls[0][0] as ReturnType<typeof addFamilyMember>).payload;
+    const dispatchedPayload = (spy.mock.calls[0][0] as unknown as { payload: AddFamilyMemberPayload }).payload;
     expect(dispatchedPayload.birthDate).toBe('2005-12-03');
   });
 });
