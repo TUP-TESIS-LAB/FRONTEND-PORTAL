@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, computed, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, effect, inject, signal, untracked } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -193,7 +193,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
       this.reprogramarTurnoId.set(null);
       this.mobileDetailOpen.set(false);
       this.selectedTurno.set(null);
-      this.cargarTurnos(this.activePatientSvc.activePatient()?.id);
+      this.cargarTurnos(untracked(() => this.activePatientSvc.activePatient()?.id));
       this.messageService.add({
         severity: 'success', summary: 'Turno reprogramado',
         detail: 'Tu turno fue reprogramado correctamente.', life: 4000,
