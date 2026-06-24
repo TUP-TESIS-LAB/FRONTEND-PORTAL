@@ -9,7 +9,6 @@ import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DrawerModule } from 'primeng/drawer';
-import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ToastModule } from 'primeng/toast';
@@ -23,6 +22,7 @@ import { EstadoTurnoLabelPipe } from '../../../shared/pipes/estado-turno-label.p
 import { EstadoTurnoKeyPipe } from '../../../shared/pipes/estado-turno-key.pipe';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { AppointmentService } from './services/appointment.service';
+import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
 import { mapApiError } from '../../../shared/utils/api-error-mapper';
 import { toLocalDateTimeString } from '../../../shared/utils/local-datetime';
 import { EstadoTurno, Turno } from '../../../core/models/turno.model';
@@ -40,7 +40,6 @@ import * as TurnosActions from './store/turnos.actions';
     ConfirmDialogModule,
     DatePickerModule,
     DrawerModule,
-    MultiSelectModule,
     SelectButtonModule,
     SkeletonModule,
     ToastModule,
@@ -59,6 +58,7 @@ import * as TurnosActions from './store/turnos.actions';
 })
 export class TurnosComponent implements OnInit, OnDestroy {
   private readonly appointmentSvc  = inject(AppointmentService);
+  private readonly activePatientSvc = inject(ActivePatientService);
   private readonly messageService = inject(MessageService);
   private readonly confirmService = inject(ConfirmationService);
   private readonly router         = inject(Router);
@@ -93,24 +93,10 @@ export class TurnosComponent implements OnInit, OnDestroy {
   // ─── Filtros seleccionables ──────────────────────────────
   /** Chips de estado activos (estado local). Vacío = todos. */
   estadoFilter   = signal<EstadoTurno[]>([]);
-  /** Familiares seleccionados. Vacío = todos. */
-  familiarFilter = signal<string[]>([]);
   /** Fecha desde (filtro mínimo). null = sin tope inferior. */
   fechaDesde     = signal<Date | null>(null);
   /** Fecha hasta (filtro máximo). null = sin tope superior. */
   fechaHasta     = signal<Date | null>(null);
-
-  /** Lista única de familiares presentes en los turnos. */
-  protected readonly familiares = computed(() => {
-    const all = [...this.proximosTurnos(), ...this.anterioresTurnos()];
-    const map = new Map<string, { label: string; value: string }>();
-    for (const t of all) {
-      if (!map.has(t.personaNombre)) {
-        map.set(t.personaNombre, { label: t.personaNombre, value: t.personaNombre });
-      }
-    }
-    return Array.from(map.values());
-  });
 
   /** Chips de estado: 4 categorías user-facing fijas que agrupan los 7 estados
    *  del backend (per appointment-to-turno.mapper.ts). Curado para UX:
@@ -147,28 +133,24 @@ export class TurnosComponent implements OnInit, OnDestroy {
   protected readonly activeFiltersCount = computed(() => {
     let n = 0;
     if (this.estadoFilter().length > 0) n++;
-    if (this.familiarFilter().length > 0) n++;
     if (this.fechaDesde()) n++;
     if (this.fechaHasta()) n++;
     return n;
   });
 
   protected readonly hasActiveFilters = computed(() =>
-    this.familiarFilter().length > 0
-    || this.fechaDesde() !== null
+    this.fechaDesde() !== null
     || this.fechaHasta() !== null
     || this.estadoFilter().length > 0
   );
 
   private applyFilters(list: Turno[]): Turno[] {
     const estados = new Set(this.estadoFilter());
-    const fams = new Set(this.familiarFilter());
     const desde = this.fechaDesde();
     const hasta = this.fechaHasta();
 
     return list.filter(t => {
       if (estados.size > 0 && !estados.has(t.estado)) return false;
-      if (fams.size > 0 && !fams.has(t.personaNombre)) return false;
       if (desde || hasta) {
         const turnoDate = new Date(t.fechaCompleta);
         if (desde && turnoDate < desde) return false;
@@ -180,12 +162,18 @@ export class TurnosComponent implements OnInit, OnDestroy {
 
   clearFilters(): void {
     this.estadoFilter.set([]);
-    this.familiarFilter.set([]);
     this.fechaDesde.set(null);
     this.fechaHasta.set(null);
   }
 
   private subs = new Subscription();
+
+  constructor() {
+    effect(() => {
+      const p = this.activePatientSvc.activePatient();
+      if (p) this.cargarTurnos(p.id);
+    });
+  }
 
   private readonly autoSelectEffect = effect(() => {
     const turnos = this.proximosTurnos();
@@ -205,7 +193,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
       this.reprogramarTurnoId.set(null);
       this.mobileDetailOpen.set(false);
       this.selectedTurno.set(null);
-      this.cargarTurnos();
+      this.cargarTurnos(this.activePatientSvc.activePatient()?.id);
       this.messageService.add({
         severity: 'success', summary: 'Turno reprogramado',
         detail: 'Tu turno fue reprogramado correctamente.', life: 4000,
@@ -225,7 +213,6 @@ export class TurnosComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
-    this.cargarTurnos();
     this.showPendingBookingToast();
   }
 
@@ -251,10 +238,10 @@ export class TurnosComponent implements OnInit, OnDestroy {
     }
   }
 
-  private cargarTurnos(): void {
+  private cargarTurnos(patientId?: number): void {
     this.cargando.set(true);
     this.subs.add(
-      this.appointmentSvc.getMyAppointments().subscribe({
+      this.appointmentSvc.getMyAppointments(patientId).subscribe({
         next: ({ proximos, anteriores }) => {
           this.proximosTurnos.set(proximos);
           this.anterioresTurnos.set(anteriores);
@@ -333,7 +320,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
             next: () => {
               this.mobileDetailOpen.set(false);
               this.selectedTurno.set(null);
-              this.cargarTurnos();
+              this.cargarTurnos(this.activePatientSvc.activePatient()?.id);
               this.messageService.add({
                 severity: 'success', summary: 'Turno cancelado',
                 detail: `El turno del ${turno.fechaCompleta} fue cancelado.`,

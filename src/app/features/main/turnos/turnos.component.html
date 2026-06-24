@@ -59,21 +59,6 @@
       [allowEmpty]="true" />
   </div>
 
-  @if (familiares().length > 1) {
-    <div class="ui-turnos-filters__group">
-      <span class="ui-turnos-filters__label">Familiar</span>
-      <p-multiselect
-        [options]="familiares()"
-        [ngModel]="familiarFilter()"
-        (ngModelChange)="familiarFilter.set($event)"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Todos"
-        [showClear]="true"
-        styleClass="ui-turnos-filters__multiselect" />
-    </div>
-  }
-
   <div class="ui-turnos-filters__group">
     <span class="ui-turnos-filters__label">Fecha desde</span>
     <p-datepicker

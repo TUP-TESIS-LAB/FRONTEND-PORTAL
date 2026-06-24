@@ -42,9 +42,10 @@ export class AppointmentService {
   private readonly sedeSvc   = inject(SucursalPublicService);
   private readonly familySvc = inject(FamilyService);
 
-  getMyAppointments(): Observable<{ proximos: Turno[]; anteriores: Turno[] }> {
+  getMyAppointments(patientId?: number): Observable<{ proximos: Turno[]; anteriores: Turno[] }> {
+    const url = '/api/v1/turnos/appointments?mine=true' + (patientId != null ? `&patientId=${patientId}` : '');
     return forkJoin({
-      ap:     this.http.get<AppointmentResponse[]>('/api/v1/turnos/appointments?mine=true'),
+      ap:     this.http.get<AppointmentResponse[]>(url),
       tipos:  this.tiposSvc.getTipos(),
       sedes:  this.sedeSvc.getSedes(),
       family: this.familySvc.getFamily(),
