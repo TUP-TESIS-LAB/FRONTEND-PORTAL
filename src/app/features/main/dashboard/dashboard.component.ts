@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
@@ -10,6 +10,7 @@ import { TopSheetComponent, TopSheetItem } from '../../../shared/ui/overlays/top
 import { AppointmentService } from '../turnos/services/appointment.service';
 import { EstudioService } from '../estudios/estudio.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
 import { Turno } from '../../../core/models/turno.model';
 import { Estudio } from '../../../core/models/estudio.model';
 
@@ -32,6 +33,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private readonly estudioSvc = inject(EstudioService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly activePatientSvc = inject(ActivePatientService);
 
   protected readonly cargando = signal(true);
   protected readonly proximoTurno = signal<Turno | null>(null);
@@ -112,14 +114,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private subs = new Subscription();
 
-  ngOnInit(): void {
-    this.cargarProximoTurno();
+  constructor() {
+    effect(() => {
+      const p = this.activePatientSvc.activePatient();
+      if (p) this.cargarProximoTurno(p.id);
+    });
   }
 
-  private cargarProximoTurno(): void {
+  ngOnInit(): void {
+    // initial load is driven by the effect above; nothing extra needed here
+  }
+
+  private cargarProximoTurno(patientId?: number): void {
     this.cargando.set(true);
     this.subs.add(
-      this.appointmentSvc.getMyAppointments().subscribe({
+      this.appointmentSvc.getMyAppointments(patientId).subscribe({
         next: ({ proximos }) => {
           this.turnosCount.set(proximos.length);
           const proximo = proximos[0] ?? null;
