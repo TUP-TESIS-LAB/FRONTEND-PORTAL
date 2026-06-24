@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, computed, effect, inject, signal, untrack
 import { NgTemplateOutlet } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription, switchMap, catchError, EMPTY, tap } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -167,11 +167,36 @@ export class TurnosComponent implements OnInit, OnDestroy {
   }
 
   private subs = new Subscription();
+  private readonly reload$ = new Subject<number | undefined>();
 
   constructor() {
+    // Single cancelling stream: switchMap ensures a new patient switch cancels any
+    // in-flight request from a prior patient.
+    this.subs.add(
+      this.reload$.pipe(
+        tap(() => this.cargando.set(true)),
+        switchMap(id =>
+          this.appointmentSvc.getMyAppointments(id).pipe(
+            catchError(err => {
+              this.cargando.set(false);
+              this.messageService.add({
+                severity: 'error', summary: 'Error',
+                detail: mapApiError(err), life: 4000,
+              });
+              return EMPTY;
+            }),
+          ),
+        ),
+      ).subscribe(({ proximos, anteriores }) => {
+        this.proximosTurnos.set(proximos);
+        this.anterioresTurnos.set(anteriores);
+        this.cargando.set(false);
+      }),
+    );
+
     effect(() => {
       const p = this.activePatientSvc.activePatient();
-      if (p) this.cargarTurnos(p.id);
+      if (p) this.reload$.next(p.id);
     });
   }
 
@@ -193,7 +218,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
       this.reprogramarTurnoId.set(null);
       this.mobileDetailOpen.set(false);
       this.selectedTurno.set(null);
-      this.cargarTurnos(untracked(() => this.activePatientSvc.activePatient()?.id));
+      this.reload$.next(untracked(() => this.activePatientSvc.activePatient()?.id));
       this.messageService.add({
         severity: 'success', summary: 'Turno reprogramado',
         detail: 'Tu turno fue reprogramado correctamente.', life: 4000,
@@ -236,26 +261,6 @@ export class TurnosComponent implements OnInit, OnDestroy {
     } catch {
       // sessionStorage corrupto - ignoramos silenciosamente
     }
-  }
-
-  private cargarTurnos(patientId?: number): void {
-    this.cargando.set(true);
-    this.subs.add(
-      this.appointmentSvc.getMyAppointments(patientId).subscribe({
-        next: ({ proximos, anteriores }) => {
-          this.proximosTurnos.set(proximos);
-          this.anterioresTurnos.set(anteriores);
-          this.cargando.set(false);
-        },
-        error: (err) => {
-          this.cargando.set(false);
-          this.messageService.add({
-            severity: 'error', summary: 'Error',
-            detail: mapApiError(err), life: 4000,
-          });
-        },
-      }),
-    );
   }
 
   onTurnoClick(turno: Turno): void {
@@ -320,7 +325,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
             next: () => {
               this.mobileDetailOpen.set(false);
               this.selectedTurno.set(null);
-              this.cargarTurnos(this.activePatientSvc.activePatient()?.id);
+              this.reload$.next(this.activePatientSvc.activePatient()?.id);
               this.messageService.add({
                 severity: 'success', summary: 'Turno cancelado',
                 detail: `El turno del ${turno.fechaCompleta} fue cancelado.`,

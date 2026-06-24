@@ -1,7 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { ActivePatientService } from './active-patient.service';
 import { FamilyService } from '../family/family.service';
 import { of } from 'rxjs';
@@ -19,8 +17,10 @@ describe('ActivePatientService', () => {
   function setup(list: Familiar[]) {
     familyStub = { getFamily: () => of(list) };
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(),
-        { provide: FamilyService, useValue: familyStub }, ActivePatientService],
+      providers: [
+        { provide: FamilyService, useValue: familyStub },
+        ActivePatientService,
+      ],
     });
     service = TestBed.inject(ActivePatientService);
   }
