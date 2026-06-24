@@ -1,6 +1,6 @@
-import { Component, computed, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnDestroy, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription, switchMap, catchError, EMPTY } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { SkeletonModule } from 'primeng/skeleton';
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
@@ -10,6 +10,7 @@ import { TopSheetComponent, TopSheetItem } from '../../../shared/ui/overlays/top
 import { AppointmentService } from '../turnos/services/appointment.service';
 import { EstudioService } from '../estudios/estudio.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
 import { Turno } from '../../../core/models/turno.model';
 import { Estudio } from '../../../core/models/estudio.model';
 
@@ -27,11 +28,12 @@ import { Estudio } from '../../../core/models/estudio.model';
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent implements OnDestroy {
   private readonly appointmentSvc = inject(AppointmentService);
   private readonly estudioSvc = inject(EstudioService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly activePatientSvc = inject(ActivePatientService);
 
   protected readonly cargando = signal(true);
   protected readonly proximoTurno = signal<Turno | null>(null);
@@ -111,31 +113,41 @@ export class DashboardComponent implements OnInit, OnDestroy {
   });
 
   private subs = new Subscription();
+  private readonly reload$ = new Subject<number | undefined>();
 
-  ngOnInit(): void {
-    this.cargarProximoTurno();
-  }
-
-  private cargarProximoTurno(): void {
-    this.cargando.set(true);
+  constructor() {
+    // Single cancelling stream: switchMap ensures a new patient switch cancels any
+    // in-flight request from a prior patient.
     this.subs.add(
-      this.appointmentSvc.getMyAppointments().subscribe({
-        next: ({ proximos }) => {
-          this.turnosCount.set(proximos.length);
-          const proximo = proximos[0] ?? null;
-          this.proximoTurno.set(proximo);
-          // Sin turno próximo → fallback al último estudio (mejor que placeholder vacío).
-          if (proximo == null) {
-            this.cargarUltimoEstudio();
-          } else {
-            this.cargando.set(false);
-          }
-        },
-        error: () => {
+      this.reload$.pipe(
+        switchMap(id =>
+          this.appointmentSvc.getMyAppointments(id).pipe(
+            catchError(() => {
+              this.cargarUltimoEstudio();
+              return EMPTY;
+            }),
+          ),
+        ),
+      ).subscribe(({ proximos }) => {
+        this.turnosCount.set(proximos.length);
+        const proximo = proximos[0] ?? null;
+        this.proximoTurno.set(proximo);
+        // Sin turno próximo → fallback al último estudio (mejor que placeholder vacío).
+        if (proximo == null) {
           this.cargarUltimoEstudio();
-        },
+        } else {
+          this.cargando.set(false);
+        }
       }),
     );
+
+    effect(() => {
+      const p = this.activePatientSvc.activePatient();
+      if (p) {
+        this.cargando.set(true);
+        this.reload$.next(p.id);
+      }
+    });
   }
 
   private cargarUltimoEstudio(): void {

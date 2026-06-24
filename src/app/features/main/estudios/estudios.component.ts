@@ -23,13 +23,12 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
 import { EmptyStateComponent } from '../../../shared/ui/components/empty-state/empty-state.component';
-import { PersonChipsComponent } from '../../../shared/ui/components/person-chips/person-chips.component';
 import { FiltersAsideComponent } from '../../../shared/ui/components/filters-aside/filters-aside.component';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
+import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
 import { EstudioService } from './estudio.service';
 import {
   Estudio,
-  PersonaChip,
   EstudiosFiltros,
   EstadoEstudio,
   CategoriaEstudio,
@@ -81,7 +80,6 @@ function parseFecha(f: string): number {
     TooltipModule,
     PageHeaderComponent,
     EmptyStateComponent,
-    PersonChipsComponent,
     FiltersAsideComponent,
   ],
   providers: [MessageService],
@@ -92,14 +90,13 @@ export class EstudiosComponent implements OnInit, OnDestroy {
   private readonly service        = inject(EstudioService);
   private readonly messageService = inject(MessageService);
   readonly bp                     = inject(BreakpointService);
+  readonly activePatient          = inject(ActivePatientService);
 
   // ── Estado base ──────────────────────────────────────────
-  estudios      = signal<Estudio[]>([]);
-  personas      = signal<PersonaChip[]>([]);
+  estudios        = signal<Estudio[]>([]);
   loadingEstudios = signal(true);
 
   // ── Filtros activos ──────────────────────────────────────
-  selectedPersonaId = signal<number | null>(null);
   searchTerm        = signal('');
   sortBy            = signal<SortBy>('recientes');
   filtros           = signal<EstudiosFiltros>({ rangoFechas: null, tipos: [], estados: [] });
@@ -131,7 +128,7 @@ export class EstudiosComponent implements OnInit, OnDestroy {
   estudiosFiltrados = computed<Estudio[]>(() => {
     let lista = this.estudios();
 
-    const pid = this.selectedPersonaId();
+    const pid = this.activePatient.activePatient()?.id ?? null;
     if (pid !== null) {
       lista = lista.filter(e => e.personaId === pid);
     }
@@ -218,18 +215,9 @@ export class EstudiosComponent implements OnInit, OnDestroy {
         this.loadingEstudios.set(false);
       }),
     );
-    this.subs.add(
-      this.service.getPersonas().subscribe(lista => {
-        this.personas.set(lista);
-      }),
-    );
   }
 
   // ── Handlers ─────────────────────────────────────────────
-  onPersonaChange(id: number | null): void {
-    this.selectedPersonaId.set(id);
-  }
-
   onSortChange(value: SortBy): void {
     this.sortBy.set(value);
   }

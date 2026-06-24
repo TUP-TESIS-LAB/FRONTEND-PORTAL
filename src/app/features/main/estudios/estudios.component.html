@@ -4,14 +4,6 @@
   title="Mis estudios"
   subtitle="Resultados disponibles para descargar." />
 
-<!-- Selector de persona -->
-@if (personas().length > 0) {
-  <ui-person-chips
-    [personas]="personas()"
-    [selectedId]="selectedPersonaId()"
-    (selectionChange)="onPersonaChange($event)" />
-}
-
 <!-- Barra de búsqueda + sort + filtros mobile -->
 <div class="ui-estudios-toolbar">
   <p-iconField iconPosition="left" styleClass="ui-search-input">

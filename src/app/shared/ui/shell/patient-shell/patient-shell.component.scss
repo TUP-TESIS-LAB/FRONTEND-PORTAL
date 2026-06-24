@@ -78,6 +78,27 @@ ui-bottom-nav {
     align-items: center;
     gap: var(--space-3);
   }
+
+  &__right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+  }
+}
+
+// Barra de paciente: visible en mobile y desktop; el topbar (tablet) ya la contiene.
+.ui-patient-bar {
+  padding: var(--space-2) max(var(--space-4), var(--ds-safe-left));
+  background: var(--ds-white);
+  border-bottom: 1px solid var(--ds-surface-dark);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+
+  // Tablet: el topbar ya muestra el selector; ocultar esta barra para no duplicarla.
+  @include tablet-only {
+    display: none;
+  }
 }
 
 .ui-patient-content {
