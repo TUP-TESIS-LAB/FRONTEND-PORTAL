@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-> **Jira:** _(pendiente — crear con `jira-workflow` antes de implementar)_
+> **Jira:** [KAN-135](https://exequielsantoro.atlassian.net/browse/KAN-135)
 > **Spec:** `FRONTEND-PORTAL/docs/superpowers/specs/2026-06-23-arco2c2-portal-selector-design.md`
 > **Rama:** `feat/arco2c2-portal-selector` (off development).
 
