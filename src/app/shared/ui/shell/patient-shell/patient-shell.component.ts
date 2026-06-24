@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { DrawerModule } from 'primeng/drawer';
 import { ButtonModule } from 'primeng/button';
@@ -8,6 +8,8 @@ import { BottomSheetComponent, BottomSheetItem } from '../../overlays/bottom-she
 import { TenantService } from '../../../../core/tenant/tenant.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { NavGroup, NavItem, UserSummary } from '../../types';
+import { PatientSelectorComponent } from '../../components/patient-selector/patient-selector.component';
+import { ActivePatientService } from '../../../../core/active-patient/active-patient.service';
 
 @Component({
   selector: 'ui-patient-shell',
@@ -19,16 +21,20 @@ import { NavGroup, NavItem, UserSummary } from '../../types';
     SidebarComponent,
     BottomNavComponent,
     BottomSheetComponent,
+    PatientSelectorComponent,
   ],
   templateUrl: './patient-shell.component.html',
   styleUrl: './patient-shell.component.scss',
 })
-export class PatientShellComponent {
-  private readonly tenantSvc = inject(TenantService);
-  private readonly router    = inject(Router);
-  private readonly auth      = inject(AuthService);
+export class PatientShellComponent implements OnInit {
+  private readonly tenantSvc    = inject(TenantService);
+  private readonly router       = inject(Router);
+  private readonly auth         = inject(AuthService);
+  private readonly activePatient = inject(ActivePatientService);
 
   tenant = this.tenantSvc.config;
+
+  ngOnInit(): void { this.activePatient.init(); }
 
   // Drawer lateral: se mantiene para uso futuro (ej: desde la topbar mobile)
   drawerOpen    = signal(false);
