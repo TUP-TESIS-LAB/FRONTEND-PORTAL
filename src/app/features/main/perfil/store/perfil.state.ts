@@ -8,6 +8,9 @@ export interface PerfilState {
   profileSaved: boolean;
   passwordChanging: boolean;
   passwordChanged: boolean;
+  registering: boolean;
+  /** patientId recién creado por autoalta (one-shot, lo consume el componente). */
+  registeredPatientId: number | null;
   error: HttpErrorResponse | null;
 }
 
@@ -18,5 +21,7 @@ export const initialPerfilState: PerfilState = {
   profileSaved: false,
   passwordChanging: false,
   passwordChanged: false,
+  registering: false,
+  registeredPatientId: null,
   error: null,
 };

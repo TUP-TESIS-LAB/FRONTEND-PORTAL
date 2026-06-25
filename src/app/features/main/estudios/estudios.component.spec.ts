@@ -42,12 +42,14 @@ function makeEstudio(id: number, personaId: number): Estudio {
   };
 }
 
-describe('EstudiosComponent — active patient filter', () => {
+describe('EstudiosComponent — filtro de paciente (mock re-mapeado a la familia)', () => {
   let injector: Injector;
 
-  const activePatientSignal = signal<Familiar | null>(null);
-  const activePatientStub = { activePatient: activePatientSignal };
+  // 2 pacientes accesibles reales (ids 10 y 20).
+  const accessibleSignal = signal<Familiar[]>([]);
+  const activePatientStub = { accessiblePatients: accessibleSignal };
 
+  // Mock: 1 estudio de persona-mock 1 + 2 estudios de persona-mock 2.
   const estudiosSvcStub = {
     getEstudios: vi.fn(() =>
       of([makeEstudio(1, 1), makeEstudio(2, 2), makeEstudio(3, 2)]),
@@ -57,8 +59,18 @@ describe('EstudiosComponent — active patient filter', () => {
 
   const bpStub = { isMobile: signal(false) };
 
+  function mount(): EstudiosComponent {
+    let comp!: EstudiosComponent;
+    runInInjectionContext(injector, () => {
+      comp = new EstudiosComponent();
+      (comp as any).ngOnInit();
+    });
+    TestBed.flushEffects();
+    return comp;
+  }
+
   beforeEach(() => {
-    activePatientSignal.set(null);
+    accessibleSignal.set([makeFam(10), makeFam(20)]);
     estudiosSvcStub.getEstudios.mockClear();
     estudiosSvcStub.getPersonas.mockClear();
 
@@ -73,32 +85,25 @@ describe('EstudiosComponent — active patient filter', () => {
     injector = TestBed.inject(Injector);
   });
 
-  it('filtra estudios por el paciente activo', () => {
-    activePatientSignal.set(makeFam(2));
-
-    let comp!: EstudiosComponent;
-    runInInjectionContext(injector, () => {
-      comp = new EstudiosComponent();
-      (comp as any).ngOnInit();
-    });
-    TestBed.flushEffects();
-
-    const filtrados = comp.estudiosFiltrados();
-    expect(filtrados.length).toBe(2);
-    expect(filtrados.every(e => e.personaId === 2)).toBe(true);
-  });
-
-  it('muestra todos los estudios cuando no hay paciente activo (null)', () => {
-    activePatientSignal.set(null);
-
-    let comp!: EstudiosComponent;
-    runInInjectionContext(injector, () => {
-      comp = new EstudiosComponent();
-      (comp as any).ngOnInit();
-    });
-    TestBed.flushEffects();
-
+  it('Todos: muestra todos los estudios, re-mapeados a ids reales de la familia', () => {
+    const comp = mount();
     const filtrados = comp.estudiosFiltrados();
     expect(filtrados.length).toBe(3);
+    // ya no usa los ids del mock (1/2), sino los reales (10/20)
+    expect(filtrados.every(e => e.personaId === 10 || e.personaId === 20)).toBe(true);
+  });
+
+  it('filtra por el paciente seleccionado', () => {
+    const comp = mount();
+    // mock-id 2 (2 estudios) → mapea a fam[1] = id 20
+    comp.selectedPatientId.set(20);
+    const filtrados = comp.estudiosFiltrados();
+    expect(filtrados.length).toBe(2);
+    expect(filtrados.every(e => e.personaId === 20)).toBe(true);
+  });
+
+  it('expone una opción de filtro por cada paciente accesible', () => {
+    const comp = mount();
+    expect(comp.patientFilterOptions().length).toBe(2);
   });
 });

@@ -8,7 +8,6 @@ import { BottomSheetComponent, BottomSheetItem } from '../../overlays/bottom-she
 import { TenantService } from '../../../../core/tenant/tenant.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { NavGroup, NavItem, UserSummary } from '../../types';
-import { PatientSelectorComponent } from '../../components/patient-selector/patient-selector.component';
 import { ActivePatientService } from '../../../../core/active-patient/active-patient.service';
 
 @Component({
@@ -21,7 +20,6 @@ import { ActivePatientService } from '../../../../core/active-patient/active-pat
     SidebarComponent,
     BottomNavComponent,
     BottomSheetComponent,
-    PatientSelectorComponent,
   ],
   templateUrl: './patient-shell.component.html',
   styleUrl: './patient-shell.component.scss',

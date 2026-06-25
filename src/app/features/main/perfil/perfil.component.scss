@@ -141,3 +141,52 @@
   color: var(--ds-text);
   line-height: 1.5;
 }
+
+// ── Selector de "qué perfil ver" + CTA de autoalta (2C.3) ──
+.ui-perfil__patient {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+
+  // En desktop el selector vive en el header (al lado de Editar); acá se oculta.
+  @include desktop-up { display: none; }
+}
+.ui-perfil__patient-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+}
+
+.ui-perfil__alta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  background: var(--brand-primary-light);
+  border: 1px solid var(--brand-primary);
+  border-radius: var(--ds-radius-md);
+}
+.ui-perfil__alta-icon {
+  font-size: 24px;
+  color: var(--brand-primary);
+}
+.ui-perfil__alta-text {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong { color: var(--ds-text); font-size: 14px; }
+  span { font-size: 13px; color: var(--ds-text-muted); }
+}
+
+// Acciones del header (desktop): selector + botón Editar lado a lado.
+.ui-perfil__header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}

@@ -3,13 +3,56 @@
 <ui-page-header
   title="Mi perfil"
   subtitle="Tus datos personales y de contacto.">
-  <p-button
-    label="Editar perfil"
-    icon="pi pi-pencil"
-    severity="primary"
-    [disabled]="!user()"
-    (onClick)="abrirEdicion()" />
+  <div class="ui-perfil__header-actions">
+    <!-- Desktop: el selector va al lado del botón Editar -->
+    @if (patientFilterOptions().length > 1) {
+      <div class="ui-show-desktop">
+        <app-patient-filter
+          [options]="patientFilterOptions()"
+          [includeTodos]="false"
+          [selectedId]="selectedPatientId()"
+          (selectedIdChange)="onSelectPatient($event)" />
+      </div>
+    }
+    @if (viewingOwn()) {
+      <p-button
+        label="Editar perfil"
+        icon="pi pi-pencil"
+        severity="primary"
+        [disabled]="!user()"
+        (onClick)="abrirEdicion()" />
+    }
+  </div>
 </ui-page-header>
+
+<!-- Mobile: el selector va debajo del header (en desktop ya está arriba) -->
+@if (patientFilterOptions().length > 1) {
+  <div class="ui-perfil__patient ui-show-mobile">
+    <span class="ui-perfil__patient-label">Ver perfil de</span>
+    <app-patient-filter
+      [options]="patientFilterOptions()"
+      [includeTodos]="false"
+      [selectedId]="selectedPatientId()"
+      (selectedIdChange)="onSelectPatient($event)" />
+  </div>
+}
+
+<!-- CTA: la cuenta de gestión todavía no es paciente → ofrecer autoalta -->
+@if (!esPaciente()) {
+  <div class="ui-perfil__alta">
+    <i class="pi pi-user-plus ui-perfil__alta-icon"></i>
+    <div class="ui-perfil__alta-text">
+      <strong>Tu cuenta gestiona a otros pacientes, pero todavía no sos paciente.</strong>
+      <span>Si también te vas a atender, registrate como paciente para sacar turnos y ver tus estudios.</span>
+    </div>
+    <p-button
+      label="Darme de alta como paciente"
+      icon="pi pi-user-plus"
+      severity="primary"
+      [loading]="registering()"
+      (onClick)="darmeDeAlta()" />
+  </div>
+}
 
 <!-- Estado loading -->
 @if (loading() && !user()) {
@@ -48,19 +91,21 @@
     </div>
   </div>
 
-  <!-- Seguridad -->
-  <div class="ui-perfil__seguridad">
-    <div class="ui-perfil__seguridad-text">
-      <strong>Contraseña</strong>
-      <span>Cambiá tu contraseña de acceso al portal.</span>
+  <!-- Seguridad: solo en el perfil propio (la contraseña es de tu cuenta) -->
+  @if (viewingOwn()) {
+    <div class="ui-perfil__seguridad">
+      <div class="ui-perfil__seguridad-text">
+        <strong>Contraseña</strong>
+        <span>Cambiá tu contraseña de acceso al portal.</span>
+      </div>
+      <p-button
+        label="Cambiar contraseña"
+        icon="pi pi-lock"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="abrirCambioPass()" />
     </div>
-    <p-button
-      label="Cambiar contraseña"
-      icon="pi pi-lock"
-      severity="secondary"
-      [outlined]="true"
-      (onClick)="abrirCambioPass()" />
-  </div>
+  }
 
   <!-- Banner informativo inferior -->
   <div class="ui-perfil__banner">

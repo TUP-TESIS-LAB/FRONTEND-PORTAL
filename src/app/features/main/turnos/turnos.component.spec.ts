@@ -28,7 +28,7 @@ describe('TurnosComponent reprogramar', () => {
     getMyAppointments: vi.fn(() => of({ proximos: [], anteriores: [] })),
     getAvailability: () => of([{ hora: '09:00', disponible: true }]),
   };
-  const activePatientStub = { activePatient: signal<Familiar | null>(makeFam(1)) };
+  const activePatientStub = { accessiblePatients: signal<Familiar[]>([makeFam(1)]) };
 
   beforeEach(() => {
     aptSvcStub.getMyAppointments.mockClear();
@@ -56,18 +56,16 @@ describe('TurnosComponent reprogramar', () => {
   });
 });
 
-describe('TurnosComponent — active patient wiring', () => {
+describe('TurnosComponent — carga contextual (todos por defecto)', () => {
   let injector: Injector;
   const aptSvcStub = {
     getMyAppointments: vi.fn(() => of({ proximos: [], anteriores: [] })),
     getAvailability: () => of([]),
   };
-  const activePatientSignal = signal<Familiar | null>(makeFam(7));
-  const activePatientStub = { activePatient: activePatientSignal };
+  const activePatientStub = { accessiblePatients: signal<Familiar[]>([makeFam(7), { ...makeFam(8), vinculo: 'Hijo' }]) };
 
   beforeEach(() => {
     aptSvcStub.getMyAppointments.mockClear();
-    activePatientSignal.set(makeFam(7));
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
@@ -80,19 +78,23 @@ describe('TurnosComponent — active patient wiring', () => {
     injector = TestBed.inject(Injector);
   });
 
-  it('calls getMyAppointments(7) on init when active patient is 7', () => {
-    runInInjectionContext(injector, () => new TurnosComponent());
-    TestBed.flushEffects();
-    expect(aptSvcStub.getMyAppointments).toHaveBeenCalledWith(7);
+  it('al iniciar carga TODOS los accesibles (getMyAppointments sin patientId)', () => {
+    const cmp = runInInjectionContext(injector, () => new TurnosComponent());
+    cmp.ngOnInit();
+    expect(aptSvcStub.getMyAppointments).toHaveBeenCalledWith(undefined);
   });
 
-  it('re-fetches when active patient changes', () => {
-    runInInjectionContext(injector, () => new TurnosComponent());
+  it('cambiar el filtro de paciente NO vuelve a pegarle al back (filtro client-side)', () => {
+    const cmp = runInInjectionContext(injector, () => new TurnosComponent());
+    cmp.ngOnInit();
     aptSvcStub.getMyAppointments.mockClear();
-    // Change active patient — effect should re-run
-    TestBed.flushEffects();
-    activePatientSignal.set(makeFam(42));
-    TestBed.flushEffects();
-    expect(aptSvcStub.getMyAppointments).toHaveBeenCalledWith(42);
+    cmp.selectedPatientId.set(7);
+    expect(aptSvcStub.getMyAppointments).not.toHaveBeenCalled();
+  });
+
+  it('expone opciones de filtro por cada paciente accesible', () => {
+    const cmp = runInInjectionContext(injector, () => new TurnosComponent());
+    const opts = (cmp as unknown as { patientFilterOptions: () => unknown[] }).patientFilterOptions();
+    expect(opts.length).toBe(2);
   });
 });

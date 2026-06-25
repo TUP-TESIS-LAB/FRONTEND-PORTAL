@@ -15,4 +15,8 @@ export const perfilReducer = createReducer(
   on(A.changePasswordSuccess, s => ({ ...s, passwordChanging: false, passwordChanged: true })),
   on(A.changePasswordFailure, (s, { error }) => ({ ...s, passwordChanging: false, error })),
   on(A.passwordChangeHandled, s => ({ ...s, passwordChanged: false })),
+  on(A.registerAsPatient, s => ({ ...s, registering: true, error: null })),
+  on(A.registerAsPatientSuccess, (s, { patientId }) => ({ ...s, registering: false, registeredPatientId: patientId })),
+  on(A.registerAsPatientFailure, (s, { error }) => ({ ...s, registering: false, error })),
+  on(A.registerHandled, s => ({ ...s, registeredPatientId: null })),
 );

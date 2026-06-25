@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, OnDestroy, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, Subscription, switchMap, catchError, EMPTY } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
@@ -10,7 +10,6 @@ import { TopSheetComponent, TopSheetItem } from '../../../shared/ui/overlays/top
 import { AppointmentService } from '../turnos/services/appointment.service';
 import { EstudioService } from '../estudios/estudio.service';
 import { AuthService } from '../../../core/auth/auth.service';
-import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
 import { Turno } from '../../../core/models/turno.model';
 import { Estudio } from '../../../core/models/estudio.model';
 
@@ -33,7 +32,6 @@ export class DashboardComponent implements OnDestroy {
   private readonly estudioSvc = inject(EstudioService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly activePatientSvc = inject(ActivePatientService);
 
   protected readonly cargando = signal(true);
   protected readonly proximoTurno = signal<Turno | null>(null);
@@ -102,6 +100,7 @@ export class DashboardComponent implements OnDestroy {
     const t = this.proximoTurno();
     if (!t) return [];
     const details: HeroCardDetail[] = [
+      { icon: 'pi-user', text: t.personaNombre },
       { icon: 'pi-clock', text: `${t.hora} hs · ${t.fechaCompleta}` },
       { icon: 'pi-map-marker', text: t.sede.nombre },
     ];
@@ -130,7 +129,9 @@ export class DashboardComponent implements OnDestroy {
         ),
       ).subscribe(({ proximos }) => {
         this.turnosCount.set(proximos.length);
-        const proximo = proximos[0] ?? null;
+        // "El más próximo de cualquiera": el turno futuro más cercano entre todos
+        // los pacientes accesibles (vos + dependientes).
+        const proximo = [...proximos].sort((a, b) => a.fechaTs - b.fechaTs)[0] ?? null;
         this.proximoTurno.set(proximo);
         // Sin turno próximo → fallback al último estudio (mejor que placeholder vacío).
         if (proximo == null) {
@@ -141,13 +142,9 @@ export class DashboardComponent implements OnDestroy {
       }),
     );
 
-    effect(() => {
-      const p = this.activePatientSvc.activePatient();
-      if (p) {
-        this.cargando.set(true);
-        this.reload$.next(p.id);
-      }
-    });
+    // Carga inicial: todos los pacientes accesibles (sin patientId).
+    this.cargando.set(true);
+    this.reload$.next(undefined);
   }
 
   private cargarUltimoEstudio(): void {

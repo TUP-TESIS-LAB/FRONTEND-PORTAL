@@ -8,4 +8,6 @@ export const selectSaving = createSelector(selectPerfil, s => s.saving);
 export const selectProfileSaved = createSelector(selectPerfil, s => s.profileSaved);
 export const selectPasswordChanging = createSelector(selectPerfil, s => s.passwordChanging);
 export const selectPasswordChanged = createSelector(selectPerfil, s => s.passwordChanged);
+export const selectRegistering = createSelector(selectPerfil, s => s.registering);
+export const selectRegisteredPatientId = createSelector(selectPerfil, s => s.registeredPatientId);
 export const selectError = createSelector(selectPerfil, s => s.error);

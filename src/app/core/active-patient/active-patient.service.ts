@@ -35,4 +35,10 @@ export class ActivePatientService {
       this._activeId.set(patientId);
     }
   }
+
+  /** Refresca la familia desde el back (invalida cache) y vuelve a cargar. */
+  reload(): void {
+    this.family.refresh();
+    this.init();
+  }
 }

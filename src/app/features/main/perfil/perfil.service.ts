@@ -8,8 +8,16 @@ import { PerfilPaciente, UpdatePerfilPayload } from '../../../core/models/perfil
 export class PerfilService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  getPerfil(): Observable<PerfilPaciente> { return this.http.get<PerfilPaciente>('/api/v1/me/profile'); }
+  /** Perfil propio (sin patientId) o de un dependiente accesible (?patientId=X, anti-IDOR en el back). */
+  getPerfil(patientId?: number | null): Observable<PerfilPaciente> {
+    const url = '/api/v1/me/profile' + (patientId != null ? `?patientId=${patientId}` : '');
+    return this.http.get<PerfilPaciente>(url);
+  }
   updatePerfil(payload: UpdatePerfilPayload): Observable<PerfilPaciente> { return this.http.put<PerfilPaciente>('/api/v1/me/profile', payload); }
+  /** Autoalta: la cuenta de gestión se registra como paciente propio. */
+  registerAsPatient(): Observable<{ patientId: number }> {
+    return this.http.post<{ patientId: number }>('/api/v1/me/register-as-patient', {});
+  }
   changePassword(currentPassword: string, newPassword: string): Observable<void> {
     return this.http.put<void>(`/api/v1/user/${this.auth.userId()}/password`, { currentPassword, newPassword });
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, effect, inject, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +18,7 @@ import { EventCardComponent } from '../../../shared/ui/components/event-card/eve
 import { PlaceholderCardComponent } from '../../../shared/ui/components/placeholder-card/placeholder-card.component';
 import { TurnoDetailComponent } from '../../../shared/ui/components/turno-detail/turno-detail.component';
 import { SlotPickerComponent } from '../../../shared/ui/components/slot-picker/slot-picker.component';
+import { PatientFilterComponent, PatientFilterOption } from '../../../shared/ui/components/patient-filter/patient-filter.component';
 import { EstadoTurnoLabelPipe } from '../../../shared/pipes/estado-turno-label.pipe';
 import { EstadoTurnoKeyPipe } from '../../../shared/pipes/estado-turno-key.pipe';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
@@ -49,6 +50,7 @@ import * as TurnosActions from './store/turnos.actions';
     PlaceholderCardComponent,
     TurnoDetailComponent,
     SlotPickerComponent,
+    PatientFilterComponent,
     EstadoTurnoLabelPipe,
     EstadoTurnoKeyPipe,
   ],
@@ -90,6 +92,21 @@ export class TurnosComponent implements OnInit, OnDestroy {
   selectedTurno    = signal<Turno | null>(null);
   mobileDetailOpen = signal(false);
 
+  // ─── Filtro de paciente (contextual, por pantalla) ───────
+  /** Paciente seleccionado. null = Todos (vos + dependientes). */
+  selectedPatientId = signal<number | null>(null);
+  /** Lista de pacientes accesibles (familia) para armar el filtro. NO es un
+   *  "paciente activo" global: solo la lista para acotar la vista de esta pantalla. */
+  protected readonly accessiblePatients = this.activePatientSvc.accessiblePatients;
+  protected readonly patientFilterOptions = computed<PatientFilterOption[]>(() =>
+    this.accessiblePatients().map(f => ({
+      id: f.id,
+      nombre: f.nombre,
+      iniciales: f.iniciales,
+      accentColor: f.accentColor,
+      sublabel: f.vinculo === 'Yo' ? 'vos' : f.vinculo,
+    })));
+
   // ─── Filtros seleccionables ──────────────────────────────
   /** Chips de estado activos (estado local). Vacío = todos. */
   estadoFilter   = signal<EstadoTurno[]>([]);
@@ -111,10 +128,12 @@ export class TurnosComponent implements OnInit, OnDestroy {
     { label: 'Cancelado',  value: 'cancelado' },  // CANCELLED + NO_SHOW
   ];
 
-  /** Lista combinada (próximos + anteriores) filtrada según los filtros activos. */
+  /** Lista combinada (próximos + anteriores) filtrada por paciente + filtros activos. */
   protected readonly visibleTurnos = computed(() => {
     const all = [...this.proximosTurnos(), ...this.anterioresTurnos()];
-    return this.applyFilters(all);
+    const pid = this.selectedPatientId();
+    const byPatient = pid == null ? all : all.filter(t => t.personaId === pid);
+    return this.applyFilters(byPatient);
   });
 
   /** Turnos pendientes (arriba, antes del HR). */
@@ -193,11 +212,6 @@ export class TurnosComponent implements OnInit, OnDestroy {
         this.cargando.set(false);
       }),
     );
-
-    effect(() => {
-      const p = this.activePatientSvc.activePatient();
-      if (p) this.reload$.next(p.id);
-    });
   }
 
   private readonly autoSelectEffect = effect(() => {
@@ -218,7 +232,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
       this.reprogramarTurnoId.set(null);
       this.mobileDetailOpen.set(false);
       this.selectedTurno.set(null);
-      this.reload$.next(untracked(() => this.activePatientSvc.activePatient()?.id));
+      this.reload$.next(undefined);
       this.messageService.add({
         severity: 'success', summary: 'Turno reprogramado',
         detail: 'Tu turno fue reprogramado correctamente.', life: 4000,
@@ -238,6 +252,9 @@ export class TurnosComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    // Carga inicial: todos los pacientes accesibles (vos + dependientes).
+    // El filtro de paciente acota client-side; no recargamos por paciente.
+    this.reload$.next(undefined);
     this.showPendingBookingToast();
   }
 
@@ -325,7 +342,7 @@ export class TurnosComponent implements OnInit, OnDestroy {
             next: () => {
               this.mobileDetailOpen.set(false);
               this.selectedTurno.set(null);
-              this.reload$.next(this.activePatientSvc.activePatient()?.id);
+              this.reload$.next(undefined);
               this.messageService.add({
                 severity: 'success', summary: 'Turno cancelado',
                 detail: `El turno del ${turno.fechaCompleta} fue cancelado.`,

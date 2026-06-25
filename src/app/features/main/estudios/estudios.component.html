@@ -4,16 +4,15 @@
   title="Mis estudios"
   subtitle="Resultados disponibles para descargar." />
 
-<!-- Barra de búsqueda + sort + filtros mobile -->
+<!-- Barra: paciente + sort + filtros mobile (sin búsqueda de texto, como Turnos) -->
 <div class="ui-estudios-toolbar">
-  <p-iconField iconPosition="left" styleClass="ui-search-input">
-    <p-inputIcon styleClass="pi pi-search" />
-    <input
-      pInputText
-      [ngModel]="searchTerm()"
-      (ngModelChange)="searchTerm.set($event)"
-      placeholder="Buscar por nombre, fecha o persona..." />
-  </p-iconField>
+  @if (patientFilterOptions().length > 1) {
+    <app-patient-filter
+      class="ui-estudios-patient"
+      [options]="patientFilterOptions()"
+      [selectedId]="selectedPatientId()"
+      (selectedIdChange)="selectedPatientId.set($event)" />
+  }
 
   <p-select
     [options]="sortOptions"
@@ -26,12 +25,11 @@
     styleClass="ui-show-desktop ui-sort-select" />
 
   <p-button
+    class="ui-show-mobile"
+    [label]="activeFiltersCount() > 0 ? 'Filtros (' + activeFiltersCount() + ')' : 'Filtros'"
     icon="pi pi-filter"
-    [rounded]="true"
-    [text]="true"
-    styleClass="ui-show-mobile"
-    [badge]="activeFiltersCount() > 0 ? activeFiltersCount().toString() : undefined"
-    ariaLabel="Filtros"
+    [outlined]="true"
+    severity="secondary"
     (onClick)="mobileFiltersOpen.set(true)" />
 </div>
 

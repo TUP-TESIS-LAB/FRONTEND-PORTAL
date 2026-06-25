@@ -63,6 +63,7 @@ export function appointmentToTurno(ap: AppointmentResponse, ctx: MapperContext):
     mes:             MESES_ABREV[date.getMonth()],
     fechaCompleta:   `${DIAS_SEMANA[date.getDay()]} ${date.getDate()} de ${MESES_FULL[date.getMonth()]} de ${date.getFullYear()}`,
     hora:            `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`,
+    fechaTs:         date.getTime(),
     tipo:            estudios.join(' + ') || 'Análisis clínicos',
     estudios,
     sede:            sede ?? { id: '0', nombre: 'Sede sin asignar', direccion: '' } as Sede,

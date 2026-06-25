@@ -1,5 +1,18 @@
 @use 'breakpoints' as *;
 
+// ─── Filtro de paciente (selectable Todos + cada paciente) ───
+// Desktop: vive como un grupo más dentro de .ui-turnos-filters; llena el grupo.
+.ui-turnos-filters .ui-turnos-filters__group app-patient-filter {
+  display: block;
+  ::ng-deep .ui-patient-filter-select { width: 100%; min-width: 220px; }
+}
+
+// Mobile: va al lado del botón "Filtros", con ancho natural (NO full-width).
+.ui-turnos-mobile-patient {
+  flex: 0 1 auto;
+  ::ng-deep .ui-patient-filter-select { min-width: 150px; }
+}
+
 // ─── Barra de filtros (chips + multi-select + rango fechas) ───
 .ui-turnos-filters {
   display: flex;
@@ -58,8 +71,9 @@
 .ui-turnos-mobile-filterbar {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
 }
 
 // ─── Filters sheet (drawer en mobile) ──────────────────

@@ -2,9 +2,16 @@ import { createAction, props } from '@ngrx/store';
 import { HttpErrorResponse } from '@angular/common/http';
 import { PerfilPaciente, UpdatePerfilPayload } from '../../../../core/models/perfil.model';
 
-export const loadProfile = createAction('[Perfil Page] Load Profile');
+// patientId opcional: null/ausente = perfil propio; un id = perfil de ese dependiente accesible.
+export const loadProfile = createAction('[Perfil Page] Load Profile', props<{ patientId?: number | null }>());
 export const loadProfileSuccess = createAction('[Perfil API] Load Profile Success', props<{ profile: PerfilPaciente }>());
 export const loadProfileFailure = createAction('[Perfil API] Load Profile Failure', props<{ error: HttpErrorResponse }>());
+
+// Autoalta: la cuenta de gestión se registra como paciente propio.
+export const registerAsPatient = createAction('[Perfil Page] Register As Patient');
+export const registerAsPatientSuccess = createAction('[Perfil API] Register As Patient Success', props<{ patientId: number }>());
+export const registerAsPatientFailure = createAction('[Perfil API] Register As Patient Failure', props<{ error: HttpErrorResponse }>());
+export const registerHandled = createAction('[Perfil Page] Register Handled');
 
 export const updateProfile = createAction('[Perfil Page] Update Profile', props<{ payload: UpdatePerfilPayload }>());
 export const updateProfileSuccess = createAction('[Perfil API] Update Profile Success', props<{ profile: PerfilPaciente }>());

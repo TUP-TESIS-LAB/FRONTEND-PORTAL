@@ -11,8 +11,15 @@ export class PerfilEffects {
 
   loadProfile$ = createEffect(() => this.actions$.pipe(
     ofType(A.loadProfile),
-    switchMap(() => this.svc.getPerfil().pipe(
+    switchMap(({ patientId }) => this.svc.getPerfil(patientId).pipe(
       map(profile => A.loadProfileSuccess({ profile })), catchError(error => of(A.loadProfileFailure({ error }))))),
+  ));
+
+  registerAsPatient$ = createEffect(() => this.actions$.pipe(
+    ofType(A.registerAsPatient),
+    concatMap(() => this.svc.registerAsPatient().pipe(
+      map(({ patientId }) => A.registerAsPatientSuccess({ patientId })),
+      catchError(error => of(A.registerAsPatientFailure({ error }))))),
   ));
 
   updateProfile$ = createEffect(() => this.actions$.pipe(

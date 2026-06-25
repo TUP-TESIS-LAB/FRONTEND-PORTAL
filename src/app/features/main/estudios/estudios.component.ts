@@ -12,9 +12,6 @@ import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DrawerModule } from 'primeng/drawer';
 import { Select } from 'primeng/select';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
-import { InputTextModule } from 'primeng/inputtext';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
@@ -26,6 +23,7 @@ import { EmptyStateComponent } from '../../../shared/ui/components/empty-state/e
 import { FiltersAsideComponent } from '../../../shared/ui/components/filters-aside/filters-aside.component';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
+import { PatientFilterComponent, PatientFilterOption } from '../../../shared/ui/components/patient-filter/patient-filter.component';
 import { EstudioService } from './estudio.service';
 import {
   Estudio,
@@ -40,13 +38,6 @@ const SORT_OPTIONS = [
   { label: 'Más recientes', value: 'recientes' },
   { label: 'Más antiguos',  value: 'antiguos'  },
 ];
-
-const AVATAR_COLOR_MAP: Record<number, string> = {
-  1: 'secondary',
-  2: 'accent',
-  3: 'primary',
-  4: 'warning',
-};
 
 const CATEGORIA_ICON_MAP: Record<CategoriaEstudio, string> = {
   hematologia:  'pi pi-heart',
@@ -70,9 +61,6 @@ function parseFecha(f: string): number {
     ButtonModule,
     DrawerModule,
     Select,
-    IconFieldModule,
-    InputIconModule,
-    InputTextModule,
     SkeletonModule,
     TableModule,
     TagModule,
@@ -81,6 +69,7 @@ function parseFecha(f: string): number {
     PageHeaderComponent,
     EmptyStateComponent,
     FiltersAsideComponent,
+    PatientFilterComponent,
   ],
   providers: [MessageService],
   templateUrl: './estudios.component.html',
@@ -93,11 +82,46 @@ export class EstudiosComponent implements OnInit, OnDestroy {
   readonly activePatient          = inject(ActivePatientService);
 
   // ── Estado base ──────────────────────────────────────────
-  estudios        = signal<Estudio[]>([]);
+  /** Estudios mock crudos (ids de persona ficticios del mock). */
+  rawEstudios     = signal<Estudio[]>([]);
   loadingEstudios = signal(true);
 
+  /** Lista de pacientes accesibles (familia) — NO un "paciente activo" global,
+   *  solo la lista para armar el filtro de esta pantalla. */
+  private readonly accessiblePatients = this.activePatient.accessiblePatients;
+
+  /**
+   * DEMO (hasta cablear /me/results real): re-mapea cada estudio mock a un
+   * paciente real accesible, para que la pantalla muestre la familia real
+   * (Carlos/dependientes) y el filtro funcione. Cuando exista /me/results se
+   * reemplaza por la data real ya atribuida por paciente.
+   */
+  estudios = computed<Estudio[]>(() => {
+    const fam = this.accessiblePatients();
+    const raw = this.rawEstudios();
+    if (fam.length === 0) return raw;
+    const distinct = [...new Set(raw.map(e => e.personaId))];
+    const idMap = new Map<number, typeof fam[number]>();
+    distinct.forEach((pid, i) => idMap.set(pid, fam[i % fam.length]));
+    return raw.map(e => {
+      const f = idMap.get(e.personaId);
+      return f ? { ...e, personaId: f.id, personaNombre: f.nombre, personaIniciales: f.iniciales } : e;
+    });
+  });
+
+  // ── Filtro de paciente (contextual, por pantalla) ────────
+  /** Paciente seleccionado. null = Todos. */
+  selectedPatientId = signal<number | null>(null);
+  patientFilterOptions = computed<PatientFilterOption[]>(() =>
+    this.accessiblePatients().map(f => ({
+      id: f.id,
+      nombre: f.nombre,
+      iniciales: f.iniciales,
+      accentColor: f.accentColor,
+      sublabel: f.vinculo === 'Yo' ? 'vos' : f.vinculo,
+    })));
+
   // ── Filtros activos ──────────────────────────────────────
-  searchTerm        = signal('');
   sortBy            = signal<SortBy>('recientes');
   filtros           = signal<EstudiosFiltros>({ rangoFechas: null, tipos: [], estados: [] });
   mobileFiltersOpen = signal(false);
@@ -128,18 +152,9 @@ export class EstudiosComponent implements OnInit, OnDestroy {
   estudiosFiltrados = computed<Estudio[]>(() => {
     let lista = this.estudios();
 
-    const pid = this.activePatient.activePatient()?.id ?? null;
+    const pid = this.selectedPatientId();
     if (pid !== null) {
       lista = lista.filter(e => e.personaId === pid);
-    }
-
-    const term = this.searchTerm().toLowerCase().trim();
-    if (term) {
-      lista = lista.filter(e =>
-        e.nombre.toLowerCase().includes(term)        ||
-        e.personaNombre.toLowerCase().includes(term) ||
-        e.fecha.includes(term),
-      );
     }
 
     const f = this.filtros();
@@ -177,7 +192,7 @@ export class EstudiosComponent implements OnInit, OnDestroy {
   }
 
   getAvatarColor(personaId: number): string {
-    return AVATAR_COLOR_MAP[personaId] ?? 'neutral';
+    return this.accessiblePatients().find(f => f.id === personaId)?.accentColor ?? 'neutral';
   }
 
   /**
@@ -211,7 +226,7 @@ export class EstudiosComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subs.add(
       this.service.getEstudios().subscribe(lista => {
-        this.estudios.set(lista);
+        this.rawEstudios.set(lista);
         this.loadingEstudios.set(false);
       }),
     );

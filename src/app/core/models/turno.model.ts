@@ -10,6 +10,8 @@ export interface Turno {
   mes: string;
   fechaCompleta: string;
   hora: string;
+  /** Timestamp del turno (ms) para ordenar por cercanía. */
+  fechaTs: number;
 
   tipo: string;
   estudios: string[];

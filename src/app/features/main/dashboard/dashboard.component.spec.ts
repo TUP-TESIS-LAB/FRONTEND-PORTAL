@@ -7,46 +7,31 @@ import { DashboardComponent } from './dashboard.component';
 import { AppointmentService } from '../turnos/services/appointment.service';
 import { EstudioService } from '../estudios/estudio.service';
 import { AuthService } from '../../../core/auth/auth.service';
-import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
-import type { Familiar } from '../../../core/models/familiar.model';
+import type { Turno } from '../../../core/models/turno.model';
 
-function makeFam(id: number): Familiar {
+function makeTurno(id: number, fechaTs: number): Turno {
   return {
-    id,
-    userPatientId: id,
-    status: 'VERIFIED',
-    nombre: 'Test',
-    apellido: 'User',
-    iniciales: 'TU',
-    edad: 30,
-    vinculo: 'Yo',
-    dni: '12345678',
-    cobertura: '',
-    totalTurnos: 0,
-    totalEstudios: 0,
-    accentColor: 'primary',
+    id, personaId: id, personaNombre: 'P' + id, personaIniciales: 'P',
+    dia: '01', mes: 'ENE', fechaCompleta: 'x', hora: '09:00', fechaTs,
+    tipo: 'Análisis', estudios: [],
+    sede: { id: '1', nombre: 'Sede', direccion: '' },
+    estado: 'pendiente', preparacion: [], llegarMinAntes: 10, ordenCargada: false,
   };
 }
 
-describe('DashboardComponent — active patient wiring', () => {
+describe('DashboardComponent — próximo turno (el más cercano de cualquiera)', () => {
   let injector: Injector;
 
   const aptSvcStub = {
-    getMyAppointments: vi.fn(() => of({ proximos: [], anteriores: [] })),
+    getMyAppointments: vi.fn(() => of({ proximos: [] as Turno[], anteriores: [] as Turno[] })),
   };
-  const estudioSvcStub = {
-    getEstudios: vi.fn(() => of([])),
-  };
-  const authStub = {
-    currentUser: signal(null as any),
-  };
-  const activePatientSignal = signal<Familiar | null>(makeFam(5));
-  const activePatientStub = { activePatient: activePatientSignal };
+  const estudioSvcStub = { getEstudios: vi.fn(() => of([])) };
+  const authStub = { currentUser: signal(null as any) };
 
   beforeEach(() => {
     aptSvcStub.getMyAppointments.mockClear();
+    aptSvcStub.getMyAppointments.mockReturnValue(of({ proximos: [], anteriores: [] }));
     estudioSvcStub.getEstudios.mockClear();
-    activePatientSignal.set(makeFam(5));
 
     TestBed.configureTestingModule({
       providers: [
@@ -54,24 +39,25 @@ describe('DashboardComponent — active patient wiring', () => {
         { provide: AppointmentService, useValue: aptSvcStub },
         { provide: EstudioService,     useValue: estudioSvcStub },
         { provide: AuthService,        useValue: authStub },
-        { provide: ActivePatientService, useValue: activePatientStub },
       ],
     });
     injector = TestBed.inject(Injector);
   });
 
-  it('carga el proximo turno del paciente activo', () => {
+  it('al iniciar carga TODOS los accesibles (getMyAppointments sin patientId)', () => {
     runInInjectionContext(injector, () => new DashboardComponent());
-    TestBed.flushEffects();
-    expect(aptSvcStub.getMyAppointments).toHaveBeenCalledWith(5);
+    expect(aptSvcStub.getMyAppointments).toHaveBeenCalledWith(undefined);
   });
 
-  it('re-fetches when active patient changes', () => {
-    runInInjectionContext(injector, () => new DashboardComponent());
-    aptSvcStub.getMyAppointments.mockClear();
-    TestBed.flushEffects();
-    activePatientSignal.set(makeFam(99));
-    TestBed.flushEffects();
-    expect(aptSvcStub.getMyAppointments).toHaveBeenCalledWith(99);
+  it('elige el turno futuro más cercano entre todos (menor fechaTs)', () => {
+    const lejano  = makeTurno(1, 5000);
+    const cercano = makeTurno(2, 1000);
+    aptSvcStub.getMyAppointments.mockReturnValue(of({ proximos: [lejano, cercano], anteriores: [] }));
+
+    let comp!: DashboardComponent;
+    runInInjectionContext(injector, () => { comp = new DashboardComponent(); });
+
+    expect((comp as any).proximoTurno()?.id).toBe(2);
+    expect((comp as any).turnosCount()).toBe(2);
   });
 });

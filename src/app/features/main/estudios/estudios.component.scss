@@ -1,11 +1,14 @@
 @use 'breakpoints' as *;
 
-// ── Toolbar de búsqueda ──────────────────────────────────
+// ── Toolbar (paciente + sort + filtros) ──────────────────
 .ui-estudios-toolbar {
   display: flex;
   gap: var(--space-2);
   align-items: center;
+  flex-wrap: wrap;
   margin-bottom: var(--space-4);
+
+  .ui-sort-select { min-width: 180px; }
 
   @include mobile-only {
     position: sticky;
@@ -13,11 +16,11 @@
     background: var(--ds-bg);
     z-index: var(--z-sticky);
     padding: var(--space-2) 0;
+    gap: var(--space-3);
+
+    // Igual que Turnos: select de ancho natural + botón Filtros agrupados a la izquierda.
+    .ui-estudios-patient { flex: 0 1 auto; }
   }
-
-  .ui-search-input { flex: 1; }
-
-  .ui-sort-select { min-width: 180px; }
 }
 
 // ── Layout principal ─────────────────────────────────────

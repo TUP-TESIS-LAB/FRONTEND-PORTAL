@@ -21,9 +21,16 @@
     (onClick)="onSacarTurno()" />
 </ui-page-header>
 
-<!-- ─── Filtros: inline desktop / botón + drawer en mobile ─── -->
+<!-- ─── Filtros: paciente + estado/fecha (inline desktop / barra + drawer mobile) ─── -->
 @if (bp.isMobile()) {
   <div class="ui-turnos-mobile-filterbar">
+    @if (patientFilterOptions().length > 1) {
+      <app-patient-filter
+        class="ui-turnos-mobile-patient"
+        [options]="patientFilterOptions()"
+        [selectedId]="selectedPatientId()"
+        (selectedIdChange)="selectedPatientId.set($event)" />
+    }
     <p-button
       [label]="activeFiltersCount() > 0 ? 'Filtros (' + activeFiltersCount() + ')' : 'Filtros'"
       icon="pi pi-filter"
@@ -41,6 +48,15 @@
   </div>
 } @else {
   <div class="ui-turnos-filters">
+    @if (patientFilterOptions().length > 1) {
+      <div class="ui-turnos-filters__group">
+        <span class="ui-turnos-filters__label">Paciente</span>
+        <app-patient-filter
+          [options]="patientFilterOptions()"
+          [selectedId]="selectedPatientId()"
+          (selectedIdChange)="selectedPatientId.set($event)" />
+      </div>
+    }
     <ng-container [ngTemplateOutlet]="filtersContent" />
   </div>
 }

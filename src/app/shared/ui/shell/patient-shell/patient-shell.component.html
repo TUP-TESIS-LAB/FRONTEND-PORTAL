@@ -29,7 +29,7 @@
   <!-- Área principal: topbar + contenido con router-outlet -->
   <div class="ui-patient-layout__main">
 
-    <!-- Topbar: visible solo en tablet (hamburguesa + selector de paciente) -->
+    <!-- Topbar: visible solo en tablet (hamburguesa para abrir el menú) -->
     <header class="ui-topbar">
       <div class="ui-topbar__left">
         <p-button
@@ -39,15 +39,7 @@
           ariaLabel="Abrir menú"
           (onClick)="drawerOpen.set(true)" />
       </div>
-      <div class="ui-topbar__right">
-        <app-patient-selector />
-      </div>
     </header>
-
-    <!-- Barra de paciente: visible en mobile y desktop (el topbar cubre tablet) -->
-    <div class="ui-patient-bar">
-      <app-patient-selector />
-    </div>
 
     <main class="ui-patient-content">
       <router-outlet />

@@ -935,3 +935,92 @@
     }
   }
 }
+
+// ── p-select "pelados" (el theme Aura no les da chrome: quedan sin borde/padding).
+//    Los igualamos al resto de los controles del portal y a la altura del botón
+//    "Filtros" (48px / radius 10px): filtro de paciente y select de ordenar.
+.p-select.ui-patient-filter-select,
+.p-select.ui-sort-select {
+  display: inline-flex;
+  align-items: center;
+  background: var(--ds-white);
+  border: 1.5px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-md);
+  min-height: 48px;
+  min-width: 160px;
+  font-family: var(--ds-font);
+  font-size: 14px;
+  color: var(--ds-text);
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover:not(.p-disabled) {
+    border-color: var(--brand-primary);
+  }
+
+  &.p-focus,
+  &:focus-within {
+    outline: none;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px var(--brand-primary-light);
+  }
+
+  .p-select-label {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 0.875rem;
+    color: var(--ds-text);
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .p-select-dropdown,
+  .p-select-trigger {
+    color: var(--ds-text-muted);
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: 0 0.75rem 0 0.5rem;
+  }
+}
+
+// Panel desplegable de p-select (renderiza al body con appendTo="body").
+// El theme tampoco lo estila: opciones sin padding y "selected" con fondo verde.
+.p-select-overlay,
+.p-select-panel {
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-md);
+  overflow: hidden;
+
+  .p-select-list,
+  .p-select-items {
+    padding: var(--space-2) 0;
+  }
+
+  .p-select-option,
+  .p-select-item {
+    padding: 0.625rem var(--space-3);
+    font-size: 14px;
+    color: var(--ds-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+
+    &:hover,
+    &.p-focus { background: var(--ds-surface); }
+
+    // Selected: tipografía bold + fondo suave (no el verde por defecto).
+    &.p-select-option-selected,
+    &[aria-selected="true"] {
+      background: var(--ds-surface);
+      color: var(--ds-text);
+      font-weight: 600;
+    }
+  }
+}
