@@ -1,7 +1,9 @@
+<!-- role/tabindex solo cuando la card es interactiva (selección); si no, es contenido estático -->
 <div
   class="family-card"
-  role="button"
-  tabindex="0"
+  [class.family-card--static]="!interactive"
+  [attr.role]="interactive ? 'button' : null"
+  [attr.tabindex]="interactive ? 0 : null"
   (click)="onCardClick()"
   (keydown.enter)="onCardClick()"
   (keydown.space)="onCardClick()"

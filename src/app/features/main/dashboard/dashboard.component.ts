@@ -58,32 +58,8 @@ export class DashboardComponent implements OnDestroy {
   /** Sheet de notificaciones (campanita en el header del dashboard). */
   protected readonly notificationsOpen = signal(false);
 
-  /**
-   * Mock de notificaciones para la presentación. Cuando exista backend de
-   * notifs reemplazar por un selector NgRx + endpoint /me/notifications.
-   */
-  protected readonly notifications = signal<TopSheetItem[]>([
-    {
-      id: 'n1',
-      icon: 'pi-calendar-check',
-      label: 'Turno confirmado',
-      message: 'Tu turno del 7/6 a las 10:30 hs fue confirmado por la sucursal Sede Central.',
-      route: ['/turnos'],
-    },
-    {
-      id: 'n2',
-      icon: 'pi-file',
-      label: 'Resultados disponibles',
-      message: 'Los resultados del estudio del 1/6 ya están listos para ver.',
-      route: ['/estudios'],
-    },
-    {
-      id: 'n3',
-      icon: 'pi-clock',
-      label: 'Recordatorio',
-      message: 'Mañana a las 09:00 hs tenés un turno programado.',
-    },
-  ]);
+  // TODO: reemplazar por endpoint real de notificaciones cuando exista en el backend
+  protected readonly notifications = signal<TopSheetItem[]>([]);
 
   protected readonly nombrePaciente = computed(() => {
     const u = this.auth.currentUser();

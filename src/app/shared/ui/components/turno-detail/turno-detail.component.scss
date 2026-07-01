@@ -130,6 +130,12 @@
     gap: var(--space-2);
   }
 
+  // Placeholder cuando el turno no tiene estudios asociados
+  &__estudios-empty {
+    font-size: 13px;
+    color: var(--ds-text-muted);
+  }
+
   &__chip {
     background: var(--brand-secondary-light);
     color: var(--brand-secondary-dark);

@@ -2,7 +2,12 @@
 
   <!-- Header: identidad del tenant + portal -->
   <div class="ui-sidebar__header">
-    <div class="ui-sidebar__logo-mark">{{ tenant.shortName }}</div>
+    <ui-brand-mark
+      class="ui-sidebar__logo-mark"
+      [logoUrl]="tenant.logo.white"
+      [name]="tenant.fullName"
+      [shortName]="tenant.shortName"
+    />
     <div class="ui-sidebar__logo-text">
       <strong>{{ tenant.fullName }}</strong>
       <span>{{ portalName }}</span>

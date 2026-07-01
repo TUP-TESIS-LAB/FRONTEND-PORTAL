@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TipoAnalisis } from '../../../../core/models/tipo-analisis.model';
+import { analysisIcon } from '../../../utils/analysis-icon';
 
 @Component({
   selector: 'ui-analysis-card-grid',
@@ -25,5 +26,10 @@ export class AnalysisCardGridComponent {
 
   isSelected(id: number | string): boolean {
     return this.selectedIds.includes(id);
+  }
+
+  /** Clase PrimeIcons para el tipo (el backend manda nombres de Material Icons). */
+  icon(tipo: TipoAnalisis): string {
+    return analysisIcon(tipo.icono, tipo.categoria);
   }
 }

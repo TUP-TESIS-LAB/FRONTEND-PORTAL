@@ -1,9 +1,9 @@
 <header class="ui-topbar">
   <div class="ui-topbar__left">
-    <img
-      class="ui-tenant-logo"
-      [src]="tenant.config()?.logo?.color"
-      [alt]="tenant.config()?.fullName"
+    <ui-brand-mark
+      [logoUrl]="tenant.config()?.logo?.color ?? null"
+      [name]="tenant.config()?.fullName ?? ''"
+      [shortName]="tenant.config()?.shortName ?? ''"
     />
     <span class="public-topbar__name ui-show-desktop">
       {{ tenant.config()?.fullName }}

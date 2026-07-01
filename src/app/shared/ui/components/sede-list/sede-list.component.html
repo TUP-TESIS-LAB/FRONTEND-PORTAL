@@ -18,10 +18,9 @@
 
         <div class="ui-sede-card__info">
           <span class="ui-sede-card__nombre">{{ sede.nombre }}</span>
+          <!-- Sin direccion utilizable se oculta la linea entera (no placeholder) -->
           @if (sede.direccion && sede.direccion !== '—') {
             <span class="ui-sede-card__direccion">{{ sede.direccion }}</span>
-          } @else {
-            <span class="ui-sede-card__direccion ui-sede-card__direccion--missing">Dirección no disponible</span>
           }
           @if (sede.telefono) {
             <span class="ui-sede-card__tel">

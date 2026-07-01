@@ -1,0 +1,12 @@
+@if (showLogo) {
+  <img
+    class="ui-brand-mark__img"
+    [src]="_logoUrl()"
+    [alt]="name"
+    (error)="onImgError()"
+  />
+} @else {
+  <div class="ui-brand-mark__chip" [attr.aria-label]="name" role="img">
+    {{ shortName }}
+  </div>
+}

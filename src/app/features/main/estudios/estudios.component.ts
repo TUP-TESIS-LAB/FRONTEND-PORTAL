@@ -22,6 +22,7 @@ import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-
 import { EmptyStateComponent } from '../../../shared/ui/components/empty-state/empty-state.component';
 import { FiltersAsideComponent } from '../../../shared/ui/components/filters-aside/filters-aside.component';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
+import { mapApiError } from '../../../shared/utils/api-error-mapper';
 import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
 import { PatientFilterComponent, PatientFilterOption } from '../../../shared/ui/components/patient-filter/patient-filter.component';
 import { EstudioService } from './estudio.service';
@@ -39,11 +40,13 @@ const SORT_OPTIONS = [
   { label: 'Más antiguos',  value: 'antiguos'  },
 ];
 
+// Alineado con CATEGORIA_TO_PI de shared/utils/analysis-icon.ts.
+// Solo PrimeIcons existentes (pi-flask y pi-droplet NO existen en PrimeIcons 7).
 const CATEGORIA_ICON_MAP: Record<CategoriaEstudio, string> = {
   hematologia:  'pi pi-heart',
-  bioquimica:   'pi pi-flask',
+  bioquimica:   'pi pi-chart-line',
   hormonas:     'pi pi-sync',
-  orina:        'pi pi-droplet',
+  orina:        'pi pi-filter',
   coagulacion:  'pi pi-shield',
 };
 
@@ -225,9 +228,19 @@ export class EstudiosComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subs.add(
-      this.service.getEstudios().subscribe(lista => {
-        this.rawEstudios.set(lista);
-        this.loadingEstudios.set(false);
+      this.service.getEstudios().subscribe({
+        next: lista => {
+          this.rawEstudios.set(lista);
+          this.loadingEstudios.set(false);
+        },
+        error: err => {
+          this.rawEstudios.set([]);
+          this.loadingEstudios.set(false);
+          this.messageService.add({
+            severity: 'error', summary: 'Error',
+            detail: mapApiError(err), life: 4000,
+          });
+        },
       }),
     );
   }
