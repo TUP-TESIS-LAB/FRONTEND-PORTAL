@@ -43,12 +43,12 @@ describe('TenantService', () => {
 
   /** Ejecuta loadTenant('x') mockeando la config estática y con el
    *  white-label del backend fallando por red (usa solo el estático). */
-  async function loadTenantConEstatico(): Promise<void> {
+  async function loadTenantConEstatico(config: TenantConfig = STATIC_CONFIG): Promise<void> {
     const promise = service.loadTenant('x');
 
     const staticReq = httpMock.expectOne('/assets/tenants/x/tenant.config.json');
     expect(staticReq.request.method).toBe('GET');
-    staticReq.flush(STATIC_CONFIG);
+    staticReq.flush(config);
 
     await tick();
 
@@ -86,6 +86,35 @@ describe('TenantService', () => {
       // #2563EB = rgb(37, 99, 235) → con ratio 0.25: rgb(28, 74, 176)
       expect(document.documentElement.style.getPropertyValue('--brand-primary-dark'))
         .toBe('rgb(28, 74, 176)');
+    });
+  });
+
+  describe('favicon por tenant', () => {
+    function conLinkFavicon(): HTMLLinkElement {
+      document.querySelector('link[rel="icon"]')?.remove();
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.type = 'image/x-icon';
+      link.href = '/favicon.ico';
+      document.head.appendChild(link);
+      return link;
+    }
+
+    it('con logo.mark apunta el favicon al mark del tenant', async () => {
+      const link = conLinkFavicon();
+      await loadTenantConEstatico({
+        ...STATIC_CONFIG,
+        logo: { color: null, white: null, mark: '/assets/tenants/x/logo-mark.svg' },
+      });
+      expect(link.href).toContain('/assets/tenants/x/logo-mark.svg');
+      expect(link.type).toBe('image/svg+xml');
+    });
+
+    it('sin mark deja el favicon default intacto', async () => {
+      const link = conLinkFavicon();
+      await loadTenantConEstatico();
+      expect(link.href).toContain('/favicon.ico');
+      expect(link.type).toBe('image/x-icon');
     });
   });
 

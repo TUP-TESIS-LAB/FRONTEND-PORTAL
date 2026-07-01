@@ -121,6 +121,16 @@ export class TenantService {
     document.querySelector('meta[name="theme-color"]')
             ?.setAttribute('content', config.colors.primary);
 
+    // Favicon por tenant: si tiene mark propio lo usa; si no, queda el
+    // favicon.ico neutro del index.html.
+    if (config.logo.mark) {
+      const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+      if (link) {
+        link.href = config.logo.mark;
+        link.type = config.logo.mark.endsWith('.svg') ? 'image/svg+xml' : 'image/png';
+      }
+    }
+
     // Título de la pestaña
     document.title = config.shortName + ' — Portal';
   }

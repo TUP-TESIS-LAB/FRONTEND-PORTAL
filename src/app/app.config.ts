@@ -2,12 +2,13 @@ import {
   ApplicationConfig,
   APP_INITIALIZER,
   inject,
-  provideBrowserGlobalErrorListeners,
+  provideBrowserGlobalErrorListeners, isDevMode,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { providePrimeNG } from 'primeng/config';
+import { MessageService } from 'primeng/api';
 import Aura from '@primeng/themes/aura';
 
 import { routes } from './app.routes';
@@ -31,12 +32,17 @@ import { FAMILY_KEY } from './features/main/familia/store/family.state';
 import { firstLoginReducer } from './features/auth/first-login/store/first-login.reducer';
 import { FirstLoginEffects } from './features/auth/first-login/store/first-login.effects';
 import { FIRST_LOGIN_KEY } from './features/auth/first-login/store/first-login.state';
+import { provideServiceWorker } from '@angular/service-worker';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
+
+    // MessageService raíz para el toast global de la PWA (key "pwa" en app
+    // root). Las páginas siguen proveyendo el suyo propio — este no las pisa.
+    MessageService,
 
     provideStore({ router: routerReducer, passwordRecovery: passwordRecoveryReducer, perfil: perfilReducer, turnos: turnosReducer, [FAMILY_KEY]: familyReducer, [FIRST_LOGIN_KEY]: firstLoginReducer }, { metaReducers }),
     provideEffects(PasswordRecoveryEffects, PerfilEffects, TurnosEffects, FamilyEffects, FirstLoginEffects),
@@ -96,6 +102,9 @@ export const appConfig: ApplicationConfig = {
         // Si quedó sesión sin user en memoria, lo trae de /me/profile antes de renderizar.
         return firstValueFrom(auth.hydrateUserIfNeeded());
       },
-    },
+    }, provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
+          }),
   ],
 };
