@@ -2,11 +2,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TenantConfig } from '../../../../core/tenant/tenant-config.model';
 import { NavGroup, NavItem, UserSummary } from '../../types';
+import { BrandMarkComponent } from '../../components/brand-mark/brand-mark.component';
 
 @Component({
   selector: 'ui-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, BrandMarkComponent],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
 })

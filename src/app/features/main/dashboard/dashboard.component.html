@@ -1,10 +1,10 @@
 <ui-page-header
-  [title]="cargando() ? 'Hola 👋' : 'Hola, ' + nombrePaciente() + ' 👋'"
+  [title]="cargando() ? 'Hola' : 'Hola, ' + nombrePaciente()"
   subtitle="Esto es lo que está pasando con tu cuenta.">
   <button
     type="button"
     class="ui-dashboard__bell"
-    [attr.aria-label]="'Notificaciones (' + notifications().length + ')'"
+    [attr.aria-label]="notifications().length > 0 ? 'Notificaciones (' + notifications().length + ')' : 'Notificaciones'"
     (click)="notificationsOpen.set(true)">
     <i class="pi pi-bell"></i>
     @if (notifications().length > 0) {

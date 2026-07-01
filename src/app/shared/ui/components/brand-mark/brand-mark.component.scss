@@ -1,0 +1,25 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+}
+
+.ui-brand-mark__img {
+  height: 32px;
+  width: auto;
+  max-width: 140px;
+  object-fit: contain;
+}
+
+.ui-brand-mark__chip {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--ds-radius-sm);
+  background: var(--ui-brand-mark-bg, var(--brand-primary));
+  color: var(--ds-white);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}

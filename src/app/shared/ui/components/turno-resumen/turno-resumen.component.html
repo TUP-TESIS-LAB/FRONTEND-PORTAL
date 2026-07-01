@@ -5,6 +5,13 @@
     <p class="ui-turno-resumen__subtitle">Revisá los datos antes de confirmar.</p>
   </div>
 
+  @if (paraQuien) {
+    <div class="ui-turno-resumen__section">
+      <span class="ui-turno-resumen__label">Para quién</span>
+      <p class="ui-turno-resumen__value">{{ paraQuien }}</p>
+    </div>
+  }
+
   <div class="ui-turno-resumen__section">
     <span class="ui-turno-resumen__label">Tipo de análisis</span>
     <ul class="ui-turno-resumen__lista">
@@ -17,7 +24,9 @@
   <div class="ui-turno-resumen__section">
     <span class="ui-turno-resumen__label">Sede</span>
     <p class="ui-turno-resumen__value">{{ sede.nombre }}</p>
-    <p class="ui-turno-resumen__value ui-turno-resumen__value--muted">{{ sede.direccion }}</p>
+    @if (hasDireccion(sede.direccion)) {
+      <p class="ui-turno-resumen__value ui-turno-resumen__value--muted">{{ sede.direccion }}</p>
+    }
   </div>
 
   <div class="ui-turno-resumen__section">

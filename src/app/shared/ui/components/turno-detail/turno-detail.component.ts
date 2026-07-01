@@ -21,6 +21,17 @@ export class TurnoDetailComponent {
   @Output() cancelar    = new EventEmitter<Turno>();
   @Output() close       = new EventEmitter<void>();
 
+  /**
+   * Label del header segun la vigencia del turno: futuro → "TU PRÓXIMO TURNO",
+   * pasado o sin fecha parseable → "DETALLE DEL TURNO".
+   */
+  get headerLabel(): string {
+    const ts = this.turno?.fechaTs;
+    return typeof ts === 'number' && !Number.isNaN(ts) && ts >= Date.now()
+      ? 'TU PRÓXIMO TURNO'
+      : 'DETALLE DEL TURNO';
+  }
+
   /** True cuando la sede tiene direccion utilizable (no es placeholder). */
   hasDireccion(direccion: string | undefined | null): boolean {
     const v = direccion?.trim() ?? '';

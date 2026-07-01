@@ -4,9 +4,9 @@
   "fullName": "Laboratorio Demo",
   "tagline": "Tenant de desarrollo local",
   "logo": {
-    "color": "/assets/tenants/castillo-chidiak/logo.svg",
-    "white": "/assets/tenants/castillo-chidiak/logo-white.svg",
-    "mark":  "/assets/tenants/castillo-chidiak/logo-mark.svg"
+    "color": null,
+    "white": null,
+    "mark":  null
   },
   "colors": {
     "primary":   "#1976D2",

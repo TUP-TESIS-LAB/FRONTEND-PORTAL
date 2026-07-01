@@ -32,17 +32,9 @@
   }
 
   &__logo-mark {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--ds-radius-sm);
-    background: var(--brand-secondary);
-    color: var(--ds-white);
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    // El render (logo o chip de iniciales) vive en ui-brand-mark; acá solo
+    // se ajusta el fondo del chip al contexto sobre --brand-primary.
+    --ui-brand-mark-bg: var(--brand-secondary);
     flex-shrink: 0;
   }
 

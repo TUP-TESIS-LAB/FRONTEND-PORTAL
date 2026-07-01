@@ -15,6 +15,14 @@ export class TurnoResumenComponent {
   @Input({ required: true }) fecha!: Date;
   @Input({ required: true }) hora!: string;
   @Input() requiereAyuno = false;
+  /** Persona elegida en el paso 1, ya formateada (ej. "Carlos García · Yo"). */
+  @Input() paraQuien: string | null = null;
+
+  /** True cuando la sede tiene direccion utilizable (no es placeholder). */
+  hasDireccion(direccion: string | undefined | null): boolean {
+    const v = direccion?.trim() ?? '';
+    return v !== '' && v !== '—';
+  }
 
   formatFecha(fecha: Date): string {
     const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];

@@ -34,6 +34,20 @@
   &:active {
     transform: scale(0.98);
   }
+
+  // Variante no interactiva (ej. pantalla Familia): sin affordance de click
+  &--static {
+    cursor: default;
+
+    &:hover {
+      border-color: var(--ds-surface-dark);
+      background: var(--ds-white);
+    }
+
+    &:active {
+      transform: none;
+    }
+  }
 }
 
 .avatar {
@@ -57,6 +71,8 @@
   font-size: 16px;
   font-weight: 600;
   color: var(--ds-text);
+  // La data puede venir en minúsculas ("mateo pillado"); capitalizamos solo en presentación
+  text-transform: capitalize;
 }
 
 .meta {

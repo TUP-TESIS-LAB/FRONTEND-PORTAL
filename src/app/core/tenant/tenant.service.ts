@@ -104,9 +104,18 @@ export class TenantService {
     root.style.setProperty('--brand-secondary-light', this.lighten(config.colors.secondary, 0.92));
     root.style.setProperty('--brand-accent-light',    this.lighten(config.colors.accent, 0.92));
 
-    // URLs de logo
-    root.style.setProperty('--brand-logo',       `url('${config.logo.color}')`);
-    root.style.setProperty('--brand-logo-white', `url('${config.logo.white}')`);
+    // Variantes oscuras — sin esto los componentes del DS que usan
+    // --brand-*-dark (hover, family-card, etc.) quedan clavados en los
+    // defaults de tokens.scss para cualquier tenant. El ratio 0.25 aproxima
+    // la relación entre los pares default (#2563EB→#1D4ED8, etc.).
+    root.style.setProperty('--brand-primary-dark',   this.darken(config.colors.primary, 0.25));
+    root.style.setProperty('--brand-secondary-dark', this.darken(config.colors.secondary, 0.25));
+    root.style.setProperty('--brand-accent-dark',    this.darken(config.colors.accent, 0.25));
+
+    // URLs de logo (si el tenant no tiene, la var queda sin imagen — el
+    // fallback visible lo resuelve ui-brand-mark con las iniciales)
+    root.style.setProperty('--brand-logo',       config.logo.color ? `url('${config.logo.color}')` : 'none');
+    root.style.setProperty('--brand-logo-white', config.logo.white ? `url('${config.logo.white}')` : 'none');
 
     // Theme color del PWA (meta tag)
     document.querySelector('meta[name="theme-color"]')
@@ -125,5 +134,17 @@ export class TenantService {
     const lg = Math.round(g + (255 - g) * ratio);
     const lb = Math.round(b + (255 - b) * ratio);
     return `rgb(${lr}, ${lg}, ${lb})`;
+  }
+
+  // Genera un tono oscuro mezclando el hex con negro al porcentaje indicado
+  // (espejo de lighten)
+  private darken(hex: string, ratio: number): string {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const dr = Math.round(r * (1 - ratio));
+    const dg = Math.round(g * (1 - ratio));
+    const db = Math.round(b * (1 - ratio));
+    return `rgb(${dr}, ${dg}, ${db})`;
   }
 }

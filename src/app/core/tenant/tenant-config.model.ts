@@ -5,10 +5,12 @@ export interface TenantConfig {
   fullName: string;
   tagline?: string;
 
+  // null = el tenant no tiene ese logo configurado → la UI cae al chip de
+  // iniciales (ui-brand-mark). Nunca apuntar a assets de otro tenant.
   logo: {
-    color: string;
-    white: string;
-    mark:  string;
+    color: string | null;
+    white: string | null;
+    mark:  string | null;
   };
 
   colors: {

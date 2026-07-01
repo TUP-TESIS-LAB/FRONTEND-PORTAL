@@ -75,17 +75,6 @@ export class FamiliaComponent implements OnInit {
     this.store.dispatch(loadFamily());
   }
 
-  onSelectFamiliar(f: Familiar): void {
-    // TODO: cuando exista la ruta de edición de familiar (/familia/:id/editar),
-    // navegar ahí. Por ahora avisamos al usuario para que el click no sea silencioso.
-    this.messageService.add({
-      severity: 'info',
-      summary: f.nombre + ' ' + f.apellido,
-      detail: 'La edición de familiares estará disponible pronto.',
-      life: 3000,
-    });
-  }
-
   onRemoveFamiliar(f: Familiar): void {
     this.confirmService.confirm({
       message: `¿Quitar a ${f.nombre} ${f.apellido} de tu grupo familiar?`,

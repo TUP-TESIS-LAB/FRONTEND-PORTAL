@@ -37,9 +37,10 @@
 } @else {
   <ui-family-grid>
     @for (familiar of familiares(); track familiar.id) {
+      <!-- Card informativa: no hay edición de familiar todavía, no debe parecer clickeable -->
       <ui-family-card
         [familiar]="familiar"
-        (select)="onSelectFamiliar($event)"
+        [interactive]="false"
         (remove)="onRemoveFamiliar($event)"
       />
     }

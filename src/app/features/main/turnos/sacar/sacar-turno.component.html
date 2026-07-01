@@ -82,6 +82,7 @@
 
       @case ('confirmar') {
         <ui-turno-resumen
+          [paraQuien]="paraQuienLabel()"
           [tipos]="selectedTipos()"
           [sede]="selectedSede()!"
           [fecha]="selectedFecha()!"

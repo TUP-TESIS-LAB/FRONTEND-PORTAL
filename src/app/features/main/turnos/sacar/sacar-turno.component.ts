@@ -3,7 +3,7 @@ import { Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } fr
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { Subject, switchMap } from 'rxjs';
+import { catchError, EMPTY, of, Subject, switchMap } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DrawerModule } from 'primeng/drawer';
@@ -23,6 +23,7 @@ import { mapApiError } from '../../../../shared/utils/api-error-mapper';
 import { toLocalDateTimeString } from '../../../../shared/utils/local-datetime';
 import { WizardStep } from '../../../../shared/ui/types';
 import { SlotDisponible } from '../../../../core/models/slot-disponible.model';
+import { Familiar } from '../../../../core/models/familiar.model';
 
 @Component({
   selector: 'app-sacar-turno',
@@ -59,7 +60,12 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
   // ─── Datos del catálogo (cargados una sola vez) ──────
   readonly tiposAnalisis = toSignal(this.tiposSvc.getTipos(), { initialValue: [] });
   readonly sedes         = toSignal(this.sedeSvc.getSedes(),  { initialValue: [] });
-  readonly family        = toSignal(this.familySvc.getFamily(), { initialValue: [] });
+  // Si el back falla, la lista queda vacía (el toast lo emite el subscribe de
+  // ngOnInit) — sin el catchError, leer el signal relanzaría el error.
+  readonly family        = toSignal(
+    this.familySvc.getFamily().pipe(catchError(() => of([] as Familiar[]))),
+    { initialValue: [] },
+  );
 
   // ─── Slots: mutables, dependen de sede + fecha ───────
   readonly slots        = signal<SlotDisponible[]>([]);
@@ -93,6 +99,15 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
   readonly requiereAyuno = computed(() =>
     this.selectedTipos().some(t => t.ayuno),
   );
+
+  // Persona elegida en el paso 1, formateada para el resumen del paso final
+  // (ej. "Carlos García · Yo"). Null si todavía no hay selección resuelta.
+  readonly paraQuienLabel = computed(() => {
+    const f = this.family().find(m => m.id === this.selectedPatientId());
+    if (!f) return null;
+    const nombre = `${f.nombre} ${f.apellido}`.trim();
+    return f.vinculo ? `${nombre} · ${f.vinculo}` : nombre;
+  });
 
   // ─── Definición de pasos (dinámicos: ocultan 'para-quien' cuando no aporta) ───
   // 'para-quien' sólo tiene sentido si hay más de un familiar real y el patient
@@ -143,7 +158,19 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
     this.loadSlotsSubject.pipe(
       switchMap(({ sedeId, fecha }) => {
         this.loadingSlots.set(true);
-        return this.appointmentSvc.getAvailability(Number(sedeId), fecha);
+        // catchError DENTRO del switchMap: un fallo puntual no mata el stream
+        // (mismo patrón que turnos.component). Deja slots vacíos + toast.
+        return this.appointmentSvc.getAvailability(Number(sedeId), fecha).pipe(
+          catchError(err => {
+            this.loadingSlots.set(false);
+            this.slots.set([]);
+            this.messageService.add({
+              severity: 'error', summary: 'Error',
+              detail: mapApiError(err), life: 4000,
+            });
+            return EMPTY;
+          }),
+        );
       }),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe(slots => {
@@ -172,10 +199,18 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
     // to manually advance currentStep — step 0 is already 'tipo' in that case.
     this.familySvc.getFamily()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(family => {
-        if (this.selectedPatientId() === null && family.length > 0) {
-          this.selectedPatientId.set(family[0].id);
-        }
+      .subscribe({
+        next: family => {
+          if (this.selectedPatientId() === null && family.length > 0) {
+            this.selectedPatientId.set(family[0].id);
+          }
+        },
+        error: err => {
+          this.messageService.add({
+            severity: 'error', summary: 'Error',
+            detail: mapApiError(err), life: 4000,
+          });
+        },
       });
   }
 
