@@ -50,12 +50,12 @@
   }
 
   ::ng-deep .ui-turnos-filters__datepicker {
-    min-width: 240px;
+    width: 180px;
 
     input.p-inputtext,
     .p-datepicker-input {
       width: 100%;
-      min-width: 240px;
+      min-width: 0;
     }
   }
 }

@@ -10,7 +10,6 @@ import { Store } from '@ngrx/store';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DrawerModule } from 'primeng/drawer';
-import { Select } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
@@ -41,12 +40,13 @@ import {
   selectEstudiosError,
 } from './store/estudios.selectors';
 
-type SortBy = 'recientes' | 'antiguos';
-
-const SORT_OPTIONS = [
-  { label: 'Más recientes', value: 'recientes' },
-  { label: 'Más antiguos',  value: 'antiguos'  },
-];
+/** Filtros por defecto: rango del último mes (desde hace un mes hasta hoy). */
+function defaultFiltros(): EstudiosFiltros {
+  const hasta = new Date();
+  const desde = new Date();
+  desde.setMonth(desde.getMonth() - 1);
+  return { rangoFechas: { desde, hasta }, tipos: [], estados: [] };
+}
 
 // Alineado con CATEGORIA_TO_PI de shared/utils/analysis-icon.ts.
 const CATEGORIA_ICON_MAP: Record<CategoriaEstudio, string> = {
@@ -70,7 +70,6 @@ function parseFecha(f: string): number {
     FormsModule,
     ButtonModule,
     DrawerModule,
-    Select,
     SkeletonModule,
     TableModule,
     TagModule,
@@ -126,10 +125,8 @@ export class EstudiosComponent {
     })));
 
   // ── Filtros activos ──────────────────────────────────────
-  sortBy            = signal<SortBy>('recientes');
-  filtros           = signal<EstudiosFiltros>({ rangoFechas: null, tipos: [], estados: [] });
+  filtros           = signal<EstudiosFiltros>(defaultFiltros());
   mobileFiltersOpen = signal(false);
-  readonly sortOptions = SORT_OPTIONS;
 
   // ── Computed: contadores por tipo y estado ───────────────
   countsByTipo = computed<Record<string, number>>(() => {
@@ -168,8 +165,8 @@ export class EstudiosComponent {
       });
     }
 
-    const dir = this.sortBy() === 'recientes' ? -1 : 1;
-    return lista.slice().sort((a, b) => (a.fechaTs - b.fechaTs) * dir);
+    // Orden fijo: más recientes primero (sin control de UI).
+    return lista.slice().sort((a, b) => b.fechaTs - a.fechaTs);
   });
 
   activeFiltersCount = computed<number>(() => {
@@ -242,10 +239,6 @@ export class EstudiosComponent {
   }
 
   // ── Handlers ─────────────────────────────────────────────
-  onSortChange(value: SortBy): void {
-    this.sortBy.set(value);
-  }
-
   onFiltrosChange(f: EstudiosFiltros): void {
     this.filtros.set(f);
   }
@@ -256,7 +249,8 @@ export class EstudiosComponent {
   }
 
   onLimpiarFiltros(): void {
-    this.filtros.set({ rangoFechas: null, tipos: [], estados: [] });
+    // Reset al filtro por defecto (último mes), que es la línea base de la pantalla.
+    this.filtros.set(defaultFiltros());
     this.mobileFiltersOpen.set(false);
   }
 

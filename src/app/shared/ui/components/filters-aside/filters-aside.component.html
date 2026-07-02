@@ -32,7 +32,10 @@
           (ngModelChange)="onFechaChange()"
           dateFormat="dd/mm/yy"
           [showIcon]="true"
-          styleClass="w-full ui-datepicker-sm" />
+          iconDisplay="input"
+          [fluid]="true"
+          appendTo="body"
+          styleClass="ui-datepicker-sm" />
       </div>
       <div class="ui-filters-aside__fecha-field">
         <label class="ui-filters-aside__fecha-label">Hasta</label>
@@ -41,29 +44,34 @@
           (ngModelChange)="onFechaChange()"
           dateFormat="dd/mm/yy"
           [showIcon]="true"
-          styleClass="w-full ui-datepicker-sm" />
+          iconDisplay="input"
+          [fluid]="true"
+          appendTo="body"
+          styleClass="ui-datepicker-sm" />
       </div>
     </div>
   </div>
 
   <!-- Sección: Tipo de estudio -->
-  <div class="ui-filters-aside__section">
-    <div class="ui-filters-aside__section-label">Tipo de estudio</div>
-    @for (tipo of tiposOpciones; track tipo.value) {
-      <div class="ui-filters-aside__check-row">
-        <p-checkbox
-          [name]="'tipo-' + tipo.value"
-          [value]="tipo.value"
-          [(ngModel)]="tiposSeleccionados"
-          (ngModelChange)="onTipoChange()"
-          [inputId]="'tipo-' + tipo.value" />
-        <label [for]="'tipo-' + tipo.value" class="ui-filters-aside__check-label">
-          {{ tipo.label }}
-        </label>
-        <span class="ui-filters-aside__count">{{ getCountTipo(tipo.value) }}</span>
-      </div>
-    }
-  </div>
+  @if (showTipo) {
+    <div class="ui-filters-aside__section">
+      <div class="ui-filters-aside__section-label">Tipo de estudio</div>
+      @for (tipo of tiposOpciones; track tipo.value) {
+        <div class="ui-filters-aside__check-row">
+          <p-checkbox
+            [name]="'tipo-' + tipo.value"
+            [value]="tipo.value"
+            [(ngModel)]="tiposSeleccionados"
+            (ngModelChange)="onTipoChange()"
+            [inputId]="'tipo-' + tipo.value" />
+          <label [for]="'tipo-' + tipo.value" class="ui-filters-aside__check-label">
+            {{ tipo.label }}
+          </label>
+          <span class="ui-filters-aside__count">{{ getCountTipo(tipo.value) }}</span>
+        </div>
+      }
+    </div>
+  }
 
   <!-- Sección: Estado -->
   @if (showEstado) {

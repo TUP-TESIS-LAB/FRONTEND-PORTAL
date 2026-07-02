@@ -12,6 +12,17 @@ import { loadEstudios } from './store/estudios.actions';
 import type { Familiar } from '../../../core/models/familiar.model';
 import type { Estudio } from '../../../core/models/estudio.model';
 
+const DAY_MS = 86_400_000;
+
+/** Fecha 'DD/MM/YYYY' de hace `dias` días — dentro del rango por defecto (último mes). */
+function fechaHaceDias(dias: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - dias);
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
+
 function makeFam(id: number, nombre = 'Carlos'): Familiar {
   return {
     id,
@@ -79,10 +90,13 @@ describe('EstudiosComponent', () => {
         provideMockStore({
           initialState: {
             [ESTUDIOS_KEY]: {
+              // Fechas recientes (dentro del último mes) para no caer fuera del
+              // rango de fechas por defecto del filtro.
+              // Orden esperado más-reciente-primero: [2, 3, 1].
               estudios: [
-                makeEstudio(1, 100),
-                makeEstudio(2, 300),
-                makeEstudio(3, 200, { estado: 'disponible', estadoLabel: 'Disponible', reporteDisponible: true }),
+                makeEstudio(1, DAY_MS * 1, { fecha: fechaHaceDias(3) }),
+                makeEstudio(2, DAY_MS * 3, { fecha: fechaHaceDias(1) }),
+                makeEstudio(3, DAY_MS * 2, { fecha: fechaHaceDias(2), estado: 'disponible', estadoLabel: 'Disponible', reporteDisponible: true }),
               ],
               patientId: 10,
               loading: false,
@@ -100,15 +114,9 @@ describe('EstudiosComponent', () => {
     vi.spyOn(store, 'dispatch');
   });
 
-  it('ordena por fecha descendente (más recientes) por defecto', () => {
+  it('ordena por fecha descendente (más recientes), orden fijo', () => {
     const comp = mount();
     expect(comp.estudiosFiltrados().map(e => e.id)).toEqual([2, 3, 1]);
-  });
-
-  it('ordena ascendente cuando se elige "antiguos"', () => {
-    const comp = mount();
-    comp.sortBy.set('antiguos');
-    expect(comp.estudiosFiltrados().map(e => e.id)).toEqual([1, 3, 2]);
   });
 
   it('expone una opción de filtro por cada paciente accesible', () => {
