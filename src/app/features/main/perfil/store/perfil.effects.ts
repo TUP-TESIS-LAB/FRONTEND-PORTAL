@@ -24,7 +24,7 @@ export class PerfilEffects {
 
   updateProfile$ = createEffect(() => this.actions$.pipe(
     ofType(A.updateProfile),
-    concatMap(({ payload }) => this.svc.updatePerfil(payload).pipe(
+    concatMap(({ payload, patientId }) => this.svc.updatePerfil(payload, patientId).pipe(
       map(profile => A.updateProfileSuccess({ profile })), catchError(error => of(A.updateProfileFailure({ error }))))),
   ));
 

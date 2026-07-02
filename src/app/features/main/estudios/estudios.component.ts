@@ -1,17 +1,15 @@
 import {
   Component,
-  OnInit,
-  OnDestroy,
   inject,
   signal,
   computed,
+  effect,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Store } from '@ngrx/store';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DrawerModule } from 'primeng/drawer';
-import { Select } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
@@ -24,7 +22,10 @@ import { FiltersAsideComponent } from '../../../shared/ui/components/filters-asi
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { mapApiError } from '../../../shared/utils/api-error-mapper';
 import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
-import { PatientFilterComponent, PatientFilterOption } from '../../../shared/ui/components/patient-filter/patient-filter.component';
+import {
+  PatientFilterComponent,
+  PatientFilterOption,
+} from '../../../shared/ui/components/patient-filter/patient-filter.component';
 import { EstudioService } from './estudio.service';
 import {
   Estudio,
@@ -32,16 +33,22 @@ import {
   EstadoEstudio,
   CategoriaEstudio,
 } from '../../../core/models/estudio.model';
+import { loadEstudios } from './store/estudios.actions';
+import {
+  selectEstudios,
+  selectEstudiosLoading,
+  selectEstudiosError,
+} from './store/estudios.selectors';
 
-type SortBy = 'recientes' | 'antiguos';
-
-const SORT_OPTIONS = [
-  { label: 'Más recientes', value: 'recientes' },
-  { label: 'Más antiguos',  value: 'antiguos'  },
-];
+/** Filtros por defecto: rango del último mes (desde hace un mes hasta hoy). */
+function defaultFiltros(): EstudiosFiltros {
+  const hasta = new Date();
+  const desde = new Date();
+  desde.setMonth(desde.getMonth() - 1);
+  return { rangoFechas: { desde, hasta }, tipos: [], estados: [] };
+}
 
 // Alineado con CATEGORIA_TO_PI de shared/utils/analysis-icon.ts.
-// Solo PrimeIcons existentes (pi-flask y pi-droplet NO existen en PrimeIcons 7).
 const CATEGORIA_ICON_MAP: Record<CategoriaEstudio, string> = {
   hematologia:  'pi pi-heart',
   bioquimica:   'pi pi-chart-line',
@@ -63,7 +70,6 @@ function parseFecha(f: string): number {
     FormsModule,
     ButtonModule,
     DrawerModule,
-    Select,
     SkeletonModule,
     TableModule,
     TagModule,
@@ -78,42 +84,36 @@ function parseFecha(f: string): number {
   templateUrl: './estudios.component.html',
   styleUrl: './estudios.component.scss',
 })
-export class EstudiosComponent implements OnInit, OnDestroy {
+export class EstudiosComponent {
+  private readonly store          = inject(Store);
   private readonly service        = inject(EstudioService);
   private readonly messageService = inject(MessageService);
   readonly bp                     = inject(BreakpointService);
   readonly activePatient          = inject(ActivePatientService);
 
-  // ── Estado base ──────────────────────────────────────────
-  /** Estudios mock crudos (ids de persona ficticios del mock). */
-  rawEstudios     = signal<Estudio[]>([]);
-  loadingEstudios = signal(true);
+  // ── Datos reales desde el store ──────────────────────────
+  /** Estudios reales del paciente seleccionado (sin persona todavía). */
+  private readonly rawEstudios = this.store.selectSignal(selectEstudios);
+  loadingEstudios              = this.store.selectSignal(selectEstudiosLoading);
+  private readonly error       = this.store.selectSignal(selectEstudiosError);
 
-  /** Lista de pacientes accesibles (familia) — NO un "paciente activo" global,
-   *  solo la lista para armar el filtro de esta pantalla. */
   private readonly accessiblePatients = this.activePatient.accessiblePatients;
 
-  /**
-   * DEMO (hasta cablear /me/results real): re-mapea cada estudio mock a un
-   * paciente real accesible, para que la pantalla muestre la familia real
-   * (Carlos/dependientes) y el filtro funcione. Cuando exista /me/results se
-   * reemplaza por la data real ya atribuida por paciente.
-   */
+  /** Enriquece cada estudio con la persona del paciente seleccionado. */
   estudios = computed<Estudio[]>(() => {
-    const fam = this.accessiblePatients();
-    const raw = this.rawEstudios();
-    if (fam.length === 0) return raw;
-    const distinct = [...new Set(raw.map(e => e.personaId))];
-    const idMap = new Map<number, typeof fam[number]>();
-    distinct.forEach((pid, i) => idMap.set(pid, fam[i % fam.length]));
-    return raw.map(e => {
-      const f = idMap.get(e.personaId);
-      return f ? { ...e, personaId: f.id, personaNombre: f.nombre, personaIniciales: f.iniciales } : e;
-    });
+    const list = this.rawEstudios();
+    const f = this.accessiblePatients().find(p => p.id === this.selectedPatientId());
+    if (!f) return list;
+    return list.map(e => ({
+      ...e,
+      personaId: f.id,
+      personaNombre: f.nombre,
+      personaIniciales: f.iniciales,
+    }));
   });
 
   // ── Filtro de paciente (contextual, por pantalla) ────────
-  /** Paciente seleccionado. null = Todos. */
+  /** Paciente seleccionado; se siembra del paciente activo al cargar la familia. */
   selectedPatientId = signal<number | null>(null);
   patientFilterOptions = computed<PatientFilterOption[]>(() =>
     this.accessiblePatients().map(f => ({
@@ -125,20 +125,14 @@ export class EstudiosComponent implements OnInit, OnDestroy {
     })));
 
   // ── Filtros activos ──────────────────────────────────────
-  sortBy            = signal<SortBy>('recientes');
-  filtros           = signal<EstudiosFiltros>({ rangoFechas: null, tipos: [], estados: [] });
+  filtros           = signal<EstudiosFiltros>(defaultFiltros());
   mobileFiltersOpen = signal(false);
-
-  // ── Opciones para dropdown ───────────────────────────────
-  readonly sortOptions = SORT_OPTIONS;
-
-  private subs = new Subscription();
 
   // ── Computed: contadores por tipo y estado ───────────────
   countsByTipo = computed<Record<string, number>>(() => {
     const counts: Record<string, number> = {};
     for (const e of this.estudios()) {
-      counts[e.categoria] = (counts[e.categoria] ?? 0) + 1;
+      if (e.categoria) counts[e.categoria] = (counts[e.categoria] ?? 0) + 1;
     }
     return counts;
   });
@@ -155,14 +149,9 @@ export class EstudiosComponent implements OnInit, OnDestroy {
   estudiosFiltrados = computed<Estudio[]>(() => {
     let lista = this.estudios();
 
-    const pid = this.selectedPatientId();
-    if (pid !== null) {
-      lista = lista.filter(e => e.personaId === pid);
-    }
-
     const f = this.filtros();
     if (f.tipos.length > 0) {
-      lista = lista.filter(e => f.tipos.includes(e.categoria));
+      lista = lista.filter(e => e.categoria != null && f.tipos.includes(e.categoria));
     }
     if (f.estados.length > 0) {
       lista = lista.filter(e => f.estados.includes(e.estado));
@@ -176,8 +165,8 @@ export class EstudiosComponent implements OnInit, OnDestroy {
       });
     }
 
-    const dir = this.sortBy() === 'recientes' ? -1 : 1;
-    return lista.slice().sort((a, b) => (parseFecha(a.fecha) - parseFecha(b.fecha)) * dir);
+    // Orden fijo: más recientes primero (sin control de UI).
+    return lista.slice().sort((a, b) => b.fechaTs - a.fechaTs);
   });
 
   activeFiltersCount = computed<number>(() => {
@@ -189,67 +178,67 @@ export class EstudiosComponent implements OnInit, OnDestroy {
     return count;
   });
 
+  constructor() {
+    // Siembra el paciente seleccionado desde el paciente activo.
+    effect(() => {
+      const ap = this.activePatient.activePatient();
+      if (ap && this.selectedPatientId() === null) {
+        this.selectedPatientId.set(ap.id);
+      }
+    });
+
+    // Carga (y recarga al cambiar de paciente) vía store.
+    effect(() => {
+      const pid = this.selectedPatientId();
+      if (pid !== null) {
+        this.store.dispatch(loadEstudios({ patientId: pid }));
+      }
+    });
+
+    // Feedback de error en español, sin leak de internals (CLAUDE.md #4).
+    effect(() => {
+      const err = this.error();
+      if (err) {
+        this.messageService.add({
+          severity: 'error', summary: 'Error',
+          detail: mapApiError(err), life: 4000,
+        });
+      }
+    });
+  }
+
   // ── Helpers de template ──────────────────────────────────
-  getIconForCategoria(cat: CategoriaEstudio): string {
-    return CATEGORIA_ICON_MAP[cat] ?? 'pi pi-file';
+  getIconForCategoria(cat?: CategoriaEstudio): string {
+    return (cat && CATEGORIA_ICON_MAP[cat]) || 'pi pi-file';
   }
 
   getAvatarColor(personaId: number): string {
     return this.accessiblePatients().find(f => f.id === personaId)?.accentColor ?? 'neutral';
   }
 
-  /**
-   * Estado simplificado para el paciente: solo "disponible" o "pendiente".
-   * Cualquier estado interno (en-proceso, etc.) se muestra como pendiente
-   * porque el paciente no tiene contexto operativo para distinguirlos.
-   */
+  /** Estado simplificado para el paciente: "disponible" o "pendiente". */
   displayEstado(e: Estudio): 'disponible' | 'pendiente' {
     return e.estado === 'disponible' ? 'disponible' : 'pendiente';
   }
 
   displayEstadoLabel(e: Estudio): string {
-    return this.displayEstado(e) === 'disponible' ? 'Disponible' : 'Pendiente';
+    return this.displayEstado(e) === 'disponible' ? 'Disponible' : 'En proceso';
   }
 
   isAvailable(e: Estudio): boolean {
-    return e.estado === 'disponible';
+    return e.estado === 'disponible' && !!e.reporteDisponible;
   }
 
-  /** Click en la card → ver detalle SOLO si está disponible. */
   onCardClick(e: Estudio): void {
     if (this.isAvailable(e)) this.onVerEstudio(e);
   }
 
-  /** Click en el botón de descargar (mobile) sin propagar al card. */
   onDescargarFromCard(e: Estudio, event: Event): void {
     event.stopPropagation();
     this.onDescargar(e);
   }
 
-  ngOnInit(): void {
-    this.subs.add(
-      this.service.getEstudios().subscribe({
-        next: lista => {
-          this.rawEstudios.set(lista);
-          this.loadingEstudios.set(false);
-        },
-        error: err => {
-          this.rawEstudios.set([]);
-          this.loadingEstudios.set(false);
-          this.messageService.add({
-            severity: 'error', summary: 'Error',
-            detail: mapApiError(err), life: 4000,
-          });
-        },
-      }),
-    );
-  }
-
   // ── Handlers ─────────────────────────────────────────────
-  onSortChange(value: SortBy): void {
-    this.sortBy.set(value);
-  }
-
   onFiltrosChange(f: EstudiosFiltros): void {
     this.filtros.set(f);
   }
@@ -260,28 +249,37 @@ export class EstudiosComponent implements OnInit, OnDestroy {
   }
 
   onLimpiarFiltros(): void {
-    this.filtros.set({ rangoFechas: null, tipos: [], estados: [] });
+    // Reset al filtro por defecto (último mes), que es la línea base de la pantalla.
+    this.filtros.set(defaultFiltros());
     this.mobileFiltersOpen.set(false);
   }
 
   onDescargar(estudio: Estudio): void {
-    if (estudio.pdf?.url && estudio.pdf.url !== '#') {
-      window.open(estudio.pdf.url, '_blank');
-    } else {
+    if (!this.isAvailable(estudio)) {
       this.messageService.add({
         severity: 'info',
         summary: 'Próximamente',
-        detail: 'La visualización de PDF estará disponible pronto.',
+        detail: 'La descarga del PDF estará disponible pronto.',
         life: 3500,
       });
+      return;
     }
+    this.service.descargarReporte(estudio.id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error', summary: 'Error',
+          detail: mapApiError(err), life: 4000,
+        });
+      },
+    });
   }
 
   onVerEstudio(estudio: Estudio): void {
     this.onDescargar(estudio);
-  }
-
-  ngOnDestroy(): void {
-    this.subs.unsubscribe();
   }
 }

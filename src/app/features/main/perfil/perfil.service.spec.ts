@@ -39,4 +39,18 @@ describe('PerfilService', () => {
     expect(req.request.body).toEqual(payload);
     req.flush({});
   });
+
+  it('updatePerfil con patientId agrega ?patientId= (dependiente sin cuenta)', () => {
+    const payload = { email: 'a@b.com', phone: '123', address: 'calle 1' };
+    service.updatePerfil(payload, 20013).subscribe();
+    const req = http.expectOne('/api/v1/me/profile?patientId=20013');
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual(payload);
+    req.flush({});
+  });
+
+  it('updatePerfil con patientId null se comporta como el propio', () => {
+    service.updatePerfil({ email: 'a@b.com', phone: '1', address: 'x' }, null).subscribe();
+    http.expectOne('/api/v1/me/profile').flush({});
+  });
 });

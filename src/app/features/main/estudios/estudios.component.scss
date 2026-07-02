@@ -8,8 +8,6 @@
   flex-wrap: wrap;
   margin-bottom: var(--space-4);
 
-  .ui-sort-select { min-width: 180px; }
-
   @include mobile-only {
     position: sticky;
     top: var(--ds-topbar-h);
@@ -40,9 +38,53 @@
   min-width: 0;
 }
 
+// ── Tabla desktop: contenedor de card + header con fondo ─
+.ui-table-wrapper {
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+
+  // Header con fondo gris para que se distinga del cuerpo (antes se veía "plano").
+  ::ng-deep .p-datatable-thead > tr > th {
+    background: var(--ds-surface);
+    border-bottom: 1px solid var(--ds-surface-dark);
+  }
+}
+
 .ui-estudios-aside {
-  position: sticky;
-  top: calc(var(--ds-topbar-h) + var(--space-4));
+  // OJO: sin `display` en base — el aside es `.ui-show-desktop` y setear display
+  // acá pisaría el `display:none` de mobile. El layout va dentro de desktop-up.
+  @include desktop-up {
+    position: sticky;
+    top: calc(var(--ds-topbar-h) + var(--space-4));
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  // Filtro de persona priorizado arriba del panel de filtros.
+  &__persona {
+    background: var(--ds-white);
+    border: 1px solid var(--ds-surface-dark);
+    border-radius: var(--ds-radius-lg);
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &__persona-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--ds-text-muted);
+  }
+
+  &__persona ::ng-deep .ui-patient-filter-select {
+    width: 100%;
+  }
 }
 
 // ── Tabla: nombre de estudio ─────────────────────────────
@@ -89,7 +131,14 @@
   gap: var(--space-2);
 }
 
-// ── Avatar mini ──────────────────────────────────────────
+// ── Colores de avatar (aplican a cualquier tamaño) ───────
+.ui-avatar-primary   { background: var(--brand-primary);   }
+.ui-avatar-secondary { background: var(--brand-secondary); }
+.ui-avatar-accent    { background: var(--brand-accent);    }
+.ui-avatar-warning   { background: var(--ds-warning);      }
+.ui-avatar-neutral   { background: var(--ds-text-muted);   }
+
+// ── Avatar mini (tabla desktop) ──────────────────────────
 .ui-avatar-mini {
   width: 24px;
   height: 24px;
@@ -101,12 +150,6 @@
   font-weight: 700;
   color: white;
   flex-shrink: 0;
-
-  &.ui-avatar-primary   { background: var(--brand-primary);   }
-  &.ui-avatar-secondary { background: var(--brand-secondary); }
-  &.ui-avatar-accent    { background: var(--brand-accent);    }
-  &.ui-avatar-warning   { background: var(--ds-warning);      }
-  &.ui-avatar-neutral   { background: var(--ds-text-muted);   }
 }
 
 // ── Tags de estado (estudios) ────────────────────────────
@@ -116,23 +159,24 @@
   .ui-tag-pendiente   { background: var(--ds-warning-light) !important; color: var(--ds-warning) !important; }
 }
 
-// ── Cards mobile ─────────────────────────────────────────
+// ── Cards mobile: estilo turno (avatar prominente) ───────
 .ui-estudios-cards {
   @include mobile-only {
     display: flex;
   }
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
-// Card mobile más alta con header, título, meta y acción "Descargar".
+// Fila: avatar (izq) + info (centro, flexible) + estado/acción (der).
 .ui-estudio-card {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
   background: var(--ds-white);
-  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-lg);
   box-shadow: var(--ds-shadow-sm);
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
@@ -141,64 +185,78 @@
 
   &--disabled {
     cursor: default;
-    .ui-estudio-card__title-text,
+    .ui-estudio-card__title,
     .ui-estudio-card__meta { opacity: 0.7; }
   }
 
-  &__header {
-    display: flex;
+  // Avatar prominente (mismo peso visual que el date-stamp de Turnos).
+  &__avatar {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+  }
 
-    .ui-avatar-mini { flex-shrink: 0; }
+  &__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
 
   &__persona-name {
-    flex: 1;
     font-size: 12px;
     font-weight: 500;
     color: var(--ds-text-muted);
-    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   &__title {
+    margin: 0;
     display: flex;
     align-items: center;
     gap: var(--space-2);
     font-size: 15px;
     font-weight: 600;
     color: var(--ds-text);
-
-    .ui-categoria-icon { flex-shrink: 0; }
+    min-width: 0;
   }
 
   &__title-text {
-    flex: 1;
     min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    flex-wrap: wrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__meta {
+    margin: 0;
     display: flex;
+    align-items: center;
     flex-wrap: wrap;
-    gap: var(--space-3) var(--space-4);
+    gap: var(--space-1) var(--space-3);
     font-size: 12px;
     color: var(--ds-text-muted);
 
-    span { display: inline-flex; align-items: center; gap: var(--space-1); }
-    i { font-size: 11px; }
+    i { font-size: 12px; flex-shrink: 0; }
+    span { min-width: 0; }
   }
 
-  &__actions {
+  &__status {
     display: flex;
-    justify-content: flex-end;
-    margin-top: var(--space-1);
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-2);
+    flex-shrink: 0;
   }
 }
 

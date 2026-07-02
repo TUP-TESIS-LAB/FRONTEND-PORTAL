@@ -17,7 +17,7 @@ function makeFam(id: number): Familiar {
     id, userPatientId: id, status: 'VERIFIED',
     nombre: 'Test', apellido: 'User', iniciales: 'TU',
     edad: 30, vinculo: 'Yo', dni: '12345678',
-    cobertura: '', totalTurnos: 0, totalEstudios: 0,
+    tieneCuenta: false, cobertura: '', totalTurnos: 0, totalEstudios: 0,
     accentColor: 'primary',
   };
 }

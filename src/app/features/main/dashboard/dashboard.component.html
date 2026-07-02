@@ -38,7 +38,7 @@
 } @else if (ultimoEstudio(); as e) {
   <ui-hero-card
     label="Último estudio"
-    [title]="e.nombre"
+    [title]="e.nombre ?? 'Estudio Nº ' + e.protocolId"
     [details]="estudioHeroDetails()"
     decorativeIcon="pi-file">
     <p-button

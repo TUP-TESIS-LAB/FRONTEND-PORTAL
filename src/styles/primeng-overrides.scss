@@ -468,12 +468,18 @@
 // Drawer full-height para el wizard de sacar turno.
 // El drawer se renderiza como portal al <body>, por eso va aquí.
 .ui-wizard-sheet {
-  height: 92dvh !important;
-  border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0 !important;
+  height: 100dvh !important;
+  border-radius: 0 !important;
   padding: 0 !important;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+
+  // Full-height: el header "Nuevo turno" (elemento superior del sheet) respeta
+  // el safe-area superior (notch). Additivo: 0 en devices sin notch → sin cambio visual.
+  .ui-sacar-page__header {
+    padding-top: var(--ds-safe-top);
+  }
 
   .p-drawer-content {
     padding: 0;
@@ -895,17 +901,51 @@
 .p-datepicker {
   display: inline-flex;
   align-items: center;
+  position: relative;
   font-family: var(--ds-font);
 
   input.p-inputtext,
   .p-datepicker-input {
     min-height: 44px;
+    // Espacio a la derecha para el ícono del calendario (iconDisplay="input").
+    padding-right: 2.5rem;
+  }
+
+  // Ícono del calendario dentro del input (iconDisplay="input").
+  // PrimeNG lo renderiza como SVG sin color del DS y a veces desalineado:
+  // lo fijamos a la derecha, centrado vertical, con el gris del sistema.
+  .p-datepicker-input-icon-container,
+  .p-inputicon {
+    position: absolute;
+    right: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ds-text-muted);
+    pointer-events: none;
+  }
+
+  .p-datepicker-input-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--ds-text-muted);
   }
 }
 
 // El popup del datepicker (con appendTo="body" se renderiza al <body>).
 // Necesita su propio styling porque sale del scope del componente.
 .p-datepicker-panel {
+  // Ancho fijo de calendario: cómodo de leer, independiente del ancho del
+  // input (que puede ser angosto). Sin esto, al colgar del <body> el panel
+  // toma el ancho completo del viewport y desparrama las columnas.
+  // En web: 288px. En mobile: casi full-screen, más cómodo para el touch.
+  width: 288px;
+  max-width: calc(100vw - 24px);
+  @include mobile-only {
+    width: calc(100vw - 24px);
+  }
   background: var(--ds-white);
   border: 1px solid var(--ds-surface-dark);
   border-radius: var(--ds-radius-md);

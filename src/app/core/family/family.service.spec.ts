@@ -61,6 +61,19 @@ describe('FamilyService', () => {
       expect(result[1].status).toBe('CREATED');
     });
 
+    it('mapea hasOwnAccount a tieneCuenta, con fallback conservador true si falta', () => {
+      let result: any[] = [];
+      service.getFamily().subscribe(r => { result = r; });
+      httpMock.expectOne('/api/v1/empresa/patients/me/family').flush([
+        { ...RAW_RESPONSE[0], hasOwnAccount: false },
+        { ...RAW_RESPONSE[1], hasOwnAccount: true },
+        { ...RAW_RESPONSE[0], patientId: 3, userPatientId: 30 }, // sin el campo
+      ]);
+      expect(result[0].tieneCuenta).toBe(false);
+      expect(result[1].tieneCuenta).toBe(true);
+      expect(result[2].tieneCuenta).toBe(true); // backend viejo → no habilitar edición
+    });
+
     it('maps nombre and apellido from firstName/lastName', () => {
       let result: any[] = [];
       service.getFamily().subscribe(r => { result = r; });

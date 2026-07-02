@@ -9,6 +9,7 @@ import { PlaceholderCardComponent } from '../../../shared/ui/components/placehol
 import { TopSheetComponent, TopSheetItem } from '../../../shared/ui/overlays/top-sheet/top-sheet.component';
 import { AppointmentService } from '../turnos/services/appointment.service';
 import { EstudioService } from '../estudios/estudio.service';
+import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Turno } from '../../../core/models/turno.model';
 import { Estudio } from '../../../core/models/estudio.model';
@@ -30,6 +31,7 @@ import { Estudio } from '../../../core/models/estudio.model';
 export class DashboardComponent implements OnDestroy {
   private readonly appointmentSvc = inject(AppointmentService);
   private readonly estudioSvc = inject(EstudioService);
+  private readonly activePatient = inject(ActivePatientService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
@@ -48,10 +50,10 @@ export class DashboardComponent implements OnDestroy {
     const e = this.ultimoEstudio();
     if (!e) return [];
     const details: HeroCardDetail[] = [
-      { icon: 'pi-tag', text: e.estadoLabel },
+      { icon: 'pi-file', text: e.nombre ?? `Estudio Nº ${e.protocolId}` },
       { icon: 'pi-calendar', text: e.fecha },
     ];
-    if (e.sede) details.push({ icon: 'pi-map-marker', text: e.sede });
+    if (e.sucursal) details.push({ icon: 'pi-map-marker', text: e.sucursal });
     return details;
   });
 
@@ -124,12 +126,18 @@ export class DashboardComponent implements OnDestroy {
   }
 
   private cargarUltimoEstudio(): void {
+    // El fallback de "último estudio" usa el paciente activo (uno a la vez, como
+    // exige GET /me/results). Si aún no hay paciente activo resuelto, no hay fallback.
+    const patientId = this.activePatient.activePatient()?.id ?? null;
+    if (patientId == null) {
+      this.ultimoEstudio.set(null);
+      this.cargando.set(false);
+      return;
+    }
     this.subs.add(
-      this.estudioSvc.getEstudios().subscribe({
+      this.estudioSvc.getEstudios(patientId).subscribe({
         next: (estudios) => {
-          const ordenados = [...estudios].sort(
-            (a, b) => parseFechaDDMMYYYY(b.fecha).getTime() - parseFechaDDMMYYYY(a.fecha).getTime(),
-          );
+          const ordenados = [...estudios].sort((a, b) => b.fechaTs - a.fechaTs);
           this.ultimoEstudio.set(ordenados[0] ?? null);
           this.cargando.set(false);
         },
@@ -159,10 +167,4 @@ export class DashboardComponent implements OnDestroy {
   ngOnDestroy(): void {
     this.subs.unsubscribe();
   }
-}
-
-/** Parsea 'DD/MM/YYYY' a Date para ordenar estudios por fecha desc. */
-function parseFechaDDMMYYYY(s: string): Date {
-  const [d, m, y] = s.split('/').map(Number);
-  return new Date(y, (m ?? 1) - 1, d);
 }
