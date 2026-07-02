@@ -468,12 +468,18 @@
 // Drawer full-height para el wizard de sacar turno.
 // El drawer se renderiza como portal al <body>, por eso va aquí.
 .ui-wizard-sheet {
-  height: 92dvh !important;
-  border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0 !important;
+  height: 100dvh !important;
+  border-radius: 0 !important;
   padding: 0 !important;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+
+  // Full-height: el header "Nuevo turno" (elemento superior del sheet) respeta
+  // el safe-area superior (notch). Additivo: 0 en devices sin notch → sin cambio visual.
+  .ui-sacar-page__header {
+    padding-top: var(--ds-safe-top);
+  }
 
   .p-drawer-content {
     padding: 0;
