@@ -11,13 +11,16 @@ import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
-import { TableModule } from 'primeng/table';
-import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
 import { EmptyStateComponent } from '../../../shared/ui/components/empty-state/empty-state.component';
+import {
+  EventCardComponent,
+  EventDetail,
+  EventPersona,
+} from '../../../shared/ui/components/event-card/event-card.component';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { mapApiError } from '../../../shared/utils/api-error-mapper';
 import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
@@ -41,6 +44,8 @@ const SORT_OPTIONS = [
   { label: 'Más antiguos',  value: 'antiguos'  },
 ];
 
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
 @Component({
   selector: 'app-estudios',
   standalone: true,
@@ -49,12 +54,11 @@ const SORT_OPTIONS = [
     ButtonModule,
     Select,
     SkeletonModule,
-    TableModule,
-    TagModule,
     ToastModule,
     TooltipModule,
     PageHeaderComponent,
     EmptyStateComponent,
+    EventCardComponent,
     PatientFilterComponent,
   ],
   providers: [MessageService],
@@ -134,6 +138,26 @@ export class EstudiosComponent {
     return e.sucursal ?? '—';
   }
 
+  diaDe(e: Estudio): string {
+    const d = new Date(e.fechaTs);
+    return isNaN(d.getTime()) ? '--' : String(d.getDate()).padStart(2, '0');
+  }
+
+  mesDe(e: Estudio): string {
+    const d = new Date(e.fechaTs);
+    return isNaN(d.getTime()) ? '' : MESES[d.getMonth()];
+  }
+
+  detallesDe(e: Estudio): EventDetail[] {
+    return [{ icon: 'pi-map-marker', text: this.sucursalEstudio(e) }];
+  }
+
+  /** Persona del paciente seleccionado (para el avatar de la card, como en Turnos). */
+  personaActual(): EventPersona | undefined {
+    const f = this.accessiblePatients().find(p => p.id === this.selectedPatientId());
+    return f ? { nombre: f.nombre, iniciales: f.iniciales } : undefined;
+  }
+
   /** El reporte está disponible para descargar (llega con KAN-168). */
   reporteDisponible(e: Estudio): boolean {
     return !!e.reporteDisponible;
@@ -144,7 +168,7 @@ export class EstudiosComponent {
   }
 
   estadoClass(e: Estudio): string {
-    return this.reporteDisponible(e) ? 'disponible' : 'pendiente';
+    return this.reporteDisponible(e) ? 'disponible' : 'en-proceso';
   }
 
   // ── Handlers ─────────────────────────────────────────────
@@ -175,10 +199,5 @@ export class EstudiosComponent {
         });
       },
     });
-  }
-
-  onDescargarFromCard(estudio: Estudio, event: Event): void {
-    event.stopPropagation();
-    this.onDescargar(estudio);
   }
 }

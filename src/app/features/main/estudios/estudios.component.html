@@ -4,120 +4,63 @@
   title="Mis estudios"
   subtitle="Resultados disponibles para descargar." />
 
-<!-- Barra: paciente + orden -->
-<div class="ui-estudios-toolbar">
+<!-- ─── Barra: paciente + orden (mismo patrón que Turnos) ─── -->
+<div class="ui-estudios-filters">
   @if (patientFilterOptions().length > 1) {
-    <app-patient-filter
-      class="ui-estudios-patient"
-      [options]="patientFilterOptions()"
-      [selectedId]="selectedPatientId()"
-      (selectedIdChange)="selectedPatientId.set($event)" />
+    <div class="ui-estudios-filters__group">
+      <span class="ui-estudios-filters__label ui-show-desktop">Paciente</span>
+      <app-patient-filter
+        [options]="patientFilterOptions()"
+        [selectedId]="selectedPatientId()"
+        (selectedIdChange)="selectedPatientId.set($event)" />
+    </div>
   }
 
-  <p-select
-    [options]="sortOptions"
-    optionLabel="label"
-    optionValue="value"
-    placeholder="Ordenar por"
-    appendTo="body"
-    [ngModel]="sortBy()"
-    (ngModelChange)="onSortChange($event)"
-    styleClass="ui-sort-select" />
+  <div class="ui-estudios-filters__group ui-estudios-filters__sort">
+    <span class="ui-estudios-filters__label ui-show-desktop">Ordenar</span>
+    <p-select
+      [options]="sortOptions"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Ordenar por"
+      appendTo="body"
+      [ngModel]="sortBy()"
+      (ngModelChange)="onSortChange($event)"
+      styleClass="ui-sort-select" />
+  </div>
 </div>
 
-<!-- Lista -->
+<!-- ─── Lista de estudios ─── -->
 <section class="ui-estudios-list">
-
   @if (loading()) {
-    @for (i of [1,2,3,4,5]; track i) {
-      <p-skeleton height="56px" styleClass="mb-2" />
+    @for (i of [1, 2, 3]; track i) {
+      <p-skeleton height="96px" styleClass="mb-3" />
     }
-
   } @else if (estudiosFiltrados().length === 0) {
     <ui-empty-state
       icon="pi-file"
       heading="Aún no tenés estudios"
       message="Cuando tengas resultados disponibles van a aparecer acá." />
-
   } @else {
-
-    <!-- Desktop: tabla -->
-    <div class="ui-show-desktop ui-table-wrapper">
-      <p-table
-        [value]="estudiosFiltrados()"
-        [paginator]="true"
-        [rows]="10"
-        [stripedRows]="true"
-        styleClass="p-datatable-sm">
-        <ng-template pTemplate="caption">
-          <span class="visually-hidden">Listado de estudios</span>
-        </ng-template>
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Estudio</th>
-            <th>Fecha</th>
-            <th>Sucursal</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-e>
-          <tr>
-            <td>{{ nombreEstudio(e) }}</td>
-            <td>{{ e.fecha }}</td>
-            <td>{{ sucursalEstudio(e) }}</td>
-            <td>
-              <p-tag
-                [value]="estadoLabel(e)"
-                [styleClass]="'ui-tag-' + estadoClass(e)" />
-            </td>
-            <td>
-              <p-button
-                icon="pi pi-download"
-                label="Descargar"
-                size="small"
-                [text]="true"
-                ariaLabel="Descargar PDF"
-                [pTooltip]="reporteDisponible(e) ? 'Descargar PDF' : 'Disponible próximamente'"
-                [disabled]="!reporteDisponible(e)"
-                (onClick)="onDescargar(e)" />
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </div>
-
-    <!-- Mobile: cards -->
-    <div class="ui-show-mobile ui-estudios-cards">
-      @for (e of estudiosFiltrados(); track e.id) {
-        <div class="ui-estudio-card">
-
-          <div class="ui-estudio-card__header">
-            <span class="ui-estudio-card__title-text">{{ nombreEstudio(e) }}</span>
-            <p-tag
-              [value]="estadoLabel(e)"
-              [styleClass]="'ui-tag-' + estadoClass(e)" />
-          </div>
-
-          <div class="ui-estudio-card__meta">
-            <span><i class="pi pi-calendar"></i>{{ e.fecha }}</span>
-            <span><i class="pi pi-map-marker"></i>{{ sucursalEstudio(e) }}</span>
-          </div>
-
-          <div class="ui-estudio-card__actions">
-            <p-button
-              label="Descargar"
-              icon="pi pi-download"
-              severity="primary"
-              size="small"
-              [outlined]="true"
-              [pTooltip]="reporteDisponible(e) ? 'Descargar PDF' : 'Disponible próximamente'"
-              [disabled]="!reporteDisponible(e)"
-              (onClick)="onDescargarFromCard(e, $event)" />
-          </div>
-        </div>
-      }
-    </div>
-
+    @for (e of estudiosFiltrados(); track e.id) {
+      <ui-event-card
+        [day]="diaDe(e)"
+        [month]="mesDe(e)"
+        [title]="nombreEstudio(e)"
+        [details]="detallesDe(e)"
+        [statusKey]="estadoClass(e)"
+        [statusLabel]="estadoLabel(e)"
+        [persona]="personaActual()">
+        <p-button
+          icon="pi pi-download"
+          [rounded]="true"
+          [text]="true"
+          ariaLabel="Descargar PDF"
+          [pTooltip]="reporteDisponible(e) ? 'Descargar PDF' : 'Disponible próximamente'"
+          tooltipPosition="left"
+          [disabled]="!reporteDisponible(e)"
+          (onClick)="onDescargar(e)" />
+      </ui-event-card>
+    }
   }
 </section>
