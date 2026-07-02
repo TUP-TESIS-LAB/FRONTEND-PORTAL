@@ -7,7 +7,7 @@ import type { Familiar } from '../models/familiar.model';
 
 function fam(id: number, vinculo: Familiar['vinculo']): Familiar {
   return { id, userPatientId: id * 10, status: 'VERIFIED', nombre: 'N'+id, apellido: 'A'+id,
-    iniciales: 'N', edad: 30, vinculo, dni: '30'+id, cobertura: '', totalTurnos: 0, totalEstudios: 0, accentColor: 'primary' };
+    iniciales: 'N', edad: 30, vinculo, dni: '30'+id, tieneCuenta: false, cobertura: '', totalTurnos: 0, totalEstudios: 0, accentColor: 'primary' };
 }
 
 describe('ActivePatientService', () => {

@@ -14,7 +14,7 @@
           (selectedIdChange)="onSelectPatient($event)" />
       </div>
     }
-    @if (viewingOwn()) {
+    @if (canEditSelected()) {
       <p-button
         label="Editar perfil"
         icon="pi pi-pencil"
