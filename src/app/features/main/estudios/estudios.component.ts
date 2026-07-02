@@ -9,14 +9,17 @@ import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { DrawerModule } from 'primeng/drawer';
 import { Select } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
 import { EmptyStateComponent } from '../../../shared/ui/components/empty-state/empty-state.component';
+import { FiltersAsideComponent } from '../../../shared/ui/components/filters-aside/filters-aside.component';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { mapApiError } from '../../../shared/utils/api-error-mapper';
 import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
@@ -25,7 +28,12 @@ import {
   PatientFilterOption,
 } from '../../../shared/ui/components/patient-filter/patient-filter.component';
 import { EstudioService } from './estudio.service';
-import { Estudio } from '../../../core/models/estudio.model';
+import {
+  Estudio,
+  EstudiosFiltros,
+  EstadoEstudio,
+  CategoriaEstudio,
+} from '../../../core/models/estudio.model';
 import { loadEstudios } from './store/estudios.actions';
 import {
   selectEstudios,
@@ -40,19 +48,37 @@ const SORT_OPTIONS = [
   { label: 'Más antiguos',  value: 'antiguos'  },
 ];
 
+// Alineado con CATEGORIA_TO_PI de shared/utils/analysis-icon.ts.
+const CATEGORIA_ICON_MAP: Record<CategoriaEstudio, string> = {
+  hematologia:  'pi pi-heart',
+  bioquimica:   'pi pi-chart-line',
+  hormonas:     'pi pi-sync',
+  orina:        'pi pi-filter',
+  coagulacion:  'pi pi-shield',
+};
+
+// Parsea 'DD/MM/YYYY' → timestamp para comparar
+function parseFecha(f: string): number {
+  const [d, m, y] = f.split('/').map(Number);
+  return new Date(y, m - 1, d).getTime();
+}
+
 @Component({
   selector: 'app-estudios',
   standalone: true,
   imports: [
     FormsModule,
     ButtonModule,
+    DrawerModule,
     Select,
     SkeletonModule,
+    TableModule,
     TagModule,
     ToastModule,
     TooltipModule,
     PageHeaderComponent,
     EmptyStateComponent,
+    FiltersAsideComponent,
     PatientFilterComponent,
   ],
   providers: [MessageService],
@@ -66,13 +92,28 @@ export class EstudiosComponent {
   readonly bp                     = inject(BreakpointService);
   readonly activePatient          = inject(ActivePatientService);
 
-  // ── Estado desde el store ────────────────────────────────
-  readonly estudios = this.store.selectSignal(selectEstudios);
-  readonly loading  = this.store.selectSignal(selectEstudiosLoading);
-  readonly error    = this.store.selectSignal(selectEstudiosError);
+  // ── Datos reales desde el store ──────────────────────────
+  /** Estudios reales del paciente seleccionado (sin persona todavía). */
+  private readonly rawEstudios = this.store.selectSignal(selectEstudios);
+  loadingEstudios              = this.store.selectSignal(selectEstudiosLoading);
+  private readonly error       = this.store.selectSignal(selectEstudiosError);
+
+  private readonly accessiblePatients = this.activePatient.accessiblePatients;
+
+  /** Enriquece cada estudio con la persona del paciente seleccionado. */
+  estudios = computed<Estudio[]>(() => {
+    const list = this.rawEstudios();
+    const f = this.accessiblePatients().find(p => p.id === this.selectedPatientId());
+    if (!f) return list;
+    return list.map(e => ({
+      ...e,
+      personaId: f.id,
+      personaNombre: f.nombre,
+      personaIniciales: f.iniciales,
+    }));
+  });
 
   // ── Filtro de paciente (contextual, por pantalla) ────────
-  private readonly accessiblePatients = this.activePatient.accessiblePatients;
   /** Paciente seleccionado; se siembra del paciente activo al cargar la familia. */
   selectedPatientId = signal<number | null>(null);
   patientFilterOptions = computed<PatientFilterOption[]>(() =>
@@ -84,18 +125,64 @@ export class EstudiosComponent {
       sublabel: f.vinculo === 'Yo' ? 'vos' : f.vinculo,
     })));
 
-  // ── Orden ────────────────────────────────────────────────
-  sortBy = signal<SortBy>('recientes');
+  // ── Filtros activos ──────────────────────────────────────
+  sortBy            = signal<SortBy>('recientes');
+  filtros           = signal<EstudiosFiltros>({ rangoFechas: null, tipos: [], estados: [] });
+  mobileFiltersOpen = signal(false);
   readonly sortOptions = SORT_OPTIONS;
 
+  // ── Computed: contadores por tipo y estado ───────────────
+  countsByTipo = computed<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
+    for (const e of this.estudios()) {
+      if (e.categoria) counts[e.categoria] = (counts[e.categoria] ?? 0) + 1;
+    }
+    return counts;
+  });
+
+  countsByEstado = computed<Record<EstadoEstudio, number>>(() => {
+    const counts = { 'disponible': 0, 'en-proceso': 0, 'pendiente': 0 };
+    for (const e of this.estudios()) {
+      counts[e.estado] = (counts[e.estado] ?? 0) + 1;
+    }
+    return counts;
+  });
+
+  // ── Computed: lista filtrada y ordenada ──────────────────
   estudiosFiltrados = computed<Estudio[]>(() => {
+    let lista = this.estudios();
+
+    const f = this.filtros();
+    if (f.tipos.length > 0) {
+      lista = lista.filter(e => e.categoria != null && f.tipos.includes(e.categoria));
+    }
+    if (f.estados.length > 0) {
+      lista = lista.filter(e => f.estados.includes(e.estado));
+    }
+    if (f.rangoFechas) {
+      const desde = f.rangoFechas.desde.getTime();
+      const hasta = f.rangoFechas.hasta.getTime();
+      lista = lista.filter(e => {
+        const ts = parseFecha(e.fecha);
+        return ts >= desde && ts <= hasta;
+      });
+    }
+
     const dir = this.sortBy() === 'recientes' ? -1 : 1;
-    return this.estudios().slice().sort((a, b) => (a.fechaTs - b.fechaTs) * dir);
+    return lista.slice().sort((a, b) => (a.fechaTs - b.fechaTs) * dir);
+  });
+
+  activeFiltersCount = computed<number>(() => {
+    const f = this.filtros();
+    let count = 0;
+    if (f.rangoFechas) count++;
+    count += f.tipos.length;
+    count += f.estados.length;
+    return count;
   });
 
   constructor() {
-    // Siembra el paciente seleccionado desde el paciente activo cuando la familia
-    // termina de cargar (el shell dispara ActivePatientService.init()).
+    // Siembra el paciente seleccionado desde el paciente activo.
     effect(() => {
       const ap = this.activePatient.activePatient();
       if (ap && this.selectedPatientId() === null) {
@@ -124,30 +211,34 @@ export class EstudiosComponent {
   }
 
   // ── Helpers de template ──────────────────────────────────
-  nombreEstudio(e: Estudio): string {
-    return e.nombre ?? `Estudio Nº ${e.protocolId}`;
+  getIconForCategoria(cat?: CategoriaEstudio): string {
+    return (cat && CATEGORIA_ICON_MAP[cat]) || 'pi pi-file';
   }
 
-  sucursalEstudio(e: Estudio): string {
-    return e.sucursal ?? '—';
+  getAvatarColor(personaId: number): string {
+    return this.accessiblePatients().find(f => f.id === personaId)?.accentColor ?? 'neutral';
   }
 
-  /** Línea secundaria compacta: fecha · sucursal. */
-  subtitulo(e: Estudio): string {
-    return `${e.fecha} · ${this.sucursalEstudio(e)}`;
+  /** Estado simplificado para el paciente: "disponible" o "pendiente". */
+  displayEstado(e: Estudio): 'disponible' | 'pendiente' {
+    return e.estado === 'disponible' ? 'disponible' : 'pendiente';
   }
 
-  /** El reporte está disponible para descargar (llega con KAN-168). */
-  reporteDisponible(e: Estudio): boolean {
-    return !!e.reporteDisponible;
+  displayEstadoLabel(e: Estudio): string {
+    return this.displayEstado(e) === 'disponible' ? 'Disponible' : 'En proceso';
   }
 
-  estadoLabel(e: Estudio): string {
-    return this.reporteDisponible(e) ? 'Disponible' : 'En proceso';
+  isAvailable(e: Estudio): boolean {
+    return e.estado === 'disponible' && !!e.reporteDisponible;
   }
 
-  estadoClass(e: Estudio): string {
-    return this.reporteDisponible(e) ? 'disponible' : 'en-proceso';
+  onCardClick(e: Estudio): void {
+    if (this.isAvailable(e)) this.onVerEstudio(e);
+  }
+
+  onDescargarFromCard(e: Estudio, event: Event): void {
+    event.stopPropagation();
+    this.onDescargar(e);
   }
 
   // ── Handlers ─────────────────────────────────────────────
@@ -155,8 +246,22 @@ export class EstudiosComponent {
     this.sortBy.set(value);
   }
 
+  onFiltrosChange(f: EstudiosFiltros): void {
+    this.filtros.set(f);
+  }
+
+  onFiltrosApplyMobile(f: EstudiosFiltros): void {
+    this.filtros.set(f);
+    this.mobileFiltersOpen.set(false);
+  }
+
+  onLimpiarFiltros(): void {
+    this.filtros.set({ rangoFechas: null, tipos: [], estados: [] });
+    this.mobileFiltersOpen.set(false);
+  }
+
   onDescargar(estudio: Estudio): void {
-    if (!this.reporteDisponible(estudio)) {
+    if (!this.isAvailable(estudio)) {
       this.messageService.add({
         severity: 'info',
         summary: 'Próximamente',
@@ -178,5 +283,9 @@ export class EstudiosComponent {
         });
       },
     });
+  }
+
+  onVerEstudio(estudio: Estudio): void {
+    this.onDescargar(estudio);
   }
 }

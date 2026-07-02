@@ -1,134 +1,205 @@
 @use 'breakpoints' as *;
 
-// ── Barra de filtros (mismo patrón visual que Turnos) ────
-.ui-estudios-filters {
+// ── Toolbar (paciente + sort + filtros) ──────────────────
+.ui-estudios-toolbar {
   display: flex;
-  align-items: flex-end;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-5);
-  background: var(--ds-white);
-  border: 1px solid var(--ds-surface-dark);
-  border-radius: var(--ds-radius-lg);
-  margin-bottom: var(--space-4);
+  gap: var(--space-2);
+  align-items: center;
   flex-wrap: wrap;
-
-  &__group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    min-width: 0;
-  }
-
-  &__label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    color: var(--ds-text-muted);
-  }
-
-  &__sort { margin-left: auto; }
+  margin-bottom: var(--space-4);
 
   .ui-sort-select { min-width: 180px; }
 
-  ::ng-deep .ui-patient-filter-select { min-width: 200px; }
-
   @include mobile-only {
-    // En mobile la barra se vuelve sticky bajo la topbar, como Turnos.
     position: sticky;
     top: var(--ds-topbar-h);
+    background: var(--ds-bg);
     z-index: var(--z-sticky);
-    align-items: center;
+    padding: var(--space-2) 0;
     gap: var(--space-3);
-    padding: var(--space-3);
 
-    &__sort { margin-left: 0; flex: 1; }
-    .ui-sort-select { min-width: 0; width: 100%; }
+    // Igual que Turnos: select de ancho natural + botón Filtros agrupados a la izquierda.
+    .ui-estudios-patient { flex: 0 1 auto; }
   }
 }
 
-// ── Lista densa de estudios (filas de documentos) ────────
-.ui-estudios-list { min-width: 0; }
+// ── Layout principal ─────────────────────────────────────
+.ui-estudios-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  align-items: start;
 
-// Panel contenedor: una sola card con filas divididas.
-.ui-estudios-panel {
-  background: var(--ds-white);
-  border: 1px solid var(--ds-surface-dark);
-  border-radius: var(--ds-radius-lg);
-  overflow: hidden;
+  @include desktop-up {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: var(--space-6);
+  }
 }
 
-.ui-estudios-skeleton {
-  display: block;
-  margin: var(--space-3) var(--space-4);
+.ui-estudios-list {
+  min-width: 0;
 }
 
-// Fila compacta: ícono + info (título + fecha·sucursal) + estado + descarga.
-.ui-estudio-row {
+.ui-estudios-aside {
+  position: sticky;
+  top: calc(var(--ds-topbar-h) + var(--space-4));
+}
+
+// ── Tabla: nombre de estudio ─────────────────────────────
+.ui-estudio-nombre {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-
-  & + .ui-estudio-row {
-    border-top: 1px solid var(--ds-surface);
-  }
-
-  &__icon {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--brand-primary-light);
-    color: var(--brand-primary);
-    font-size: 16px;
-  }
-
-  &__info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-
-    strong {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--ds-text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    span {
-      font-size: 12px;
-      color: var(--ds-text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-  }
-
-  &__status { flex-shrink: 0; }
-
-  &__download { flex-shrink: 0; }
-
-  // En mobile el tag puede ocultarse para dejar respirar el título si hace falta;
-  // se mantiene visible por ahora (info mínima), solo se compacta el gap.
-  @include mobile-only {
-    gap: var(--space-2);
-    padding: var(--space-3);
-  }
+  gap: var(--space-2);
+  min-width: 0;
 }
 
-// ── Tags de estado (coloreados en el ui-event-card) ──────
+// ── Ícono de categoría ───────────────────────────────────
+.ui-categoria-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--ds-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 13px;
+
+  &.ui-categoria-hematologia { background: rgba(226, 58, 71, 0.12);    color: var(--ds-danger);   }
+  &.ui-categoria-bioquimica  { background: rgba(34, 197, 94, 0.12);    color: var(--ds-success);  }
+  &.ui-categoria-hormonas    { background: rgba(245, 158, 11, 0.12);   color: var(--ds-warning);  }
+  &.ui-categoria-orina       { background: rgba(245, 158, 11, 0.10);   color: var(--ds-warning);  }
+  &.ui-categoria-coagulacion { background: rgba(59, 130, 246, 0.12);   color: var(--ds-info);     }
+}
+
+// ── Badge NUEVO ──────────────────────────────────────────
+.ui-badge-nuevo {
+  background: var(--brand-accent);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--ds-radius-sm);
+  flex-shrink: 0;
+}
+
+// ── Celda persona (tabla) ────────────────────────────────
+.ui-persona-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+// ── Avatar mini ──────────────────────────────────────────
+.ui-avatar-mini {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+
+  &.ui-avatar-primary   { background: var(--brand-primary);   }
+  &.ui-avatar-secondary { background: var(--brand-secondary); }
+  &.ui-avatar-accent    { background: var(--brand-accent);    }
+  &.ui-avatar-warning   { background: var(--ds-warning);      }
+  &.ui-avatar-neutral   { background: var(--ds-text-muted);   }
+}
+
+// ── Tags de estado (estudios) ────────────────────────────
 ::ng-deep {
   .ui-tag-disponible  { background: var(--ds-success-light) !important; color: var(--ds-success) !important; }
   .ui-tag-en-proceso  { background: var(--ds-info-light)    !important; color: var(--ds-info)    !important; }
   .ui-tag-pendiente   { background: var(--ds-warning-light) !important; color: var(--ds-warning) !important; }
+}
+
+// ── Cards mobile ─────────────────────────────────────────
+.ui-estudios-cards {
+  @include mobile-only {
+    display: flex;
+  }
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+// Card mobile más alta con header, título, meta y acción "Descargar".
+.ui-estudio-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-sm);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:active { transform: scale(0.99); }
+
+  &--disabled {
+    cursor: default;
+    .ui-estudio-card__title-text,
+    .ui-estudio-card__meta { opacity: 0.7; }
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+
+    .ui-avatar-mini { flex-shrink: 0; }
+  }
+
+  &__persona-name {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ds-text-muted);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ds-text);
+
+    .ui-categoria-icon { flex-shrink: 0; }
+  }
+
+  &__title-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-4);
+    font-size: 12px;
+    color: var(--ds-text-muted);
+
+    span { display: inline-flex; align-items: center; gap: var(--space-1); }
+    i { font-size: 11px; }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--space-1);
+  }
 }
 
 // ── Visually hidden (accesibilidad) ─────────────────────

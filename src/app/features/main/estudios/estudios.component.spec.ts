@@ -12,14 +12,14 @@ import { loadEstudios } from './store/estudios.actions';
 import type { Familiar } from '../../../core/models/familiar.model';
 import type { Estudio } from '../../../core/models/estudio.model';
 
-function makeFam(id: number): Familiar {
+function makeFam(id: number, nombre = 'Carlos'): Familiar {
   return {
     id,
     userPatientId: id,
     status: 'VERIFIED',
-    nombre: 'Test',
+    nombre,
     apellido: 'User',
-    iniciales: 'TU',
+    iniciales: nombre[0],
     edad: 30,
     vinculo: 'Yo',
     dni: '12345678',
@@ -35,8 +35,16 @@ function makeEstudio(id: number, fechaTs: number, extra: Partial<Estudio> = {}):
     id,
     patientId: 10,
     protocolId: id,
+    personaId: 10,
+    personaNombre: '',
+    personaIniciales: '',
+    nombre: `Estudio Nº ${id}`,
     fecha: '01/01/2026',
     fechaTs,
+    estado: 'en-proceso',
+    estadoLabel: 'En proceso',
+    esNuevo: false,
+    reporteDisponible: false,
     ...extra,
   };
 }
@@ -62,8 +70,8 @@ describe('EstudiosComponent', () => {
   }
 
   beforeEach(() => {
-    accessibleSignal.set([makeFam(10), makeFam(20)]);
-    activeSignal.set(makeFam(10));
+    accessibleSignal.set([makeFam(10, 'Carlos'), makeFam(20, 'Mateo')]);
+    activeSignal.set(makeFam(10, 'Carlos'));
 
     TestBed.configureTestingModule({
       providers: [
@@ -74,7 +82,7 @@ describe('EstudiosComponent', () => {
               estudios: [
                 makeEstudio(1, 100),
                 makeEstudio(2, 300),
-                makeEstudio(3, 200, { sucursal: 'Sede Centro', nombre: 'Hemograma', reporteDisponible: true }),
+                makeEstudio(3, 200, { estado: 'disponible', estadoLabel: 'Disponible', reporteDisponible: true }),
               ],
               patientId: 10,
               loading: false,
@@ -114,19 +122,28 @@ describe('EstudiosComponent', () => {
     expect(store.dispatch).toHaveBeenCalledWith(loadEstudios({ patientId: 10 }));
   });
 
-  it('degrada campos ausentes: nombre por protocolo, sucursal "—", estado "En proceso"', () => {
+  it('enriquece cada estudio con la persona del paciente seleccionado', () => {
     const comp = mount();
-    const sinDatos = makeEstudio(9, 1);
-    expect(comp.nombreEstudio(sinDatos)).toBe('Estudio Nº 9');
-    expect(comp.sucursalEstudio(sinDatos)).toBe('—');
-    expect(comp.reporteDisponible(sinDatos)).toBe(false);
-    expect(comp.estadoLabel(sinDatos)).toBe('En proceso');
+    expect(comp.estudios().every(e => e.personaNombre === 'Carlos')).toBe(true);
+    expect(comp.estudios().every(e => e.personaIniciales === 'C')).toBe(true);
   });
 
-  it('marca disponible cuando el reporte existe', () => {
+  it('degrada el estado sin reporte a "En proceso" y deshabilita la descarga', () => {
     const comp = mount();
-    const conReporte = makeEstudio(9, 1, { reporteDisponible: true });
-    expect(comp.reporteDisponible(conReporte)).toBe(true);
-    expect(comp.estadoLabel(conReporte)).toBe('Disponible');
+    const enProceso = makeEstudio(9, 1);
+    expect(comp.displayEstadoLabel(enProceso)).toBe('En proceso');
+    expect(comp.isAvailable(enProceso)).toBe(false);
+  });
+
+  it('marca disponible y habilita la descarga cuando el reporte existe', () => {
+    const comp = mount();
+    const disponible = makeEstudio(9, 1, { estado: 'disponible', reporteDisponible: true });
+    expect(comp.displayEstado(disponible)).toBe('disponible');
+    expect(comp.isAvailable(disponible)).toBe(true);
+  });
+
+  it('usa ícono por defecto cuando no hay categoría', () => {
+    const comp = mount();
+    expect(comp.getIconForCategoria(undefined)).toBe('pi pi-file');
   });
 });

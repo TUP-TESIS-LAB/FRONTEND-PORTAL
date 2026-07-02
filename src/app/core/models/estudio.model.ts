@@ -11,14 +11,13 @@ export type CategoriaEstudio =
 
 /**
  * Estado de firma del estudio (alineado con la postanalítica del backend).
- * Llega con KAN-168; hasta entonces queda `undefined` y la UI degrada.
+ * Llega con KAN-168; hasta entonces queda `undefined`.
  */
 export type EstadoFirma = 'pendiente' | 'firmado-parcial' | 'firmado-total';
 
 /**
- * Respuesta cruda del backend: `GET /api/v1/me/results?patientId=`
- * (rol EXTERNO). Es el resultado analítico crudo, con datos mínimos —
- * sin nombre, estado, firma ni PDF (ver spec estudios-reales §3.1).
+ * Respuesta cruda del backend: `GET /api/v1/me/results?patientId=` (rol EXTERNO).
+ * Resultado analítico crudo, datos mínimos — sin nombre, estado, firma ni PDF.
  */
 export interface AnalyticalResultResponse {
   id: number;
@@ -27,16 +26,16 @@ export interface AnalyticalResultResponse {
   analysisOrderId: number;
   sectionId: number;
   patientId: number;
-  collectionDate: string; // ISO LocalDateTime, ej. '2026-04-14T10:30:00'
+  collectionDate: string; // ISO LocalDateTime
   active: boolean;
   version: number;
 }
 
 /**
- * Estudio del paciente — modelo mínimo del portal. Los campos obligatorios
- * son los que provee hoy `GET /me/results`; los opcionales (`sucursal`,
- * `nombre`, `estadoFirma`, `reporteDisponible`) llegan con el endpoint de
- * backend KAN-168 y hasta entonces se muestran degradados.
+ * Estudio del paciente. Mantiene la forma "rica" del mockup para que la UI no
+ * cambie; los campos que el backend todavía no expone al paciente (`categoria`,
+ * `sede`/`sucursal`, `esNuevo`, `pdf`/`reporteDisponible`, firmante…) son
+ * opcionales y la UI los degrada. Los que llegan con KAN-168 se documentan.
  */
 export interface Estudio {
   id: number;
@@ -44,16 +43,35 @@ export interface Estudio {
   protocolId: number;
   analysisOrderId?: number;
   sectionId?: number;
-  /** Fecha de toma (`collectionDate`) formateada 'DD/MM/YYYY' para la UI. */
-  fecha: string;
-  /** Timestamp de la fecha de toma, para ordenar. */
-  fechaTs: number;
-  // ── Diferidos a KAN-168 (hoy `undefined`) ──────────────────
+
+  // Persona (se completa con el paciente activo/seleccionado en el componente)
+  personaId: number;
+  personaNombre: string;
+  personaIniciales: string;
+
+  nombre: string;
+  fecha: string;           // 'DD/MM/YYYY'
+  fechaTs: number;         // timestamp para ordenar
+  estado: EstadoEstudio;
+  estadoLabel: string;
+
+  // ── Opcionales / diferidos (hoy sin dato real) ──────────────
+  categoria?: CategoriaEstudio;
+  esNuevo?: boolean;
+  sede?: string;
   sucursal?: string;
-  nombre?: string;
   estadoFirma?: EstadoFirma;
   reporteDisponible?: boolean;
   reporteUrl?: string;
+  pdf?: {
+    url: string;
+    paginas: number;
+    tamano: string;
+  };
+  protocolo?: string;
+  medicoSolicitante?: string;
+  medicoFirmante?: string;
+  matricula?: string;
 }
 
 export interface GrupoEstudios {

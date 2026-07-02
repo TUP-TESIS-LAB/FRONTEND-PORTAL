@@ -23,16 +23,24 @@ describe('fromAnalyticalResult (mapper)', () => {
     expect(e.id).toBe(7);
     expect(e.patientId).toBe(10);
     expect(e.protocolId).toBe(42);
+    expect(e.nombre).toBe('Estudio Nº 42');
     expect(e.fecha).toBe('14/04/2026');
     expect(e.fechaTs).toBe(new Date('2026-04-14T10:30:00').getTime());
+  });
+
+  it('degrada estado a "en proceso" y descarga no disponible; persona se completa luego', () => {
+    const e = fromAnalyticalResult(DTO);
+    expect(e.estado).toBe('en-proceso');
+    expect(e.reporteDisponible).toBe(false);
+    expect(e.personaNombre).toBe('');
   });
 
   it('deja los campos diferidos (KAN-168) como undefined', () => {
     const e = fromAnalyticalResult(DTO);
     expect(e.sucursal).toBeUndefined();
-    expect(e.nombre).toBeUndefined();
+    expect(e.categoria).toBeUndefined();
     expect(e.estadoFirma).toBeUndefined();
-    expect(e.reporteDisponible).toBeUndefined();
+    expect(e.sede).toBeUndefined();
   });
 });
 

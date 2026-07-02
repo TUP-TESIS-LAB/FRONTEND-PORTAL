@@ -20,14 +20,26 @@ function formatFecha(iso: string): string {
  */
 export function fromAnalyticalResult(dto: AnalyticalResultResponse): Estudio {
   const ts = new Date(dto.collectionDate).getTime();
+  // El reporte firmado (y su disponibilidad) llega con KAN-168; hasta entonces
+  // el estudio se muestra "en proceso" y la descarga queda deshabilitada.
+  const disponible = false;
   return {
     id: dto.id,
     patientId: dto.patientId,
     protocolId: dto.protocolId,
     analysisOrderId: dto.analysisOrderId,
     sectionId: dto.sectionId,
+    // Persona se completa en el componente con el paciente seleccionado.
+    personaId: dto.patientId,
+    personaNombre: '',
+    personaIniciales: '',
+    nombre: `Estudio Nº ${dto.protocolId}`,
     fecha: formatFecha(dto.collectionDate),
     fechaTs: isNaN(ts) ? 0 : ts,
+    estado: disponible ? 'disponible' : 'en-proceso',
+    estadoLabel: disponible ? 'Disponible' : 'En proceso',
+    esNuevo: false,
+    reporteDisponible: disponible,
   };
 }
 

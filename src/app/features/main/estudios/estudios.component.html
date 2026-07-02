@@ -4,75 +4,224 @@
   title="Mis estudios"
   subtitle="Resultados disponibles para descargar." />
 
-<!-- ─── Barra: paciente + orden (mismo patrón que Turnos) ─── -->
-<div class="ui-estudios-filters">
+<!-- Barra: paciente + sort + filtros mobile (sin búsqueda de texto, como Turnos) -->
+<div class="ui-estudios-toolbar">
   @if (patientFilterOptions().length > 1) {
-    <div class="ui-estudios-filters__group">
-      <span class="ui-estudios-filters__label ui-show-desktop">Paciente</span>
-      <app-patient-filter
-        [options]="patientFilterOptions()"
-        [selectedId]="selectedPatientId()"
-        (selectedIdChange)="selectedPatientId.set($event)" />
-    </div>
+    <app-patient-filter
+      class="ui-estudios-patient"
+      [options]="patientFilterOptions()"
+      [selectedId]="selectedPatientId()"
+      (selectedIdChange)="selectedPatientId.set($event)" />
   }
 
-  <div class="ui-estudios-filters__group ui-estudios-filters__sort">
-    <span class="ui-estudios-filters__label ui-show-desktop">Ordenar</span>
-    <p-select
-      [options]="sortOptions"
-      optionLabel="label"
-      optionValue="value"
-      placeholder="Ordenar por"
-      appendTo="body"
-      [ngModel]="sortBy()"
-      (ngModelChange)="onSortChange($event)"
-      styleClass="ui-sort-select" />
-  </div>
+  <p-select
+    [options]="sortOptions"
+    optionLabel="label"
+    optionValue="value"
+    placeholder="Ordenar por"
+    appendTo="body"
+    [ngModel]="sortBy()"
+    (ngModelChange)="onSortChange($event)"
+    styleClass="ui-show-desktop ui-sort-select" />
+
+  <p-button
+    class="ui-show-mobile"
+    [label]="activeFiltersCount() > 0 ? 'Filtros (' + activeFiltersCount() + ')' : 'Filtros'"
+    icon="pi pi-filter"
+    [outlined]="true"
+    severity="secondary"
+    (onClick)="mobileFiltersOpen.set(true)" />
 </div>
 
-<!-- ─── Lista densa de estudios (documentos para descargar) ─── -->
-<section class="ui-estudios-list">
-  @if (loading()) {
-    <div class="ui-estudios-panel">
-      @for (i of [1, 2, 3, 4]; track i) {
-        <p-skeleton height="40px" styleClass="ui-estudios-skeleton" />
-      }
-    </div>
-  } @else if (estudiosFiltrados().length === 0) {
-    <ui-empty-state
-      icon="pi-file"
-      heading="Aún no tenés estudios"
-      message="Cuando tengas resultados disponibles van a aparecer acá." />
-  } @else {
-    <div class="ui-estudios-panel" role="list">
-      @for (e of estudiosFiltrados(); track e.id) {
-        <div class="ui-estudio-row" role="listitem">
-          <span class="ui-estudio-row__icon" aria-hidden="true">
-            <i class="pi pi-file"></i>
-          </span>
+<!-- Layout principal -->
+<div class="ui-estudios-layout">
 
-          <div class="ui-estudio-row__info">
-            <strong>{{ nombreEstudio(e) }}</strong>
-            <span>{{ subtitulo(e) }}</span>
+  <!-- Sección: lista / tabla -->
+  <section class="ui-estudios-list">
+
+    @if (loadingEstudios()) {
+      <!-- Skeletons de carga -->
+      @for (i of [1,2,3,4,5]; track i) {
+        <p-skeleton height="56px" styleClass="mb-2" />
+      }
+
+    } @else if (estudios().length === 0) {
+      <!-- Sin estudios en absoluto -->
+      <ui-empty-state
+        icon="pi-file"
+        heading="Aún no tenés estudios"
+        message="Cuando tengás resultados disponibles van a aparecer acá." />
+
+    } @else if (estudiosFiltrados().length === 0) {
+      <!-- Filtros sin resultados -->
+      <ui-empty-state
+        icon="pi-filter-slash"
+        heading="No hay estudios con los filtros aplicados"
+        message="Probá ajustar los filtros o limpiarlos para ver todos los estudios.">
+        <p-button
+          label="Limpiar filtros"
+          [text]="true"
+          (onClick)="onLimpiarFiltros()" />
+      </ui-empty-state>
+
+    } @else {
+
+      <!-- Desktop: tabla -->
+      <div class="ui-show-desktop ui-table-wrapper">
+        <p-table
+          [value]="estudiosFiltrados()"
+          [paginator]="true"
+          [rows]="10"
+          [stripedRows]="true"
+          styleClass="p-datatable-sm">
+          <ng-template pTemplate="caption">
+            <span class="visually-hidden">Listado de estudios</span>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Estudio</th>
+              <th>Fecha</th>
+              <th>Persona</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-e>
+            <tr>
+              <td>
+                <div class="ui-estudio-nombre">
+                  <span class="ui-categoria-icon ui-categoria-{{ e.categoria }}">
+                    <i [class]="getIconForCategoria(e.categoria)"></i>
+                  </span>
+                  <span>{{ e.nombre }}</span>
+                  @if (e.esNuevo) {
+                    <span class="ui-badge-nuevo">NUEVO</span>
+                  }
+                </div>
+              </td>
+              <td>{{ e.fecha }}</td>
+              <td>
+                <div class="ui-persona-cell">
+                  <span class="ui-avatar-mini ui-avatar-{{ getAvatarColor(e.personaId) }}">
+                    {{ e.personaIniciales }}
+                  </span>
+                  <span>{{ e.personaNombre }}</span>
+                </div>
+              </td>
+              <td>
+                <p-tag
+                  [value]="displayEstadoLabel(e)"
+                  [styleClass]="'ui-tag-' + displayEstado(e)" />
+              </td>
+              <td>
+                <p-button
+                  icon="pi pi-download"
+                  [rounded]="true"
+                  [text]="true"
+                  ariaLabel="Descargar"
+                  pTooltip="Descargar"
+                  [disabled]="!isAvailable(e)"
+                  (onClick)="onDescargar(e)" />
+                <p-button
+                  icon="pi pi-eye"
+                  [rounded]="true"
+                  [text]="true"
+                  ariaLabel="Ver estudio"
+                  pTooltip="Ver"
+                  [disabled]="!isAvailable(e)"
+                  (onClick)="onVerEstudio(e)" />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+      <!-- Mobile: cards (más altas, con sede y acción descargar inline) -->
+      <div class="ui-show-mobile ui-estudios-cards">
+        @for (e of estudiosFiltrados(); track e.id) {
+          <div
+            class="ui-estudio-card"
+            [class.ui-estudio-card--disabled]="!isAvailable(e)"
+            (click)="onCardClick(e)"
+            role="button"
+            [attr.tabindex]="isAvailable(e) ? 0 : -1"
+            [attr.aria-label]="e.nombre">
+
+            <!-- Header: avatar + persona + estado -->
+            <div class="ui-estudio-card__header">
+              <span class="ui-avatar-mini ui-avatar-{{ getAvatarColor(e.personaId) }}">
+                {{ e.personaIniciales }}
+              </span>
+              <span class="ui-estudio-card__persona-name">{{ e.personaNombre }}</span>
+              <p-tag
+                [value]="displayEstadoLabel(e)"
+                [styleClass]="'ui-tag-' + displayEstado(e)" />
+            </div>
+
+            <!-- Nombre del estudio + badge nuevo -->
+            <div class="ui-estudio-card__title">
+              <span class="ui-categoria-icon ui-categoria-{{ e.categoria }}">
+                <i [class]="getIconForCategoria(e.categoria)"></i>
+              </span>
+              <span class="ui-estudio-card__title-text">
+                {{ e.nombre }}
+                @if (e.esNuevo) {
+                  <span class="ui-badge-nuevo">NUEVO</span>
+                }
+              </span>
+            </div>
+
+            <!-- Meta: fecha + sede -->
+            <div class="ui-estudio-card__meta">
+              <span><i class="pi pi-calendar"></i>{{ e.fecha }}</span>
+              @if (e.sede) {
+                <span><i class="pi pi-map-marker"></i>{{ e.sede }}</span>
+              }
+            </div>
+
+            <!-- Acción: descargar (siempre visible; disabled si no disponible) -->
+            <div class="ui-estudio-card__actions">
+              <p-button
+                label="Descargar"
+                icon="pi pi-download"
+                severity="primary"
+                size="small"
+                [outlined]="true"
+                [disabled]="!isAvailable(e)"
+                (onClick)="onDescargarFromCard(e, $event)" />
+            </div>
           </div>
+        }
+      </div>
 
-          <p-tag
-            class="ui-estudio-row__status"
-            [value]="estadoLabel(e)"
-            [styleClass]="'ui-tag-' + estadoClass(e)" />
+    }
+  </section>
 
-          <p-button
-            class="ui-estudio-row__download"
-            icon="pi pi-download"
-            [rounded]="true"
-            [text]="true"
-            ariaLabel="Descargar PDF"
-            [pTooltip]="reporteDisponible(e) ? 'Descargar PDF' : 'Disponible próximamente'"
-            tooltipPosition="left"
-            [disabled]="!reporteDisponible(e)"
-            (onClick)="onDescargar(e)" />
-        </div>
-      }
-    </div>
-  }
-</section>
+  <!-- Aside desktop: filtros -->
+  <aside class="ui-estudios-aside ui-show-desktop">
+    <ui-filters-aside
+      [filtros]="filtros()"
+      [countsByTipo]="countsByTipo()"
+      [countsByEstado]="countsByEstado()"
+      (filtrosChange)="onFiltrosChange($event)"
+      (limpiar)="onLimpiarFiltros()" />
+  </aside>
+
+</div>
+
+<!-- Bottom sheet mobile: filtros -->
+<p-drawer
+  [visible]="mobileFiltersOpen()"
+  (visibleChange)="mobileFiltersOpen.set($event)"
+  position="bottom"
+  styleClass="ui-bottom-sheet-drawer ui-filters-sheet">
+  <ng-template pTemplate="headless">
+    <ui-filters-aside
+      [mobileMode]="true"
+      [filtros]="filtros()"
+      [countsByTipo]="countsByTipo()"
+      [countsByEstado]="countsByEstado()"
+      (aplicar)="onFiltrosApplyMobile($event)"
+      (limpiar)="onLimpiarFiltros()" />
+  </ng-template>
+</p-drawer>
