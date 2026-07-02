@@ -9,26 +9,66 @@ export type CategoriaEstudio =
   | 'orina'
   | 'coagulacion';
 
+/**
+ * Estado de firma del estudio (alineado con la postanalítica del backend).
+ * Llega con KAN-168; hasta entonces queda `undefined`.
+ */
+export type EstadoFirma = 'pendiente' | 'firmado-parcial' | 'firmado-total';
+
+/**
+ * Respuesta cruda del backend: `GET /api/v1/me/results?patientId=` (rol EXTERNO).
+ * Resultado analítico crudo, datos mínimos — sin nombre, estado, firma ni PDF.
+ */
+export interface AnalyticalResultResponse {
+  id: number;
+  tenantId: number;
+  protocolId: number;
+  analysisOrderId: number;
+  sectionId: number;
+  patientId: number;
+  collectionDate: string; // ISO LocalDateTime
+  active: boolean;
+  version: number;
+}
+
+/**
+ * Estudio del paciente. Mantiene la forma "rica" del mockup para que la UI no
+ * cambie; los campos que el backend todavía no expone al paciente (`categoria`,
+ * `sede`/`sucursal`, `esNuevo`, `pdf`/`reporteDisponible`, firmante…) son
+ * opcionales y la UI los degrada. Los que llegan con KAN-168 se documentan.
+ */
 export interface Estudio {
   id: number;
+  patientId: number;
+  protocolId: number;
+  analysisOrderId?: number;
+  sectionId?: number;
+
+  // Persona (se completa con el paciente activo/seleccionado en el componente)
   personaId: number;
   personaNombre: string;
   personaIniciales: string;
+
   nombre: string;
-  categoria: CategoriaEstudio;
   fecha: string;           // 'DD/MM/YYYY'
-  fechaToma?: string;
-  fechaCarga?: string;
+  fechaTs: number;         // timestamp para ordenar
   estado: EstadoEstudio;
   estadoLabel: string;
+
+  // ── Opcionales / diferidos (hoy sin dato real) ──────────────
+  categoria?: CategoriaEstudio;
   esNuevo?: boolean;
+  sede?: string;
+  sucursal?: string;
+  estadoFirma?: EstadoFirma;
+  reporteDisponible?: boolean;
+  reporteUrl?: string;
   pdf?: {
     url: string;
     paginas: number;
-    tamano: string;        // '184 KB'
+    tamano: string;
   };
   protocolo?: string;
-  sede?: string;
   medicoSolicitante?: string;
   medicoFirmante?: string;
   matricula?: string;

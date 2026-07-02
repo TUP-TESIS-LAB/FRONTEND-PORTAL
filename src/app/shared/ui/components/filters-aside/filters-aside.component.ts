@@ -46,6 +46,8 @@ export class FiltersAsideComponent implements OnChanges {
   @Input() countsByEstado: Record<EstadoEstudio, number> = {} as Record<EstadoEstudio, number>;
   /** En mobile (dentro del bottom sheet) muestra los botones de Aplicar/Limpiar en el footer */
   @Input() mobileMode = false;
+  /** Muestra la sección de Estado. Se puede ocultar cuando no aplica al caso. */
+  @Input() showEstado = true;
 
   @Output() filtrosChange = new EventEmitter<EstudiosFiltros>();
   @Output() limpiar       = new EventEmitter<void>();
