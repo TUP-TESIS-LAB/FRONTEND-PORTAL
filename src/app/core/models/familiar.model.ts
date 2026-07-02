@@ -10,6 +10,10 @@ export interface Familiar {
   edad: number;
   vinculo: Vinculo;
   dni: string;
+  /** True si el paciente tiene su propia cuenta del portal (vínculo PROPIO
+   *  verificado de algún usuario). El titular solo puede editar los datos de
+   *  contacto de familiares SIN cuenta propia. */
+  tieneCuenta: boolean;
   cobertura: string;             // TODO: backend does not return this in MVP
   proximoTurno?: {
     dia: string;

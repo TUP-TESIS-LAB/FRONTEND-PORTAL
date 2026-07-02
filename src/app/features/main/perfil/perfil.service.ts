@@ -13,7 +13,12 @@ export class PerfilService {
     const url = '/api/v1/me/profile' + (patientId != null ? `?patientId=${patientId}` : '');
     return this.http.get<PerfilPaciente>(url);
   }
-  updatePerfil(payload: UpdatePerfilPayload): Observable<PerfilPaciente> { return this.http.put<PerfilPaciente>('/api/v1/me/profile', payload); }
+  /** Actualiza el perfil propio (sin patientId) o el de un dependiente SIN
+   *  cuenta propia (?patientId=X — el backend valida acceso y que no tenga cuenta). */
+  updatePerfil(payload: UpdatePerfilPayload, patientId?: number | null): Observable<PerfilPaciente> {
+    const url = '/api/v1/me/profile' + (patientId != null ? `?patientId=${patientId}` : '');
+    return this.http.put<PerfilPaciente>(url, payload);
+  }
   /** Autoalta: la cuenta de gestión se registra como paciente propio. */
   registerAsPatient(): Observable<{ patientId: number }> {
     return this.http.post<{ patientId: number }>('/api/v1/me/register-as-patient', {});

@@ -21,7 +21,7 @@ const familiarHijo: Familiar = {
   edad: 12,
   vinculo: 'Hijo',
   dni: '40000000',
-  cobertura: '',
+  tieneCuenta: false, cobertura: '',
   totalTurnos: 0,
   totalEstudios: 0,
   accentColor: 'primary',

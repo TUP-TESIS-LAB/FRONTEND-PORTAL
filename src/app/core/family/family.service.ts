@@ -13,6 +13,9 @@ interface PatientFamilyResponse {
   isOwner: boolean;
   status: string;
   userPatientId: number;
+  /** True si el paciente tiene su propia cuenta del portal. Opcional para
+   *  tolerar backends que todavía no exponen el campo. */
+  hasOwnAccount?: boolean;
 }
 
 export interface AddFamilyMemberPayload {
@@ -67,6 +70,9 @@ export class FamilyService {
       edad,
       vinculo,
       dni: p.dni,
+      // Fallback conservador: si el backend no manda el campo, se asume que
+      // tiene cuenta (no se habilita la edición por el titular).
+      tieneCuenta: p.hasOwnAccount ?? true,
       cobertura: '',                                 // TODO: backend does not return this in MVP
       totalTurnos: 0,                                // TODO: derive from appointments
       totalEstudios: 0,                              // TODO: derive from results

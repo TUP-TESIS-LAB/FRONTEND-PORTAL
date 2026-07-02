@@ -29,7 +29,7 @@ const FAMILIAR: Familiar = {
   edad: 30,
   vinculo: 'Hija',
   dni: '12345678',
-  cobertura: '',
+  tieneCuenta: false, cobertura: '',
   totalTurnos: 0,
   totalEstudios: 0,
   accentColor: 'primary',

@@ -13,7 +13,8 @@ export const registerAsPatientSuccess = createAction('[Perfil API] Register As P
 export const registerAsPatientFailure = createAction('[Perfil API] Register As Patient Failure', props<{ error: HttpErrorResponse }>());
 export const registerHandled = createAction('[Perfil Page] Register Handled');
 
-export const updateProfile = createAction('[Perfil Page] Update Profile', props<{ payload: UpdatePerfilPayload }>());
+// patientId opcional: null/ausente = perfil propio; un id = dependiente sin cuenta propia (KAN-165).
+export const updateProfile = createAction('[Perfil Page] Update Profile', props<{ payload: UpdatePerfilPayload; patientId?: number | null }>());
 export const updateProfileSuccess = createAction('[Perfil API] Update Profile Success', props<{ profile: PerfilPaciente }>());
 export const updateProfileFailure = createAction('[Perfil API] Update Profile Failure', props<{ error: HttpErrorResponse }>());
 export const profileSavedHandled = createAction('[Perfil Page] Profile Saved Handled');

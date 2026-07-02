@@ -61,9 +61,20 @@ export class PerfilComponent {
     this.accessiblePatients().find(f => f.vinculo === 'Yo')?.id ?? null);
   /** La cuenta de gestión es, ella misma, paciente (tiene vínculo PROPIO). */
   protected readonly esPaciente = computed(() => this.ownPatientId() !== null);
-  /** Estás viendo tu propio perfil → habilita editar / cambiar contraseña. */
+  /** Estás viendo tu propio perfil → habilita cambiar contraseña. */
   protected readonly viewingOwn = computed(() =>
     this.ownPatientId() !== null && this.selectedPatientId() === this.ownPatientId());
+
+  protected readonly selectedFamiliar = computed(() =>
+    this.accessiblePatients().find(f => f.id === this.selectedPatientId()) ?? null);
+
+  /** Editar habilitado para el perfil propio o para un familiar verificado SIN
+   *  cuenta propia (el backend valida lo mismo en el PUT — regla KAN-165). */
+  protected readonly canEditSelected = computed(() => {
+    if (this.viewingOwn()) return true;
+    const f = this.selectedFamiliar();
+    return f !== null && f.status === 'VERIFIED' && !f.tieneCuenta;
+  });
 
   protected readonly patientFilterOptions = computed<PatientFilterOption[]>(() =>
     this.accessiblePatients().map(f => ({
@@ -121,12 +132,18 @@ export class PerfilComponent {
     });
 
     effect(() => {
-      if (this.error()) {
+      const err = this.error();
+      if (err) {
+        // 403 en este contexto = el familiar tiene su propia cuenta del portal
+        // (o el vínculo no habilita la edición) — el backend valida KAN-165.
+        const detail = err.status === 403
+          ? 'No podés editar los datos de este familiar porque gestiona su propia cuenta en el portal.'
+          : 'Verificá los datos e intentá de nuevo.';
         this.messageService.add({
           severity: 'error',
           summary: 'No se pudo completar la operación',
-          detail: 'Verificá los datos e intentá de nuevo.',
-          life: 4000,
+          detail,
+          life: 5000,
         });
       }
     });
@@ -203,6 +220,8 @@ export class PerfilComponent {
   guardarEdicion(): void {
     if (this.editForm.invalid) { this.editForm.markAllAsTouched(); return; }
     const { email, phone, address } = this.editForm.getRawValue();
-    this.store.dispatch(A.updateProfile({ payload: { email: email!, phone: phone!, address: address! } }));
+    // null = perfil propio; con familiar seleccionado el PUT va con ?patientId
+    const patientId = this.viewingOwn() ? null : this.selectedPatientId();
+    this.store.dispatch(A.updateProfile({ payload: { email: email!, phone: phone!, address: address! }, patientId }));
   }
 }
