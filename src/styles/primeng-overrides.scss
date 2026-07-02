@@ -934,8 +934,12 @@
   // Ancho fijo de calendario: cómodo de leer, independiente del ancho del
   // input (que puede ser angosto). Sin esto, al colgar del <body> el panel
   // toma el ancho completo del viewport y desparrama las columnas.
+  // En web: 288px. En mobile: casi full-screen, más cómodo para el touch.
   width: 288px;
   max-width: calc(100vw - 24px);
+  @include mobile-only {
+    width: calc(100vw - 24px);
+  }
   background: var(--ds-white);
   border: 1px solid var(--ds-surface-dark);
   border-radius: var(--ds-radius-md);
