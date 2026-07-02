@@ -895,17 +895,47 @@
 .p-datepicker {
   display: inline-flex;
   align-items: center;
+  position: relative;
   font-family: var(--ds-font);
 
   input.p-inputtext,
   .p-datepicker-input {
     min-height: 44px;
+    // Espacio a la derecha para el ícono del calendario (iconDisplay="input").
+    padding-right: 2.5rem;
+  }
+
+  // Ícono del calendario dentro del input (iconDisplay="input").
+  // PrimeNG lo renderiza como SVG sin color del DS y a veces desalineado:
+  // lo fijamos a la derecha, centrado vertical, con el gris del sistema.
+  .p-datepicker-input-icon-container,
+  .p-inputicon {
+    position: absolute;
+    right: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ds-text-muted);
+    pointer-events: none;
+  }
+
+  .p-datepicker-input-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--ds-text-muted);
   }
 }
 
 // El popup del datepicker (con appendTo="body" se renderiza al <body>).
 // Necesita su propio styling porque sale del scope del componente.
 .p-datepicker-panel {
+  // Ancho fijo de calendario: cómodo de leer, independiente del ancho del
+  // input (que puede ser angosto). Sin esto, al colgar del <body> el panel
+  // toma el ancho completo del viewport y desparrama las columnas.
+  width: 288px;
+  max-width: calc(100vw - 24px);
   background: var(--ds-white);
   border: 1px solid var(--ds-surface-dark);
   border-radius: var(--ds-radius-md);
