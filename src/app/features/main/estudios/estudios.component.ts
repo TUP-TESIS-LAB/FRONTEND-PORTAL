@@ -40,6 +40,14 @@ import {
   selectEstudiosError,
 } from './store/estudios.selectors';
 
+/** Filtros por defecto: rango del último mes (desde hace un mes hasta hoy). */
+function defaultFiltros(): EstudiosFiltros {
+  const hasta = new Date();
+  const desde = new Date();
+  desde.setMonth(desde.getMonth() - 1);
+  return { rangoFechas: { desde, hasta }, tipos: [], estados: [] };
+}
+
 // Alineado con CATEGORIA_TO_PI de shared/utils/analysis-icon.ts.
 const CATEGORIA_ICON_MAP: Record<CategoriaEstudio, string> = {
   hematologia:  'pi pi-heart',
@@ -117,7 +125,7 @@ export class EstudiosComponent {
     })));
 
   // ── Filtros activos ──────────────────────────────────────
-  filtros           = signal<EstudiosFiltros>({ rangoFechas: null, tipos: [], estados: [] });
+  filtros           = signal<EstudiosFiltros>(defaultFiltros());
   mobileFiltersOpen = signal(false);
 
   // ── Computed: contadores por tipo y estado ───────────────
@@ -241,7 +249,8 @@ export class EstudiosComponent {
   }
 
   onLimpiarFiltros(): void {
-    this.filtros.set({ rangoFechas: null, tipos: [], estados: [] });
+    // Reset al filtro por defecto (último mes), que es la línea base de la pantalla.
+    this.filtros.set(defaultFiltros());
     this.mobileFiltersOpen.set(false);
   }
 
