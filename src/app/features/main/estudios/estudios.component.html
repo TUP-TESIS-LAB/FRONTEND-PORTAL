@@ -4,14 +4,16 @@
   title="Mis estudios"
   subtitle="Resultados disponibles para descargar." />
 
-<!-- Barra: paciente + sort + filtros mobile (sin búsqueda de texto, como Turnos) -->
+<!-- Barra: en desktop solo el orden (los filtros viven en el aside derecho).
+     En mobile: paciente + botón Filtros (que abre el bottom sheet). -->
 <div class="ui-estudios-toolbar">
   @if (patientFilterOptions().length > 1) {
-    <app-patient-filter
-      class="ui-estudios-patient"
-      [options]="patientFilterOptions()"
-      [selectedId]="selectedPatientId()"
-      (selectedIdChange)="selectedPatientId.set($event)" />
+    <div class="ui-estudios-patient ui-show-mobile">
+      <app-patient-filter
+        [options]="patientFilterOptions()"
+        [selectedId]="selectedPatientId()"
+        (selectedIdChange)="selectedPatientId.set($event)" />
+    </div>
   }
 
   <p-select
@@ -119,17 +121,9 @@
                   [rounded]="true"
                   [text]="true"
                   ariaLabel="Descargar"
-                  pTooltip="Descargar"
+                  [pTooltip]="isAvailable(e) ? 'Descargar' : 'Disponible próximamente'"
                   [disabled]="!isAvailable(e)"
                   (onClick)="onDescargar(e)" />
-                <p-button
-                  icon="pi pi-eye"
-                  [rounded]="true"
-                  [text]="true"
-                  ariaLabel="Ver estudio"
-                  pTooltip="Ver"
-                  [disabled]="!isAvailable(e)"
-                  (onClick)="onVerEstudio(e)" />
               </td>
             </tr>
           </ng-template>
@@ -197,12 +191,21 @@
     }
   </section>
 
-  <!-- Aside desktop: filtros -->
+  <!-- Aside desktop: filtros (persona priorizada arriba + fechas + tipo) -->
   <aside class="ui-estudios-aside ui-show-desktop">
+    @if (patientFilterOptions().length > 1) {
+      <div class="ui-estudios-aside__persona">
+        <span class="ui-estudios-aside__persona-label">Paciente</span>
+        <app-patient-filter
+          [options]="patientFilterOptions()"
+          [selectedId]="selectedPatientId()"
+          (selectedIdChange)="selectedPatientId.set($event)" />
+      </div>
+    }
     <ui-filters-aside
       [filtros]="filtros()"
       [countsByTipo]="countsByTipo()"
-      [countsByEstado]="countsByEstado()"
+      [showEstado]="false"
       (filtrosChange)="onFiltrosChange($event)"
       (limpiar)="onLimpiarFiltros()" />
   </aside>
@@ -220,7 +223,7 @@
       [mobileMode]="true"
       [filtros]="filtros()"
       [countsByTipo]="countsByTipo()"
-      [countsByEstado]="countsByEstado()"
+      [showEstado]="false"
       (aplicar)="onFiltrosApplyMobile($event)"
       (limpiar)="onLimpiarFiltros()" />
   </ng-template>
