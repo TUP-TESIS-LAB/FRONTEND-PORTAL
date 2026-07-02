@@ -120,7 +120,7 @@
         </p-table>
       </div>
 
-      <!-- Mobile: cards (más altas, con sede y acción descargar inline) -->
+      <!-- Mobile: cards estilo turno (avatar prominente + info + estado/acción) -->
       <div class="ui-show-mobile ui-estudios-cards">
         @for (e of estudiosFiltrados(); track e.id) {
           <div
@@ -131,46 +131,41 @@
             [attr.tabindex]="isAvailable(e) ? 0 : -1"
             [attr.aria-label]="e.nombre">
 
-            <!-- Header: avatar + persona + estado -->
-            <div class="ui-estudio-card__header">
-              <span class="ui-avatar-mini ui-avatar-{{ getAvatarColor(e.personaId) }}">
-                {{ e.personaIniciales }}
-              </span>
-              <span class="ui-estudio-card__persona-name">{{ e.personaNombre }}</span>
-              <p-tag
-                [value]="displayEstadoLabel(e)"
-                [styleClass]="'ui-tag-' + displayEstado(e)" />
-            </div>
+            <!-- Avatar de la persona (izquierda, prominente) -->
+            <span class="ui-estudio-card__avatar ui-avatar-{{ getAvatarColor(e.personaId) }}">
+              {{ e.personaIniciales }}
+            </span>
 
-            <!-- Nombre del estudio + badge nuevo -->
-            <div class="ui-estudio-card__title">
-              <span class="ui-categoria-icon ui-categoria-{{ e.categoria }}">
-                <i [class]="getIconForCategoria(e.categoria)"></i>
-              </span>
-              <span class="ui-estudio-card__title-text">
-                {{ e.nombre }}
+            <!-- Info: persona + nombre + fecha/sede -->
+            <div class="ui-estudio-card__info">
+              <span class="ui-estudio-card__persona-name">{{ e.personaNombre }}</span>
+              <h4 class="ui-estudio-card__title">
+                <span class="ui-estudio-card__title-text">{{ e.nombre }}</span>
                 @if (e.esNuevo) {
                   <span class="ui-badge-nuevo">NUEVO</span>
                 }
-              </span>
+              </h4>
+              <p class="ui-estudio-card__meta">
+                <i class="pi pi-calendar" aria-hidden="true"></i>
+                <span>{{ e.fecha }}</span>
+                @if (e.sede) {
+                  <i class="pi pi-map-marker" aria-hidden="true"></i>
+                  <span>{{ e.sede }}</span>
+                }
+              </p>
             </div>
 
-            <!-- Meta: fecha + sede -->
-            <div class="ui-estudio-card__meta">
-              <span><i class="pi pi-calendar"></i>{{ e.fecha }}</span>
-              @if (e.sede) {
-                <span><i class="pi pi-map-marker"></i>{{ e.sede }}</span>
-              }
-            </div>
-
-            <!-- Acción: descargar (siempre visible; disabled si no disponible) -->
-            <div class="ui-estudio-card__actions">
+            <!-- Estado + acción descargar (derecha) -->
+            <div class="ui-estudio-card__status">
+              <p-tag
+                [value]="displayEstadoLabel(e)"
+                [styleClass]="'ui-tag-' + displayEstado(e)" />
               <p-button
-                label="Descargar"
                 icon="pi pi-download"
-                severity="primary"
-                size="small"
-                [outlined]="true"
+                [rounded]="true"
+                [text]="true"
+                ariaLabel="Descargar"
+                [pTooltip]="isAvailable(e) ? 'Descargar' : 'Disponible próximamente'"
                 [disabled]="!isAvailable(e)"
                 (onClick)="onDescargarFromCard(e, $event)" />
             </div>
