@@ -162,8 +162,9 @@
               <p-button
                 icon="pi pi-download"
                 severity="primary"
+                [text]="true"
                 [rounded]="true"
-                [outlined]="true"
+                size="large"
                 ariaLabel="Descargar"
                 [pTooltip]="isAvailable(e) ? 'Descargar' : 'Disponible próximamente'"
                 (onClick)="onDescargarFromCard(e, $event)" />
