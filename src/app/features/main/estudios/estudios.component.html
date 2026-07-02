@@ -161,11 +161,11 @@
                 [styleClass]="'ui-tag-' + displayEstado(e)" />
               <p-button
                 icon="pi pi-download"
+                severity="primary"
                 [rounded]="true"
-                [text]="true"
+                [outlined]="true"
                 ariaLabel="Descargar"
                 [pTooltip]="isAvailable(e) ? 'Descargar' : 'Disponible próximamente'"
-                [disabled]="!isAvailable(e)"
                 (onClick)="onDescargarFromCard(e, $event)" />
             </div>
           </div>
