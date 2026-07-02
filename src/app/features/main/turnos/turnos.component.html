@@ -82,6 +82,8 @@
       (ngModelChange)="fechaDesde.set($event)"
       placeholder="Cualquier fecha"
       dateFormat="dd/mm/yy"
+      [showIcon]="true"
+      iconDisplay="input"
       [showButtonBar]="true"
       appendTo="body"
       styleClass="ui-turnos-filters__datepicker" />
@@ -94,6 +96,8 @@
       (ngModelChange)="fechaHasta.set($event)"
       placeholder="Cualquier fecha"
       dateFormat="dd/mm/yy"
+      [showIcon]="true"
+      iconDisplay="input"
       [showButtonBar]="true"
       appendTo="body"
       styleClass="ui-turnos-filters__datepicker" />
