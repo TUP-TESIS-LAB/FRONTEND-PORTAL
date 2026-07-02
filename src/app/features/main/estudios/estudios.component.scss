@@ -47,12 +47,81 @@
   }
 }
 
-// ── Lista de estudios (event-cards, como Turnos) ─────────
-.ui-estudios-list {
+// ── Lista densa de estudios (filas de documentos) ────────
+.ui-estudios-list { min-width: 0; }
+
+// Panel contenedor: una sola card con filas divididas.
+.ui-estudios-panel {
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+}
+
+.ui-estudios-skeleton {
+  display: block;
+  margin: var(--space-3) var(--space-4);
+}
+
+// Fila compacta: ícono + info (título + fecha·sucursal) + estado + descarga.
+.ui-estudio-row {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: var(--space-3);
-  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+
+  & + .ui-estudio-row {
+    border-top: 1px solid var(--ds-surface);
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--brand-primary-light);
+    color: var(--brand-primary);
+    font-size: 16px;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ds-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    span {
+      font-size: 12px;
+      color: var(--ds-text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &__status { flex-shrink: 0; }
+
+  &__download { flex-shrink: 0; }
+
+  // En mobile el tag puede ocultarse para dejar respirar el título si hace falta;
+  // se mantiene visible por ahora (info mínima), solo se compacta el gap.
+  @include mobile-only {
+    gap: var(--space-2);
+    padding: var(--space-3);
+  }
 }
 
 // ── Tags de estado (coloreados en el ui-event-card) ──────

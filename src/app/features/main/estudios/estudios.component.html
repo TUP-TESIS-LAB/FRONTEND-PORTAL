@@ -30,37 +30,49 @@
   </div>
 </div>
 
-<!-- ─── Lista de estudios ─── -->
+<!-- ─── Lista densa de estudios (documentos para descargar) ─── -->
 <section class="ui-estudios-list">
   @if (loading()) {
-    @for (i of [1, 2, 3]; track i) {
-      <p-skeleton height="96px" styleClass="mb-3" />
-    }
+    <div class="ui-estudios-panel">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <p-skeleton height="40px" styleClass="ui-estudios-skeleton" />
+      }
+    </div>
   } @else if (estudiosFiltrados().length === 0) {
     <ui-empty-state
       icon="pi-file"
       heading="Aún no tenés estudios"
       message="Cuando tengas resultados disponibles van a aparecer acá." />
   } @else {
-    @for (e of estudiosFiltrados(); track e.id) {
-      <ui-event-card
-        [day]="diaDe(e)"
-        [month]="mesDe(e)"
-        [title]="nombreEstudio(e)"
-        [details]="detallesDe(e)"
-        [statusKey]="estadoClass(e)"
-        [statusLabel]="estadoLabel(e)"
-        [persona]="personaActual()">
-        <p-button
-          icon="pi pi-download"
-          [rounded]="true"
-          [text]="true"
-          ariaLabel="Descargar PDF"
-          [pTooltip]="reporteDisponible(e) ? 'Descargar PDF' : 'Disponible próximamente'"
-          tooltipPosition="left"
-          [disabled]="!reporteDisponible(e)"
-          (onClick)="onDescargar(e)" />
-      </ui-event-card>
-    }
+    <div class="ui-estudios-panel" role="list">
+      @for (e of estudiosFiltrados(); track e.id) {
+        <div class="ui-estudio-row" role="listitem">
+          <span class="ui-estudio-row__icon" aria-hidden="true">
+            <i class="pi pi-file"></i>
+          </span>
+
+          <div class="ui-estudio-row__info">
+            <strong>{{ nombreEstudio(e) }}</strong>
+            <span>{{ subtitulo(e) }}</span>
+          </div>
+
+          <p-tag
+            class="ui-estudio-row__status"
+            [value]="estadoLabel(e)"
+            [styleClass]="'ui-tag-' + estadoClass(e)" />
+
+          <p-button
+            class="ui-estudio-row__download"
+            icon="pi pi-download"
+            [rounded]="true"
+            [text]="true"
+            ariaLabel="Descargar PDF"
+            [pTooltip]="reporteDisponible(e) ? 'Descargar PDF' : 'Disponible próximamente'"
+            tooltipPosition="left"
+            [disabled]="!reporteDisponible(e)"
+            (onClick)="onDescargar(e)" />
+        </div>
+      }
+    </div>
   }
 </section>
