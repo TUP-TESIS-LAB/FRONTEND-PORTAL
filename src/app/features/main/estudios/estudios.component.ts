@@ -10,7 +10,6 @@ import { Store } from '@ngrx/store';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DrawerModule } from 'primeng/drawer';
-import { Select } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
@@ -41,13 +40,6 @@ import {
   selectEstudiosError,
 } from './store/estudios.selectors';
 
-type SortBy = 'recientes' | 'antiguos';
-
-const SORT_OPTIONS = [
-  { label: 'Más recientes', value: 'recientes' },
-  { label: 'Más antiguos',  value: 'antiguos'  },
-];
-
 // Alineado con CATEGORIA_TO_PI de shared/utils/analysis-icon.ts.
 const CATEGORIA_ICON_MAP: Record<CategoriaEstudio, string> = {
   hematologia:  'pi pi-heart',
@@ -70,7 +62,6 @@ function parseFecha(f: string): number {
     FormsModule,
     ButtonModule,
     DrawerModule,
-    Select,
     SkeletonModule,
     TableModule,
     TagModule,
@@ -126,10 +117,8 @@ export class EstudiosComponent {
     })));
 
   // ── Filtros activos ──────────────────────────────────────
-  sortBy            = signal<SortBy>('recientes');
   filtros           = signal<EstudiosFiltros>({ rangoFechas: null, tipos: [], estados: [] });
   mobileFiltersOpen = signal(false);
-  readonly sortOptions = SORT_OPTIONS;
 
   // ── Computed: contadores por tipo y estado ───────────────
   countsByTipo = computed<Record<string, number>>(() => {
@@ -168,8 +157,8 @@ export class EstudiosComponent {
       });
     }
 
-    const dir = this.sortBy() === 'recientes' ? -1 : 1;
-    return lista.slice().sort((a, b) => (a.fechaTs - b.fechaTs) * dir);
+    // Orden fijo: más recientes primero (sin control de UI).
+    return lista.slice().sort((a, b) => b.fechaTs - a.fechaTs);
   });
 
   activeFiltersCount = computed<number>(() => {
@@ -242,10 +231,6 @@ export class EstudiosComponent {
   }
 
   // ── Handlers ─────────────────────────────────────────────
-  onSortChange(value: SortBy): void {
-    this.sortBy.set(value);
-  }
-
   onFiltrosChange(f: EstudiosFiltros): void {
     this.filtros.set(f);
   }

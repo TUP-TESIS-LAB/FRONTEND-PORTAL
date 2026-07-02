@@ -100,15 +100,9 @@ describe('EstudiosComponent', () => {
     vi.spyOn(store, 'dispatch');
   });
 
-  it('ordena por fecha descendente (más recientes) por defecto', () => {
+  it('ordena por fecha descendente (más recientes), orden fijo', () => {
     const comp = mount();
     expect(comp.estudiosFiltrados().map(e => e.id)).toEqual([2, 3, 1]);
-  });
-
-  it('ordena ascendente cuando se elige "antiguos"', () => {
-    const comp = mount();
-    comp.sortBy.set('antiguos');
-    expect(comp.estudiosFiltrados().map(e => e.id)).toEqual([1, 3, 2]);
   });
 
   it('expone una opción de filtro por cada paciente accesible', () => {

@@ -48,6 +48,8 @@ export class FiltersAsideComponent implements OnChanges {
   @Input() mobileMode = false;
   /** Muestra la sección de Estado. Se puede ocultar cuando no aplica al caso. */
   @Input() showEstado = true;
+  /** Muestra la sección de Tipo de estudio. Se puede ocultar cuando no aplica. */
+  @Input() showTipo = true;
 
   @Output() filtrosChange = new EventEmitter<EstudiosFiltros>();
   @Output() limpiar       = new EventEmitter<void>();

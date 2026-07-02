@@ -16,16 +16,6 @@
     </div>
   }
 
-  <p-select
-    [options]="sortOptions"
-    optionLabel="label"
-    optionValue="value"
-    placeholder="Ordenar por"
-    appendTo="body"
-    [ngModel]="sortBy()"
-    (ngModelChange)="onSortChange($event)"
-    styleClass="ui-show-desktop ui-sort-select" />
-
   <p-button
     class="ui-show-mobile"
     [label]="activeFiltersCount() > 0 ? 'Filtros (' + activeFiltersCount() + ')' : 'Filtros'"
@@ -191,7 +181,7 @@
     }
   </section>
 
-  <!-- Aside desktop: filtros (persona priorizada arriba + fechas + tipo) -->
+  <!-- Aside desktop: filtros (persona priorizada arriba + rango de fechas) -->
   <aside class="ui-estudios-aside ui-show-desktop">
     @if (patientFilterOptions().length > 1) {
       <div class="ui-estudios-aside__persona">
@@ -206,6 +196,7 @@
       [filtros]="filtros()"
       [countsByTipo]="countsByTipo()"
       [showEstado]="false"
+      [showTipo]="false"
       (filtrosChange)="onFiltrosChange($event)"
       (limpiar)="onLimpiarFiltros()" />
   </aside>
@@ -224,6 +215,7 @@
       [filtros]="filtros()"
       [countsByTipo]="countsByTipo()"
       [showEstado]="false"
+      [showTipo]="false"
       (aplicar)="onFiltrosApplyMobile($event)"
       (limpiar)="onLimpiarFiltros()" />
   </ng-template>

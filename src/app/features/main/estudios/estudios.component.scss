@@ -8,8 +8,6 @@
   flex-wrap: wrap;
   margin-bottom: var(--space-4);
 
-  .ui-sort-select { min-width: 180px; }
-
   @include mobile-only {
     position: sticky;
     top: var(--ds-topbar-h);
@@ -38,6 +36,20 @@
 
 .ui-estudios-list {
   min-width: 0;
+}
+
+// ── Tabla desktop: contenedor de card + header con fondo ─
+.ui-table-wrapper {
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+
+  // Header con fondo gris para que se distinga del cuerpo (antes se veía "plano").
+  ::ng-deep .p-datatable-thead > tr > th {
+    background: var(--ds-surface);
+    border-bottom: 1px solid var(--ds-surface-dark);
+  }
 }
 
 .ui-estudios-aside {
