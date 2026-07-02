@@ -1,243 +1,56 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { Estudio, PersonaChip } from '../../../core/models/estudio.model';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { AnalyticalResultResponse, Estudio } from '../../../core/models/estudio.model';
 
-const ESTUDIOS_MOCK: Estudio[] = [
-  // ── María (yo) — 6 estudios ──────────────────────────────
-  {
-    id: 1,
-    personaId: 1,
-    personaNombre: 'María',
-    personaIniciales: 'M',
-    nombre: 'Hemograma completo',
-    categoria: 'hematologia',
-    fecha: '14/04/2026',
-    estado: 'disponible',
-    estadoLabel: 'Disponible',
-    esNuevo: true,
-    pdf: { url: '#', paginas: 2, tamano: '184 KB' },
-    protocolo: 'LAB-2026-04-001',
-    sede: 'Sede Centro',
-    medicoSolicitante: 'Dr. Roberto Méndez',
-    medicoFirmante: 'Dra. Ana López',
-    matricula: 'MP 18.452',
-  },
-  {
-    id: 2,
-    personaId: 1,
-    personaNombre: 'María',
-    personaIniciales: 'M',
-    nombre: 'Glucemia en ayunas',
-    categoria: 'bioquimica',
-    fecha: '14/04/2026',
-    estado: 'disponible',
-    estadoLabel: 'Disponible',
-    esNuevo: true,
-    pdf: { url: '#', paginas: 1, tamano: '98 KB' },
-    protocolo: 'LAB-2026-04-002',
-    sede: 'Sede Centro',
-    medicoSolicitante: 'Dr. Roberto Méndez',
-    medicoFirmante: 'Dra. Ana López',
-    matricula: 'MP 18.452',
-  },
-  {
-    id: 3,
-    personaId: 1,
-    personaNombre: 'María',
-    personaIniciales: 'M',
-    nombre: 'Perfil lipídico',
-    categoria: 'bioquimica',
-    fecha: '14/04/2026',
-    estado: 'disponible',
-    estadoLabel: 'Disponible',
-    esNuevo: false,
-    pdf: { url: '#', paginas: 2, tamano: '210 KB' },
-    protocolo: 'LAB-2026-04-003',
-    sede: 'Sede Centro',
-    medicoSolicitante: 'Dr. Roberto Méndez',
-    medicoFirmante: 'Dra. Ana López',
-    matricula: 'MP 18.452',
-  },
-  {
-    id: 4,
-    personaId: 1,
-    personaNombre: 'María',
-    personaIniciales: 'M',
-    nombre: 'Perfil tiroideo (TSH + T4)',
-    categoria: 'hormonas',
-    fecha: '10/03/2026',
-    estado: 'disponible',
-    estadoLabel: 'Disponible',
-    esNuevo: false,
-    pdf: { url: '#', paginas: 1, tamano: '145 KB' },
-    protocolo: 'LAB-2026-03-001',
-    sede: 'Sede Norte',
-    medicoSolicitante: 'Dra. Claudia Romero',
-    medicoFirmante: 'Dra. Ana López',
-    matricula: 'MP 18.452',
-  },
-  {
-    id: 5,
-    personaId: 1,
-    personaNombre: 'María',
-    personaIniciales: 'M',
-    nombre: 'Orina completa',
-    categoria: 'orina',
-    fecha: '10/03/2026',
-    estado: 'disponible',
-    estadoLabel: 'Disponible',
-    esNuevo: false,
-    pdf: { url: '#', paginas: 1, tamano: '112 KB' },
-    protocolo: 'LAB-2026-03-002',
-    sede: 'Sede Norte',
-    medicoSolicitante: 'Dra. Claudia Romero',
-    medicoFirmante: 'Dra. Ana López',
-    matricula: 'MP 18.452',
-  },
-  {
-    id: 6,
-    personaId: 1,
-    personaNombre: 'María',
-    personaIniciales: 'M',
-    nombre: 'Coagulograma completo',
-    categoria: 'coagulacion',
-    fecha: '15/02/2026',
-    estado: 'disponible',
-    estadoLabel: 'Disponible',
-    esNuevo: false,
-    pdf: { url: '#', paginas: 2, tamano: '175 KB' },
-    protocolo: 'LAB-2026-02-001',
-    sede: 'Sede Centro',
-    medicoSolicitante: 'Dr. Roberto Méndez',
-    medicoFirmante: 'Dra. Ana López',
-    matricula: 'MP 18.452',
-  },
+/** Formatea un ISO LocalDateTime del back a 'DD/MM/YYYY'. */
+function formatFecha(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
 
-  // ── Lucía (hija) — 3 estudios ────────────────────────────
-  {
-    id: 7,
-    personaId: 2,
-    personaNombre: 'Lucía',
-    personaIniciales: 'L',
-    nombre: 'Hemograma pediátrico',
-    categoria: 'hematologia',
-    fecha: '20/05/2026',
-    estado: 'en-proceso',
-    estadoLabel: 'En proceso',
-    esNuevo: false,
-    protocolo: 'LAB-2026-05-001',
-    sede: 'Sede Centro',
-    medicoSolicitante: 'Dra. Sofía García',
-  },
-  {
-    id: 8,
-    personaId: 2,
-    personaNombre: 'Lucía',
-    personaIniciales: 'L',
-    nombre: 'Orina completa',
-    categoria: 'orina',
-    fecha: '20/05/2026',
-    estado: 'pendiente',
-    estadoLabel: 'Pendiente',
-    esNuevo: false,
-    protocolo: 'LAB-2026-05-002',
-    sede: 'Sede Centro',
-    medicoSolicitante: 'Dra. Sofía García',
-  },
-  {
-    id: 9,
-    personaId: 2,
-    personaNombre: 'Lucía',
-    personaIniciales: 'L',
-    nombre: 'Ferritina y hierro sérico',
-    categoria: 'bioquimica',
-    fecha: '05/03/2026',
-    estado: 'disponible',
-    estadoLabel: 'Disponible',
-    esNuevo: true,
-    pdf: { url: '#', paginas: 1, tamano: '89 KB' },
-    protocolo: 'LAB-2026-03-010',
-    sede: 'Sede Norte',
-    medicoSolicitante: 'Dra. Sofía García',
-    medicoFirmante: 'Dr. Carlos Vega',
-    matricula: 'MP 22.110',
-  },
-
-  // ── Tomás (hijo) — 2 estudios ────────────────────────────
-  {
-    id: 10,
-    personaId: 3,
-    personaNombre: 'Tomás',
-    personaIniciales: 'T',
-    nombre: 'Hemograma completo',
-    categoria: 'hematologia',
-    fecha: '28/02/2026',
-    estado: 'disponible',
-    estadoLabel: 'Disponible',
-    esNuevo: false,
-    pdf: { url: '#', paginas: 2, tamano: '180 KB' },
-    protocolo: 'LAB-2026-02-010',
-    sede: 'Sede Centro',
-    medicoSolicitante: 'Dr. Pablo Ríos',
-    medicoFirmante: 'Dra. Ana López',
-    matricula: 'MP 18.452',
-  },
-  {
-    id: 11,
-    personaId: 3,
-    personaNombre: 'Tomás',
-    personaIniciales: 'T',
-    nombre: 'Glucemia',
-    categoria: 'bioquimica',
-    fecha: '28/02/2026',
-    estado: 'disponible',
-    estadoLabel: 'Disponible',
-    esNuevo: false,
-    pdf: { url: '#', paginas: 1, tamano: '95 KB' },
-    protocolo: 'LAB-2026-02-011',
-    sede: 'Sede Centro',
-    medicoSolicitante: 'Dr. Pablo Ríos',
-    medicoFirmante: 'Dra. Ana López',
-    matricula: 'MP 18.452',
-  },
-
-  // ── Marta/Mamá — 1 estudio ───────────────────────────────
-  {
-    id: 12,
-    personaId: 4,
-    personaNombre: 'Mamá',
-    personaIniciales: 'M',
-    nombre: 'Panel hormonal completo',
-    categoria: 'hormonas',
-    fecha: '18/04/2026',
-    estado: 'disponible',
-    estadoLabel: 'Disponible',
-    esNuevo: false,
-    pdf: { url: '#', paginas: 3, tamano: '290 KB' },
-    protocolo: 'LAB-2026-04-020',
-    sede: 'Sede Norte',
-    medicoSolicitante: 'Dra. Claudia Romero',
-    medicoFirmante: 'Dr. Carlos Vega',
-    matricula: 'MP 22.110',
-  },
-];
-
-const PERSONAS_MOCK: PersonaChip[] = [
-  { id: null, nombre: 'Todos',      iniciales: '·', avatarColor: 'neutral'    },
-  { id: 1,    nombre: 'María (yo)', iniciales: 'M', avatarColor: 'secondary'  },
-  { id: 2,    nombre: 'Lucía',      iniciales: 'L', avatarColor: 'accent'     },
-  { id: 3,    nombre: 'Tomás',      iniciales: 'T', avatarColor: 'primary'    },
-  { id: 4,    nombre: 'Mamá',       iniciales: 'M', avatarColor: 'warning'    },
-];
+/**
+ * Mapea la respuesta cruda del back al modelo mínimo del portal. Los campos
+ * ricos (sucursal, nombre, estadoFirma, reporteDisponible) quedan `undefined`
+ * hasta que el endpoint KAN-168 los provea.
+ */
+export function fromAnalyticalResult(dto: AnalyticalResultResponse): Estudio {
+  const ts = new Date(dto.collectionDate).getTime();
+  return {
+    id: dto.id,
+    patientId: dto.patientId,
+    protocolId: dto.protocolId,
+    analysisOrderId: dto.analysisOrderId,
+    sectionId: dto.sectionId,
+    fecha: formatFecha(dto.collectionDate),
+    fechaTs: isNaN(ts) ? 0 : ts,
+  };
+}
 
 @Injectable({ providedIn: 'root' })
 export class EstudioService {
-  getEstudios(): Observable<Estudio[]> {
-    return of(ESTUDIOS_MOCK).pipe(delay(300));
+  private readonly http = inject(HttpClient);
+
+  /** Estudios del paciente indicado (scoped por familia + tenant en el back). */
+  getEstudios(patientId: number): Observable<Estudio[]> {
+    return this.http
+      .get<AnalyticalResultResponse[]>('/api/v1/me/results', {
+        params: { patientId: String(patientId) },
+      })
+      .pipe(map(list => list.map(fromAnalyticalResult)));
   }
 
-  getPersonas(): Observable<PersonaChip[]> {
-    return of(PERSONAS_MOCK).pipe(delay(100));
+  /**
+   * Descarga del PDF firmado del estudio. Se habilita cuando exista el
+   * endpoint de backend KAN-168 (`GET /api/v1/me/studies/{id}/report`).
+   */
+  descargarReporte(estudioId: number): Observable<Blob> {
+    return this.http.get(`/api/v1/me/studies/${estudioId}/report`, {
+      responseType: 'blob',
+    });
   }
 }

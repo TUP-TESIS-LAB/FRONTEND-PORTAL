@@ -1,16 +1,14 @@
 import {
   Component,
-  OnInit,
-  OnDestroy,
   inject,
   signal,
   computed,
+  effect,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Store } from '@ngrx/store';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { DrawerModule } from 'primeng/drawer';
 import { Select } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
@@ -20,18 +18,21 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
 import { EmptyStateComponent } from '../../../shared/ui/components/empty-state/empty-state.component';
-import { FiltersAsideComponent } from '../../../shared/ui/components/filters-aside/filters-aside.component';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { mapApiError } from '../../../shared/utils/api-error-mapper';
 import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
-import { PatientFilterComponent, PatientFilterOption } from '../../../shared/ui/components/patient-filter/patient-filter.component';
-import { EstudioService } from './estudio.service';
 import {
-  Estudio,
-  EstudiosFiltros,
-  EstadoEstudio,
-  CategoriaEstudio,
-} from '../../../core/models/estudio.model';
+  PatientFilterComponent,
+  PatientFilterOption,
+} from '../../../shared/ui/components/patient-filter/patient-filter.component';
+import { EstudioService } from './estudio.service';
+import { Estudio } from '../../../core/models/estudio.model';
+import { loadEstudios } from './store/estudios.actions';
+import {
+  selectEstudios,
+  selectEstudiosLoading,
+  selectEstudiosError,
+} from './store/estudios.selectors';
 
 type SortBy = 'recientes' | 'antiguos';
 
@@ -40,29 +41,12 @@ const SORT_OPTIONS = [
   { label: 'Más antiguos',  value: 'antiguos'  },
 ];
 
-// Alineado con CATEGORIA_TO_PI de shared/utils/analysis-icon.ts.
-// Solo PrimeIcons existentes (pi-flask y pi-droplet NO existen en PrimeIcons 7).
-const CATEGORIA_ICON_MAP: Record<CategoriaEstudio, string> = {
-  hematologia:  'pi pi-heart',
-  bioquimica:   'pi pi-chart-line',
-  hormonas:     'pi pi-sync',
-  orina:        'pi pi-filter',
-  coagulacion:  'pi pi-shield',
-};
-
-// Parsea 'DD/MM/YYYY' → timestamp para comparar
-function parseFecha(f: string): number {
-  const [d, m, y] = f.split('/').map(Number);
-  return new Date(y, m - 1, d).getTime();
-}
-
 @Component({
   selector: 'app-estudios',
   standalone: true,
   imports: [
     FormsModule,
     ButtonModule,
-    DrawerModule,
     Select,
     SkeletonModule,
     TableModule,
@@ -71,49 +55,27 @@ function parseFecha(f: string): number {
     TooltipModule,
     PageHeaderComponent,
     EmptyStateComponent,
-    FiltersAsideComponent,
     PatientFilterComponent,
   ],
   providers: [MessageService],
   templateUrl: './estudios.component.html',
   styleUrl: './estudios.component.scss',
 })
-export class EstudiosComponent implements OnInit, OnDestroy {
+export class EstudiosComponent {
+  private readonly store          = inject(Store);
   private readonly service        = inject(EstudioService);
   private readonly messageService = inject(MessageService);
   readonly bp                     = inject(BreakpointService);
   readonly activePatient          = inject(ActivePatientService);
 
-  // ── Estado base ──────────────────────────────────────────
-  /** Estudios mock crudos (ids de persona ficticios del mock). */
-  rawEstudios     = signal<Estudio[]>([]);
-  loadingEstudios = signal(true);
-
-  /** Lista de pacientes accesibles (familia) — NO un "paciente activo" global,
-   *  solo la lista para armar el filtro de esta pantalla. */
-  private readonly accessiblePatients = this.activePatient.accessiblePatients;
-
-  /**
-   * DEMO (hasta cablear /me/results real): re-mapea cada estudio mock a un
-   * paciente real accesible, para que la pantalla muestre la familia real
-   * (Carlos/dependientes) y el filtro funcione. Cuando exista /me/results se
-   * reemplaza por la data real ya atribuida por paciente.
-   */
-  estudios = computed<Estudio[]>(() => {
-    const fam = this.accessiblePatients();
-    const raw = this.rawEstudios();
-    if (fam.length === 0) return raw;
-    const distinct = [...new Set(raw.map(e => e.personaId))];
-    const idMap = new Map<number, typeof fam[number]>();
-    distinct.forEach((pid, i) => idMap.set(pid, fam[i % fam.length]));
-    return raw.map(e => {
-      const f = idMap.get(e.personaId);
-      return f ? { ...e, personaId: f.id, personaNombre: f.nombre, personaIniciales: f.iniciales } : e;
-    });
-  });
+  // ── Estado desde el store ────────────────────────────────
+  readonly estudios = this.store.selectSignal(selectEstudios);
+  readonly loading  = this.store.selectSignal(selectEstudiosLoading);
+  readonly error    = this.store.selectSignal(selectEstudiosError);
 
   // ── Filtro de paciente (contextual, por pantalla) ────────
-  /** Paciente seleccionado. null = Todos. */
+  private readonly accessiblePatients = this.activePatient.accessiblePatients;
+  /** Paciente seleccionado; se siembra del paciente activo al cargar la familia. */
   selectedPatientId = signal<number | null>(null);
   patientFilterOptions = computed<PatientFilterOption[]>(() =>
     this.accessiblePatients().map(f => ({
@@ -124,125 +86,65 @@ export class EstudiosComponent implements OnInit, OnDestroy {
       sublabel: f.vinculo === 'Yo' ? 'vos' : f.vinculo,
     })));
 
-  // ── Filtros activos ──────────────────────────────────────
-  sortBy            = signal<SortBy>('recientes');
-  filtros           = signal<EstudiosFiltros>({ rangoFechas: null, tipos: [], estados: [] });
-  mobileFiltersOpen = signal(false);
-
-  // ── Opciones para dropdown ───────────────────────────────
+  // ── Orden ────────────────────────────────────────────────
+  sortBy = signal<SortBy>('recientes');
   readonly sortOptions = SORT_OPTIONS;
 
-  private subs = new Subscription();
-
-  // ── Computed: contadores por tipo y estado ───────────────
-  countsByTipo = computed<Record<string, number>>(() => {
-    const counts: Record<string, number> = {};
-    for (const e of this.estudios()) {
-      counts[e.categoria] = (counts[e.categoria] ?? 0) + 1;
-    }
-    return counts;
-  });
-
-  countsByEstado = computed<Record<EstadoEstudio, number>>(() => {
-    const counts = { 'disponible': 0, 'en-proceso': 0, 'pendiente': 0 };
-    for (const e of this.estudios()) {
-      counts[e.estado] = (counts[e.estado] ?? 0) + 1;
-    }
-    return counts;
-  });
-
-  // ── Computed: lista filtrada y ordenada ──────────────────
   estudiosFiltrados = computed<Estudio[]>(() => {
-    let lista = this.estudios();
-
-    const pid = this.selectedPatientId();
-    if (pid !== null) {
-      lista = lista.filter(e => e.personaId === pid);
-    }
-
-    const f = this.filtros();
-    if (f.tipos.length > 0) {
-      lista = lista.filter(e => f.tipos.includes(e.categoria));
-    }
-    if (f.estados.length > 0) {
-      lista = lista.filter(e => f.estados.includes(e.estado));
-    }
-    if (f.rangoFechas) {
-      const desde = f.rangoFechas.desde.getTime();
-      const hasta = f.rangoFechas.hasta.getTime();
-      lista = lista.filter(e => {
-        const ts = parseFecha(e.fecha);
-        return ts >= desde && ts <= hasta;
-      });
-    }
-
     const dir = this.sortBy() === 'recientes' ? -1 : 1;
-    return lista.slice().sort((a, b) => (parseFecha(a.fecha) - parseFecha(b.fecha)) * dir);
+    return this.estudios().slice().sort((a, b) => (a.fechaTs - b.fechaTs) * dir);
   });
 
-  activeFiltersCount = computed<number>(() => {
-    const f = this.filtros();
-    let count = 0;
-    if (f.rangoFechas) count++;
-    count += f.tipos.length;
-    count += f.estados.length;
-    return count;
-  });
+  constructor() {
+    // Siembra el paciente seleccionado desde el paciente activo cuando la familia
+    // termina de cargar (el shell dispara ActivePatientService.init()).
+    effect(() => {
+      const ap = this.activePatient.activePatient();
+      if (ap && this.selectedPatientId() === null) {
+        this.selectedPatientId.set(ap.id);
+      }
+    });
+
+    // Carga (y recarga al cambiar de paciente) vía store.
+    effect(() => {
+      const pid = this.selectedPatientId();
+      if (pid !== null) {
+        this.store.dispatch(loadEstudios({ patientId: pid }));
+      }
+    });
+
+    // Feedback de error en español, sin leak de internals (CLAUDE.md #4).
+    effect(() => {
+      const err = this.error();
+      if (err) {
+        this.messageService.add({
+          severity: 'error', summary: 'Error',
+          detail: mapApiError(err), life: 4000,
+        });
+      }
+    });
+  }
 
   // ── Helpers de template ──────────────────────────────────
-  getIconForCategoria(cat: CategoriaEstudio): string {
-    return CATEGORIA_ICON_MAP[cat] ?? 'pi pi-file';
+  nombreEstudio(e: Estudio): string {
+    return e.nombre ?? `Estudio Nº ${e.protocolId}`;
   }
 
-  getAvatarColor(personaId: number): string {
-    return this.accessiblePatients().find(f => f.id === personaId)?.accentColor ?? 'neutral';
+  sucursalEstudio(e: Estudio): string {
+    return e.sucursal ?? '—';
   }
 
-  /**
-   * Estado simplificado para el paciente: solo "disponible" o "pendiente".
-   * Cualquier estado interno (en-proceso, etc.) se muestra como pendiente
-   * porque el paciente no tiene contexto operativo para distinguirlos.
-   */
-  displayEstado(e: Estudio): 'disponible' | 'pendiente' {
-    return e.estado === 'disponible' ? 'disponible' : 'pendiente';
+  /** El reporte está disponible para descargar (llega con KAN-168). */
+  reporteDisponible(e: Estudio): boolean {
+    return !!e.reporteDisponible;
   }
 
-  displayEstadoLabel(e: Estudio): string {
-    return this.displayEstado(e) === 'disponible' ? 'Disponible' : 'Pendiente';
+  estadoLabel(e: Estudio): string {
+    return this.reporteDisponible(e) ? 'Disponible' : 'En proceso';
   }
 
-  isAvailable(e: Estudio): boolean {
-    return e.estado === 'disponible';
-  }
-
-  /** Click en la card → ver detalle SOLO si está disponible. */
-  onCardClick(e: Estudio): void {
-    if (this.isAvailable(e)) this.onVerEstudio(e);
-  }
-
-  /** Click en el botón de descargar (mobile) sin propagar al card. */
-  onDescargarFromCard(e: Estudio, event: Event): void {
-    event.stopPropagation();
-    this.onDescargar(e);
-  }
-
-  ngOnInit(): void {
-    this.subs.add(
-      this.service.getEstudios().subscribe({
-        next: lista => {
-          this.rawEstudios.set(lista);
-          this.loadingEstudios.set(false);
-        },
-        error: err => {
-          this.rawEstudios.set([]);
-          this.loadingEstudios.set(false);
-          this.messageService.add({
-            severity: 'error', summary: 'Error',
-            detail: mapApiError(err), life: 4000,
-          });
-        },
-      }),
-    );
+  estadoClass(e: Estudio): string {
+    return this.reporteDisponible(e) ? 'disponible' : 'pendiente';
   }
 
   // ── Handlers ─────────────────────────────────────────────
@@ -250,38 +152,33 @@ export class EstudiosComponent implements OnInit, OnDestroy {
     this.sortBy.set(value);
   }
 
-  onFiltrosChange(f: EstudiosFiltros): void {
-    this.filtros.set(f);
-  }
-
-  onFiltrosApplyMobile(f: EstudiosFiltros): void {
-    this.filtros.set(f);
-    this.mobileFiltersOpen.set(false);
-  }
-
-  onLimpiarFiltros(): void {
-    this.filtros.set({ rangoFechas: null, tipos: [], estados: [] });
-    this.mobileFiltersOpen.set(false);
-  }
-
   onDescargar(estudio: Estudio): void {
-    if (estudio.pdf?.url && estudio.pdf.url !== '#') {
-      window.open(estudio.pdf.url, '_blank');
-    } else {
+    if (!this.reporteDisponible(estudio)) {
       this.messageService.add({
         severity: 'info',
         summary: 'Próximamente',
-        detail: 'La visualización de PDF estará disponible pronto.',
+        detail: 'La descarga del PDF estará disponible pronto.',
         life: 3500,
       });
+      return;
     }
+    this.service.descargarReporte(estudio.id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error', summary: 'Error',
+          detail: mapApiError(err), life: 4000,
+        });
+      },
+    });
   }
 
-  onVerEstudio(estudio: Estudio): void {
+  onDescargarFromCard(estudio: Estudio, event: Event): void {
+    event.stopPropagation();
     this.onDescargar(estudio);
-  }
-
-  ngOnDestroy(): void {
-    this.subs.unsubscribe();
   }
 }
