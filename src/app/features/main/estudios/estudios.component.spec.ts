@@ -8,7 +8,7 @@ import { EstudioService } from './estudio.service';
 import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { ESTUDIOS_KEY } from './store/estudios.state';
-import { loadEstudios } from './store/estudios.actions';
+import { loadEstudios, loadEstudiosTodos } from './store/estudios.actions';
 import type { Familiar } from '../../../core/models/familiar.model';
 import type { Estudio } from '../../../core/models/estudio.model';
 
@@ -153,5 +153,39 @@ describe('EstudiosComponent', () => {
   it('usa ícono por defecto cuando no hay categoría', () => {
     const comp = mount();
     expect(comp.getIconForCategoria(undefined)).toBe('pi pi-file');
+  });
+
+  it('al elegir "Todos" despacha loadEstudiosTodos con los ids de toda la familia', () => {
+    const comp = mount();
+    vi.mocked(store.dispatch).mockClear();
+    comp.selectedPatientId.set(null);
+    TestBed.flushEffects();
+    expect(store.dispatch).toHaveBeenCalledWith(loadEstudiosTodos({ patientIds: [10, 20] }));
+  });
+
+  it('"Todos" no se revierte al paciente activo tras la siembra inicial', () => {
+    const comp = mount();
+    comp.selectedPatientId.set(null);
+    TestBed.flushEffects();
+    expect(comp.selectedPatientId()).toBeNull();
+  });
+
+  it('enriquece cada estudio con la persona dueña de esa fila (no con la seleccionada)', () => {
+    const comp = mount();
+    // Simula el resultado fusionado de "Todos": un estudio de cada paciente.
+    store.setState({
+      [ESTUDIOS_KEY]: {
+        estudios: [
+          makeEstudio(1, DAY_MS, { patientId: 10, fecha: fechaHaceDias(1) }),
+          makeEstudio(2, DAY_MS, { patientId: 20, fecha: fechaHaceDias(1) }),
+        ],
+        patientId: null,
+        loading: false,
+        error: null,
+      },
+    });
+    const porId = new Map(comp.estudios().map(e => [e.patientId, e]));
+    expect(porId.get(10)?.personaNombre).toBe('Carlos');
+    expect(porId.get(20)?.personaNombre).toBe('Mateo');
   });
 });

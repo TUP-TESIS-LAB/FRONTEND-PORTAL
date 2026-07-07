@@ -14,3 +14,13 @@ export const loadEstudiosFailure = createAction(
   '[Estudios API] Load Estudios Failure',
   props<{ error: HttpErrorResponse }>(),
 );
+
+// ── "Todos" (fan-out sobre la familia) ──────────────────────
+export const loadEstudiosTodos = createAction(
+  '[Estudios Page] Load Estudios Todos',
+  props<{ patientIds: number[] }>(),
+);
+export const loadEstudiosTodosSuccess = createAction(
+  '[Estudios API] Load Estudios Todos Success',
+  props<{ estudios: Estudio[] }>(),
+);

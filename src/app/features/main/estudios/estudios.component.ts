@@ -33,7 +33,7 @@ import {
   EstadoEstudio,
   CategoriaEstudio,
 } from '../../../core/models/estudio.model';
-import { loadEstudios } from './store/estudios.actions';
+import { loadEstudios, loadEstudiosTodos } from './store/estudios.actions';
 import {
   selectEstudios,
   selectEstudiosLoading,
@@ -99,17 +99,24 @@ export class EstudiosComponent {
 
   private readonly accessiblePatients = this.activePatient.accessiblePatients;
 
-  /** Enriquece cada estudio con la persona del paciente seleccionado. */
+  /**
+   * Enriquece cada estudio con su propia persona (por `patientId` de la fila,
+   * no por el `selectedPatientId` único) — necesario para "Todos", donde la
+   * lista fusiona estudios de varios miembros de la familia.
+   */
   estudios = computed<Estudio[]>(() => {
     const list = this.rawEstudios();
-    const f = this.accessiblePatients().find(p => p.id === this.selectedPatientId());
-    if (!f) return list;
-    return list.map(e => ({
-      ...e,
-      personaId: f.id,
-      personaNombre: f.nombre,
-      personaIniciales: f.iniciales,
-    }));
+    const porId = new Map(this.accessiblePatients().map(f => [f.id, f]));
+    return list.map(e => {
+      const f = porId.get(e.patientId);
+      if (!f) return e;
+      return {
+        ...e,
+        personaId: f.id,
+        personaNombre: f.nombre,
+        personaIniciales: f.iniciales,
+      };
+    });
   });
 
   // ── Filtro de paciente (contextual, por pantalla) ────────
@@ -178,20 +185,32 @@ export class EstudiosComponent {
     return count;
   });
 
+  // Bandera plana (no signal): distingue "todavía no sembrado" de "Todos"
+  // seleccionado por el usuario — ambos casos comparten selectedPatientId===null.
+  private seeded = false;
+
   constructor() {
-    // Siembra el paciente seleccionado desde el paciente activo.
+    // Siembra el paciente seleccionado desde el paciente activo (solo una vez;
+    // de lo contrario, elegir "Todos" luego de sembrado se revertiría solo).
     effect(() => {
       const ap = this.activePatient.activePatient();
-      if (ap && this.selectedPatientId() === null) {
+      if (ap && !this.seeded) {
+        this.seeded = true;
         this.selectedPatientId.set(ap.id);
       }
     });
 
-    // Carga (y recarga al cambiar de paciente) vía store.
+    // Carga (y recarga al cambiar de paciente) vía store. "Todos" (pid null)
+    // hace fan-out sobre todos los pacientes accesibles.
     effect(() => {
       const pid = this.selectedPatientId();
       if (pid !== null) {
         this.store.dispatch(loadEstudios({ patientId: pid }));
+      } else {
+        const ids = this.accessiblePatients().map(p => p.id);
+        if (ids.length > 0) {
+          this.store.dispatch(loadEstudiosTodos({ patientIds: ids }));
+        }
       }
     });
 
