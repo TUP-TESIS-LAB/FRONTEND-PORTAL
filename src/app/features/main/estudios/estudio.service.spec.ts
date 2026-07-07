@@ -15,6 +15,14 @@ const DTO: AnalyticalResultResponse = {
   collectionDate: '2026-04-14T10:30:00',
   active: true,
   version: 0,
+  reportId: null,
+  reportAvailable: false,
+};
+
+const DTO_CON_INFORME: AnalyticalResultResponse = {
+  ...DTO,
+  reportId: 77,
+  reportAvailable: true,
 };
 
 describe('fromAnalyticalResult (mapper)', () => {
@@ -28,14 +36,22 @@ describe('fromAnalyticalResult (mapper)', () => {
     expect(e.fechaTs).toBe(new Date('2026-04-14T10:30:00').getTime());
   });
 
-  it('degrada estado a "en proceso" y descarga no disponible; persona se completa luego', () => {
+  it('sin informe firmado: estado "en proceso", descarga no disponible, sin reportId', () => {
     const e = fromAnalyticalResult(DTO);
     expect(e.estado).toBe('en-proceso');
     expect(e.reporteDisponible).toBe(false);
+    expect(e.reportId).toBeUndefined();
     expect(e.personaNombre).toBe('');
   });
 
-  it('deja los campos diferidos (KAN-168) como undefined', () => {
+  it('con informe firmado (KAN-168): estado "disponible", descarga habilitada y reportId', () => {
+    const e = fromAnalyticalResult(DTO_CON_INFORME);
+    expect(e.estado).toBe('disponible');
+    expect(e.reporteDisponible).toBe(true);
+    expect(e.reportId).toBe(77);
+  });
+
+  it('deja los campos ricos diferidos como undefined', () => {
     const e = fromAnalyticalResult(DTO);
     expect(e.sucursal).toBeUndefined();
     expect(e.categoria).toBeUndefined();
@@ -68,5 +84,18 @@ describe('EstudioService', () => {
     req.flush([DTO]);
 
     expect(result).toEqual([fromAnalyticalResult(DTO)]);
+  });
+
+  it('descargarReporte pega a /api/v1/me/results/reports/{reportId}/pdf como blob', () => {
+    let result: unknown;
+    service.descargarReporte(77).subscribe(r => (result = r));
+
+    const req = httpMock.expectOne('/api/v1/me/results/reports/77/pdf');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.responseType).toBe('blob');
+    const blob = new Blob(['%PDF'], { type: 'application/pdf' });
+    req.flush(blob);
+
+    expect(result).toBeInstanceOf(Blob);
   });
 });

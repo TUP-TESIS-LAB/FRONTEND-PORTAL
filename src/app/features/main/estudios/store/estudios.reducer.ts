@@ -4,6 +4,9 @@ import {
   loadEstudios,
   loadEstudiosSuccess,
   loadEstudiosFailure,
+  descargarReporte,
+  descargarReporteSuccess,
+  descargarReporteFailure,
 } from './estudios.actions';
 
 export const estudiosReducer = createReducer(
@@ -27,5 +30,20 @@ export const estudiosReducer = createReducer(
     estudios: [],
     loading: false,
     error,
+  })),
+
+  on(descargarReporte, (state): EstudiosState => ({
+    ...state,
+    descargando: true,
+    descargaError: null,
+  })),
+  on(descargarReporteSuccess, (state): EstudiosState => ({
+    ...state,
+    descargando: false,
+  })),
+  on(descargarReporteFailure, (state, { error }): EstudiosState => ({
+    ...state,
+    descargando: false,
+    descargaError: error,
   })),
 );

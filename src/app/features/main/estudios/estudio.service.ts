@@ -14,15 +14,14 @@ function formatFecha(iso: string): string {
 }
 
 /**
- * Mapea la respuesta cruda del back al modelo mínimo del portal. Los campos
- * ricos (sucursal, nombre, estadoFirma, reporteDisponible) quedan `undefined`
- * hasta que el endpoint KAN-168 los provea.
+ * Mapea la respuesta cruda del back al modelo mínimo del portal. La disponibilidad
+ * del informe firmado + su reportId llegan del back (KAN-168); el resto de los campos
+ * ricos (sucursal, nombre, estadoFirma) siguen `undefined` y la UI los degrada.
  */
 export function fromAnalyticalResult(dto: AnalyticalResultResponse): Estudio {
   const ts = new Date(dto.collectionDate).getTime();
-  // El reporte firmado (y su disponibilidad) llega con KAN-168; hasta entonces
-  // el estudio se muestra "en proceso" y la descarga queda deshabilitada.
-  const disponible = false;
+  // Disponible solo si el back marca el informe firmado y trae su reportId (KAN-168).
+  const disponible = dto.reportAvailable === true && dto.reportId != null;
   return {
     id: dto.id,
     patientId: dto.patientId,
@@ -40,6 +39,7 @@ export function fromAnalyticalResult(dto: AnalyticalResultResponse): Estudio {
     estadoLabel: disponible ? 'Disponible' : 'En proceso',
     esNuevo: false,
     reporteDisponible: disponible,
+    reportId: dto.reportId ?? undefined,
   };
 }
 
@@ -57,11 +57,11 @@ export class EstudioService {
   }
 
   /**
-   * Descarga del PDF firmado del estudio. Se habilita cuando exista el
-   * endpoint de backend KAN-168 (`GET /api/v1/me/studies/{id}/report`).
+   * Descarga del PDF del informe FINAL firmado (KAN-168). El acceso lo acota el
+   * back por vínculo familiar + tenant; 404 si aún no está firmado.
    */
-  descargarReporte(estudioId: number): Observable<Blob> {
-    return this.http.get(`/api/v1/me/studies/${estudioId}/report`, {
+  descargarReporte(reportId: number): Observable<Blob> {
+    return this.http.get(`/api/v1/me/results/reports/${reportId}/pdf`, {
       responseType: 'blob',
     });
   }

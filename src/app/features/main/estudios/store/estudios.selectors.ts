@@ -17,3 +17,13 @@ export const selectEstudiosError = createSelector(
   selectEstudiosState,
   state => state.error,
 );
+
+export const selectDescargando = createSelector(
+  selectEstudiosState,
+  state => state.descargando,
+);
+
+export const selectDescargaError = createSelector(
+  selectEstudiosState,
+  state => state.descargaError,
+);
