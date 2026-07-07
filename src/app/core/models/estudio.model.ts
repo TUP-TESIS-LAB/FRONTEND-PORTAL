@@ -29,6 +29,14 @@ export interface AnalyticalResultResponse {
   collectionDate: string; // ISO LocalDateTime
   active: boolean;
   version: number;
+  /** id del informe FINAL firmado disponible; null mientras no esté firmado (KAN-168). */
+  reportId: number | null;
+  /** true cuando hay PDF firmado descargable (KAN-168). */
+  reportAvailable: boolean;
+  /** Nombre real del análisis de catálogo (ej. "TGO (AST)"); null si no resuelve (KAN-209). */
+  analysisName: string | null;
+  /** Familia del catálogo en español libre (ej. "Bioquímica"); null si no resuelve (KAN-209). */
+  familyName: string | null;
 }
 
 /**
@@ -62,6 +70,8 @@ export interface Estudio {
   sucursal?: string;
   estadoFirma?: EstadoFirma;
   reporteDisponible?: boolean;
+  /** id del informe FINAL para armar la descarga del PDF (KAN-168). */
+  reportId?: number;
   reporteUrl?: string;
   pdf?: {
     url: string;

@@ -26,18 +26,18 @@ import {
   PatientFilterComponent,
   PatientFilterOption,
 } from '../../../shared/ui/components/patient-filter/patient-filter.component';
-import { EstudioService } from './estudio.service';
 import {
   Estudio,
   EstudiosFiltros,
   EstadoEstudio,
   CategoriaEstudio,
 } from '../../../core/models/estudio.model';
-import { loadEstudios, loadEstudiosTodos } from './store/estudios.actions';
+import { loadEstudios, loadEstudiosTodos, descargarReporte } from './store/estudios.actions';
 import {
   selectEstudios,
   selectEstudiosLoading,
   selectEstudiosError,
+  selectDescargaError,
 } from './store/estudios.selectors';
 
 /** Filtros por defecto: rango del último mes (desde hace un mes hasta hoy). */
@@ -86,7 +86,6 @@ function parseFecha(f: string): number {
 })
 export class EstudiosComponent {
   private readonly store          = inject(Store);
-  private readonly service        = inject(EstudioService);
   private readonly messageService = inject(MessageService);
   readonly bp                     = inject(BreakpointService);
   readonly activePatient          = inject(ActivePatientService);
@@ -96,6 +95,7 @@ export class EstudiosComponent {
   private readonly rawEstudios = this.store.selectSignal(selectEstudios);
   loadingEstudios              = this.store.selectSignal(selectEstudiosLoading);
   private readonly error       = this.store.selectSignal(selectEstudiosError);
+  private readonly descargaError = this.store.selectSignal(selectDescargaError);
 
   private readonly accessiblePatients = this.activePatient.accessiblePatients;
 
@@ -213,6 +213,17 @@ export class EstudiosComponent {
         });
       }
     });
+
+    // Error de descarga del PDF (KAN-168).
+    effect(() => {
+      const err = this.descargaError();
+      if (err) {
+        this.messageService.add({
+          severity: 'error', summary: 'Error',
+          detail: mapApiError(err), life: 4000,
+        });
+      }
+    });
   }
 
   // ── Helpers de template ──────────────────────────────────
@@ -263,7 +274,7 @@ export class EstudiosComponent {
   }
 
   onDescargar(estudio: Estudio): void {
-    if (!this.isAvailable(estudio)) {
+    if (!this.isAvailable(estudio) || estudio.reportId == null) {
       this.messageService.add({
         severity: 'info',
         summary: 'Próximamente',
@@ -272,19 +283,8 @@ export class EstudiosComponent {
       });
       return;
     }
-    this.service.descargarReporte(estudio.id).subscribe({
-      next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-        setTimeout(() => URL.revokeObjectURL(url), 60_000);
-      },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error', summary: 'Error',
-          detail: mapApiError(err), life: 4000,
-        });
-      },
-    });
+    // Descarga vía store (regla del repo): el effect abre el PDF y maneja el error.
+    this.store.dispatch(descargarReporte({ reportId: estudio.reportId }));
   }
 
   onVerEstudio(estudio: Estudio): void {
