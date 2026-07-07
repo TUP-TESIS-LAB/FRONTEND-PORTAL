@@ -15,6 +15,16 @@ export const loadEstudiosFailure = createAction(
   props<{ error: HttpErrorResponse }>(),
 );
 
+// ── "Todos" (fan-out sobre la familia) ──────────────────────
+export const loadEstudiosTodos = createAction(
+  '[Estudios Page] Load Estudios Todos',
+  props<{ patientIds: number[] }>(),
+);
+export const loadEstudiosTodosSuccess = createAction(
+  '[Estudios API] Load Estudios Todos Success',
+  props<{ estudios: Estudio[] }>(),
+);
+
 // ── Descarga del PDF del informe firmado (KAN-168) ──────────
 export const descargarReporte = createAction(
   '[Estudios Page] Descargar Reporte',

@@ -10,6 +10,8 @@ import {
   loadEstudios,
   loadEstudiosSuccess,
   loadEstudiosFailure,
+  loadEstudiosTodos,
+  loadEstudiosTodosSuccess,
   descargarReporte,
   descargarReporteSuccess,
   descargarReporteFailure,
@@ -17,6 +19,7 @@ import {
 import type { Estudio } from '../../../../core/models/estudio.model';
 
 const ESTUDIO: Estudio = { id: 1, patientId: 10, protocolId: 5, fecha: '01/01/2026', fechaTs: 1 };
+const ESTUDIO_2: Estudio = { id: 2, patientId: 20, protocolId: 6, fecha: '02/01/2026', fechaTs: 2 };
 
 function setup(svc: Partial<EstudioService>, action: Action) {
   const actions$ = new ReplaySubject<Action>(1);
@@ -44,6 +47,39 @@ describe('EstudiosEffects', () => {
     const error = new HttpErrorResponse({ status: 500 });
     const eff = setup({ getEstudios: () => throwError(() => error) }, loadEstudios({ patientId: 10 }));
     eff.loadEstudios$.subscribe(a => {
+      expect(a).toEqual(loadEstudiosFailure({ error }));
+      done();
+    });
+  }));
+
+  it('loadEstudiosTodos$ hace fan-out por paciente y fusiona los resultados', () => new Promise<void>(done => {
+    const getEstudios = vi.fn((id: number) => of(id === 10 ? [ESTUDIO] : [ESTUDIO_2]));
+    const eff = setup({ getEstudios }, loadEstudiosTodos({ patientIds: [10, 20] }));
+    eff.loadEstudiosTodos$.subscribe(a => {
+      expect(a).toEqual(loadEstudiosTodosSuccess({ estudios: [ESTUDIO, ESTUDIO_2] }));
+      expect(getEstudios).toHaveBeenCalledWith(10);
+      expect(getEstudios).toHaveBeenCalledWith(20);
+      done();
+    });
+  }));
+
+  it('loadEstudiosTodos$ despacha loadEstudiosTodosSuccess vacío sin pacientes', () => new Promise<void>(done => {
+    const getEstudios = vi.fn();
+    const eff = setup({ getEstudios }, loadEstudiosTodos({ patientIds: [] }));
+    eff.loadEstudiosTodos$.subscribe(a => {
+      expect(a).toEqual(loadEstudiosTodosSuccess({ estudios: [] }));
+      expect(getEstudios).not.toHaveBeenCalled();
+      done();
+    });
+  }));
+
+  it('loadEstudiosTodos$ despacha loadEstudiosFailure si falla algún paciente', () => new Promise<void>(done => {
+    const error = new HttpErrorResponse({ status: 500 });
+    const eff = setup(
+      { getEstudios: () => throwError(() => error) },
+      loadEstudiosTodos({ patientIds: [10, 20] }),
+    );
+    eff.loadEstudiosTodos$.subscribe(a => {
       expect(a).toEqual(loadEstudiosFailure({ error }));
       done();
     });

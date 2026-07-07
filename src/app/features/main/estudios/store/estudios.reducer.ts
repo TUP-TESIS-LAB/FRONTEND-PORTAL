@@ -4,6 +4,8 @@ import {
   loadEstudios,
   loadEstudiosSuccess,
   loadEstudiosFailure,
+  loadEstudiosTodos,
+  loadEstudiosTodosSuccess,
   descargarReporte,
   descargarReporteSuccess,
   descargarReporteFailure,
@@ -30,6 +32,20 @@ export const estudiosReducer = createReducer(
     estudios: [],
     loading: false,
     error,
+  })),
+
+  // "Todos": patientId null representa el alcance de toda la familia.
+  on(loadEstudiosTodos, (state): EstudiosState => ({
+    ...state,
+    patientId: null,
+    loading: true,
+    error: null,
+  })),
+  on(loadEstudiosTodosSuccess, (state, { estudios }): EstudiosState => ({
+    ...state,
+    estudios,
+    loading: false,
+    error: null,
   })),
 
   on(descargarReporte, (state): EstudiosState => ({

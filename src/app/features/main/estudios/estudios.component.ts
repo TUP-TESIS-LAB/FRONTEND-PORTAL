@@ -32,7 +32,7 @@ import {
   EstadoEstudio,
   CategoriaEstudio,
 } from '../../../core/models/estudio.model';
-import { loadEstudios, descargarReporte } from './store/estudios.actions';
+import { loadEstudios, loadEstudiosTodos, descargarReporte } from './store/estudios.actions';
 import {
   selectEstudios,
   selectEstudiosLoading,
@@ -99,17 +99,24 @@ export class EstudiosComponent {
 
   private readonly accessiblePatients = this.activePatient.accessiblePatients;
 
-  /** Enriquece cada estudio con la persona del paciente seleccionado. */
+  /**
+   * Enriquece cada estudio con su propia persona (por `patientId` de la fila,
+   * no por el `selectedPatientId` único) — necesario para "Todos", donde la
+   * lista fusiona estudios de varios miembros de la familia.
+   */
   estudios = computed<Estudio[]>(() => {
     const list = this.rawEstudios();
-    const f = this.accessiblePatients().find(p => p.id === this.selectedPatientId());
-    if (!f) return list;
-    return list.map(e => ({
-      ...e,
-      personaId: f.id,
-      personaNombre: f.nombre,
-      personaIniciales: f.iniciales,
-    }));
+    const porId = new Map(this.accessiblePatients().map(f => [f.id, f]));
+    return list.map(e => {
+      const f = porId.get(e.patientId);
+      if (!f) return e;
+      return {
+        ...e,
+        personaId: f.id,
+        personaNombre: f.nombre,
+        personaIniciales: f.iniciales,
+      };
+    });
   });
 
   // ── Filtro de paciente (contextual, por pantalla) ────────
@@ -179,19 +186,20 @@ export class EstudiosComponent {
   });
 
   constructor() {
-    // Siembra el paciente seleccionado desde el paciente activo.
-    effect(() => {
-      const ap = this.activePatient.activePatient();
-      if (ap && this.selectedPatientId() === null) {
-        this.selectedPatientId.set(ap.id);
-      }
-    });
+    // Sin siembra: el default del filtro es "Todos" (selectedPatientId null),
+    // la línea base de la pantalla — el usuario elige un paciente puntual a mano.
 
-    // Carga (y recarga al cambiar de paciente) vía store.
+    // Carga (y recarga al cambiar de paciente) vía store. "Todos" (pid null)
+    // hace fan-out sobre todos los pacientes accesibles.
     effect(() => {
       const pid = this.selectedPatientId();
       if (pid !== null) {
         this.store.dispatch(loadEstudios({ patientId: pid }));
+      } else {
+        const ids = this.accessiblePatients().map(p => p.id);
+        if (ids.length > 0) {
+          this.store.dispatch(loadEstudiosTodos({ patientIds: ids }));
+        }
       }
     });
 

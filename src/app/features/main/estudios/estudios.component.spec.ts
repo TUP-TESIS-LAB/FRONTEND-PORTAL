@@ -8,7 +8,7 @@ import { EstudioService } from './estudio.service';
 import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
 import { BreakpointService } from '../../../shared/utils/breakpoint.service';
 import { ESTUDIOS_KEY } from './store/estudios.state';
-import { loadEstudios } from './store/estudios.actions';
+import { loadEstudios, loadEstudiosTodos } from './store/estudios.actions';
 import type { Familiar } from '../../../core/models/familiar.model';
 import type { Estudio } from '../../../core/models/estudio.model';
 
@@ -124,9 +124,17 @@ describe('EstudiosComponent', () => {
     expect(comp.patientFilterOptions().length).toBe(2);
   });
 
-  it('siembra el paciente activo y despacha loadEstudios', () => {
+  it('por defecto el filtro queda en "Todos" y hace fan-out sobre toda la familia', () => {
     const comp = mount();
-    expect(comp.selectedPatientId()).toBe(10);
+    expect(comp.selectedPatientId()).toBeNull();
+    expect(store.dispatch).toHaveBeenCalledWith(loadEstudiosTodos({ patientIds: [10, 20] }));
+  });
+
+  it('al elegir un paciente puntual despacha loadEstudios', () => {
+    const comp = mount();
+    vi.mocked(store.dispatch).mockClear();
+    comp.selectedPatientId.set(10);
+    TestBed.flushEffects();
     expect(store.dispatch).toHaveBeenCalledWith(loadEstudios({ patientId: 10 }));
   });
 
@@ -153,5 +161,42 @@ describe('EstudiosComponent', () => {
   it('usa ícono por defecto cuando no hay categoría', () => {
     const comp = mount();
     expect(comp.getIconForCategoria(undefined)).toBe('pi pi-file');
+  });
+
+  it('al volver a "Todos" tras elegir un paciente puntual, vuelve a hacer fan-out', () => {
+    const comp = mount();
+    comp.selectedPatientId.set(10);
+    TestBed.flushEffects();
+    vi.mocked(store.dispatch).mockClear();
+    comp.selectedPatientId.set(null);
+    TestBed.flushEffects();
+    expect(store.dispatch).toHaveBeenCalledWith(loadEstudiosTodos({ patientIds: [10, 20] }));
+  });
+
+  it('la selección no se ve afectada por cambios en el paciente activo (sin siembra)', () => {
+    const comp = mount();
+    expect(comp.selectedPatientId()).toBeNull();
+    activeSignal.set(makeFam(20, 'Mateo'));
+    TestBed.flushEffects();
+    expect(comp.selectedPatientId()).toBeNull();
+  });
+
+  it('enriquece cada estudio con la persona dueña de esa fila (no con la seleccionada)', () => {
+    const comp = mount();
+    // Simula el resultado fusionado de "Todos": un estudio de cada paciente.
+    store.setState({
+      [ESTUDIOS_KEY]: {
+        estudios: [
+          makeEstudio(1, DAY_MS, { patientId: 10, fecha: fechaHaceDias(1) }),
+          makeEstudio(2, DAY_MS, { patientId: 20, fecha: fechaHaceDias(1) }),
+        ],
+        patientId: null,
+        loading: false,
+        error: null,
+      },
+    });
+    const porId = new Map(comp.estudios().map(e => [e.patientId, e]));
+    expect(porId.get(10)?.personaNombre).toBe('Carlos');
+    expect(porId.get(20)?.personaNombre).toBe('Mateo');
   });
 });

@@ -1,12 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, mergeMap, of, switchMap, tap } from 'rxjs';
+import { catchError, forkJoin, map, mergeMap, of, switchMap, tap } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { EstudioService } from '../estudio.service';
 import {
   loadEstudios,
   loadEstudiosSuccess,
   loadEstudiosFailure,
+  loadEstudiosTodos,
+  loadEstudiosTodosSuccess,
   descargarReporte,
   descargarReporteSuccess,
   descargarReporteFailure,
@@ -28,6 +30,24 @@ export class EstudiosEffects {
             of(loadEstudiosFailure({ error })),
           ),
         ),
+      ),
+    ),
+  );
+
+  // "Todos": el back es por-paciente, así que se hace fan-out y se fusionan
+  // las listas en el cliente (no existe endpoint de familia).
+  loadEstudiosTodos$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(loadEstudiosTodos),
+      switchMap(({ patientIds }) =>
+        patientIds.length === 0
+          ? of(loadEstudiosTodosSuccess({ estudios: [] }))
+          : forkJoin(patientIds.map(id => this.service.getEstudios(id))).pipe(
+              map(lists => loadEstudiosTodosSuccess({ estudios: lists.flat() })),
+              catchError((error: HttpErrorResponse) =>
+                of(loadEstudiosFailure({ error })),
+              ),
+            ),
       ),
     ),
   );
