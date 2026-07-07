@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { AnalyticalResultResponse, Estudio } from '../../../core/models/estudio.model';
+import { AnalyticalResultResponse, CategoriaEstudio, Estudio } from '../../../core/models/estudio.model';
 
 /** Formatea un ISO LocalDateTime del back a 'DD/MM/YYYY'. */
 function formatFecha(iso: string): string {
@@ -14,9 +14,22 @@ function formatFecha(iso: string): string {
 }
 
 /**
+ * Familia del catálogo (texto libre en español, ej. "Bioquímica") → enum cerrado del
+ * frontend (KAN-209). Familias sin mapeo conocido (ej. "Serología") degradan a `undefined`
+ * sin romper la UI — no se inventan categorías nuevas acá.
+ */
+const FAMILY_TO_CATEGORIA: Record<string, CategoriaEstudio> = {
+  'Hematología': 'hematologia',
+  'Bioquímica': 'bioquimica',
+  'Endocrinología': 'hormonas',
+  'Urología': 'orina',
+};
+
+/**
  * Mapea la respuesta cruda del back al modelo mínimo del portal. La disponibilidad
- * del informe firmado + su reportId llegan del back (KAN-168); el resto de los campos
- * ricos (sucursal, nombre, estadoFirma) siguen `undefined` y la UI los degrada.
+ * del informe firmado + su reportId llegan del back (KAN-168); el nombre real y la
+ * categoría del análisis llegan del catálogo (KAN-209). Los campos ricos restantes
+ * (sucursal, estadoFirma, firmante) siguen `undefined` y la UI los degrada.
  */
 export function fromAnalyticalResult(dto: AnalyticalResultResponse): Estudio {
   const ts = new Date(dto.collectionDate).getTime();
@@ -32,7 +45,7 @@ export function fromAnalyticalResult(dto: AnalyticalResultResponse): Estudio {
     personaId: dto.patientId,
     personaNombre: '',
     personaIniciales: '',
-    nombre: `Estudio Nº ${dto.protocolId}`,
+    nombre: dto.analysisName ?? `Estudio Nº ${dto.protocolId}`,
     fecha: formatFecha(dto.collectionDate),
     fechaTs: isNaN(ts) ? 0 : ts,
     estado: disponible ? 'disponible' : 'en-proceso',
@@ -40,6 +53,7 @@ export function fromAnalyticalResult(dto: AnalyticalResultResponse): Estudio {
     esNuevo: false,
     reporteDisponible: disponible,
     reportId: dto.reportId ?? undefined,
+    categoria: dto.familyName ? FAMILY_TO_CATEGORIA[dto.familyName] : undefined,
   };
 }
 

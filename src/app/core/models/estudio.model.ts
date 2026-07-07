@@ -33,6 +33,10 @@ export interface AnalyticalResultResponse {
   reportId: number | null;
   /** true cuando hay PDF firmado descargable (KAN-168). */
   reportAvailable: boolean;
+  /** Nombre real del análisis de catálogo (ej. "TGO (AST)"); null si no resuelve (KAN-209). */
+  analysisName: string | null;
+  /** Familia del catálogo en español libre (ej. "Bioquímica"); null si no resuelve (KAN-209). */
+  familyName: string | null;
 }
 
 /**

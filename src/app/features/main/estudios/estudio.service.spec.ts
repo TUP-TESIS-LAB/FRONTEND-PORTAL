@@ -17,12 +17,20 @@ const DTO: AnalyticalResultResponse = {
   version: 0,
   reportId: null,
   reportAvailable: false,
+  analysisName: null,
+  familyName: null,
 };
 
 const DTO_CON_INFORME: AnalyticalResultResponse = {
   ...DTO,
   reportId: 77,
   reportAvailable: true,
+};
+
+const DTO_CON_CATALOGO: AnalyticalResultResponse = {
+  ...DTO,
+  analysisName: 'TGO (AST)',
+  familyName: 'Bioquímica',
 };
 
 describe('fromAnalyticalResult (mapper)', () => {
@@ -57,6 +65,22 @@ describe('fromAnalyticalResult (mapper)', () => {
     expect(e.categoria).toBeUndefined();
     expect(e.estadoFirma).toBeUndefined();
     expect(e.sede).toBeUndefined();
+  });
+
+  it('con analysisName/familyName del catálogo (KAN-209): nombre real y categoría mapeada', () => {
+    const e = fromAnalyticalResult(DTO_CON_CATALOGO);
+    expect(e.nombre).toBe('TGO (AST)');
+    expect(e.categoria).toBe('bioquimica');
+  });
+
+  it('sin analysisName: degrada al placeholder "Estudio Nº {protocolId}"', () => {
+    const e = fromAnalyticalResult(DTO);
+    expect(e.nombre).toBe('Estudio Nº 42');
+  });
+
+  it('con familyName sin mapeo conocido (ej. Serología): categoria degrada a undefined', () => {
+    const e = fromAnalyticalResult({ ...DTO, analysisName: 'VDRL', familyName: 'Serología' });
+    expect(e.categoria).toBeUndefined();
   });
 });
 
