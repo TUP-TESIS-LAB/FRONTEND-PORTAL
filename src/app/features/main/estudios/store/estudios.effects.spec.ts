@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { of, throwError, ReplaySubject } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { Action } from '@ngrx/store';
@@ -10,6 +10,9 @@ import {
   loadEstudios,
   loadEstudiosSuccess,
   loadEstudiosFailure,
+  descargarReporte,
+  descargarReporteSuccess,
+  descargarReporteFailure,
 } from './estudios.actions';
 import type { Estudio } from '../../../../core/models/estudio.model';
 
@@ -45,4 +48,34 @@ describe('EstudiosEffects', () => {
       done();
     });
   }));
+
+  describe('descargarReporte$', () => {
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('abre el PDF en una pestaña y despacha success', () => new Promise<void>(done => {
+      const createObjectURL = vi.fn(() => 'blob:fake');
+      const revokeObjectURL = vi.fn();
+      vi.stubGlobal('URL', { createObjectURL, revokeObjectURL });
+      const open = vi.fn();
+      vi.stubGlobal('open', open);
+
+      const blob = new Blob(['%PDF'], { type: 'application/pdf' });
+      const eff = setup({ descargarReporte: () => of(blob) }, descargarReporte({ reportId: 77 }));
+      eff.descargarReporte$.subscribe(a => {
+        expect(a).toEqual(descargarReporteSuccess());
+        expect(createObjectURL).toHaveBeenCalledWith(blob);
+        expect(open).toHaveBeenCalledWith('blob:fake', '_blank');
+        done();
+      });
+    }));
+
+    it('despacha failure en error', () => new Promise<void>(done => {
+      const error = new HttpErrorResponse({ status: 404 });
+      const eff = setup({ descargarReporte: () => throwError(() => error) }, descargarReporte({ reportId: 77 }));
+      eff.descargarReporte$.subscribe(a => {
+        expect(a).toEqual(descargarReporteFailure({ error }));
+        done();
+      });
+    }));
+  });
 });

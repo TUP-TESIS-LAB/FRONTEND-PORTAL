@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { AnalyticalResultResponse, Estudio } from '../../../core/models/estudio.model';
+import { AnalyticalResultResponse, CategoriaEstudio, Estudio } from '../../../core/models/estudio.model';
 
 /** Formatea un ISO LocalDateTime del back a 'DD/MM/YYYY'. */
 function formatFecha(iso: string): string {
@@ -14,15 +14,27 @@ function formatFecha(iso: string): string {
 }
 
 /**
- * Mapea la respuesta cruda del back al modelo mínimo del portal. Los campos
- * ricos (sucursal, nombre, estadoFirma, reporteDisponible) quedan `undefined`
- * hasta que el endpoint KAN-168 los provea.
+ * Familia del catálogo (texto libre en español, ej. "Bioquímica") → enum cerrado del
+ * frontend (KAN-209). Familias sin mapeo conocido (ej. "Serología") degradan a `undefined`
+ * sin romper la UI — no se inventan categorías nuevas acá.
+ */
+const FAMILY_TO_CATEGORIA: Record<string, CategoriaEstudio> = {
+  'Hematología': 'hematologia',
+  'Bioquímica': 'bioquimica',
+  'Endocrinología': 'hormonas',
+  'Urología': 'orina',
+};
+
+/**
+ * Mapea la respuesta cruda del back al modelo mínimo del portal. La disponibilidad
+ * del informe firmado + su reportId llegan del back (KAN-168); el nombre real y la
+ * categoría del análisis llegan del catálogo (KAN-209). Los campos ricos restantes
+ * (sucursal, estadoFirma, firmante) siguen `undefined` y la UI los degrada.
  */
 export function fromAnalyticalResult(dto: AnalyticalResultResponse): Estudio {
   const ts = new Date(dto.collectionDate).getTime();
-  // El reporte firmado (y su disponibilidad) llega con KAN-168; hasta entonces
-  // el estudio se muestra "en proceso" y la descarga queda deshabilitada.
-  const disponible = false;
+  // Disponible solo si el back marca el informe firmado y trae su reportId (KAN-168).
+  const disponible = dto.reportAvailable === true && dto.reportId != null;
   return {
     id: dto.id,
     patientId: dto.patientId,
@@ -33,13 +45,15 @@ export function fromAnalyticalResult(dto: AnalyticalResultResponse): Estudio {
     personaId: dto.patientId,
     personaNombre: '',
     personaIniciales: '',
-    nombre: `Estudio Nº ${dto.protocolId}`,
+    nombre: dto.analysisName ?? `Estudio Nº ${dto.protocolId}`,
     fecha: formatFecha(dto.collectionDate),
     fechaTs: isNaN(ts) ? 0 : ts,
     estado: disponible ? 'disponible' : 'en-proceso',
     estadoLabel: disponible ? 'Disponible' : 'En proceso',
     esNuevo: false,
     reporteDisponible: disponible,
+    reportId: dto.reportId ?? undefined,
+    categoria: dto.familyName ? FAMILY_TO_CATEGORIA[dto.familyName] : undefined,
   };
 }
 
@@ -57,11 +71,11 @@ export class EstudioService {
   }
 
   /**
-   * Descarga del PDF firmado del estudio. Se habilita cuando exista el
-   * endpoint de backend KAN-168 (`GET /api/v1/me/studies/{id}/report`).
+   * Descarga del PDF del informe FINAL firmado (KAN-168). El acceso lo acota el
+   * back por vínculo familiar + tenant; 404 si aún no está firmado.
    */
-  descargarReporte(estudioId: number): Observable<Blob> {
-    return this.http.get(`/api/v1/me/studies/${estudioId}/report`, {
+  descargarReporte(reportId: number): Observable<Blob> {
+    return this.http.get(`/api/v1/me/results/reports/${reportId}/pdf`, {
       responseType: 'blob',
     });
   }

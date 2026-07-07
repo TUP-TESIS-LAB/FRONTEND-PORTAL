@@ -14,3 +14,16 @@ export const loadEstudiosFailure = createAction(
   '[Estudios API] Load Estudios Failure',
   props<{ error: HttpErrorResponse }>(),
 );
+
+// ── Descarga del PDF del informe firmado (KAN-168) ──────────
+export const descargarReporte = createAction(
+  '[Estudios Page] Descargar Reporte',
+  props<{ reportId: number }>(),
+);
+export const descargarReporteSuccess = createAction(
+  '[Estudios API] Descargar Reporte Success',
+);
+export const descargarReporteFailure = createAction(
+  '[Estudios API] Descargar Reporte Failure',
+  props<{ error: HttpErrorResponse }>(),
+);
