@@ -124,9 +124,17 @@ describe('EstudiosComponent', () => {
     expect(comp.patientFilterOptions().length).toBe(2);
   });
 
-  it('siembra el paciente activo y despacha loadEstudios', () => {
+  it('por defecto el filtro queda en "Todos" y hace fan-out sobre toda la familia', () => {
     const comp = mount();
-    expect(comp.selectedPatientId()).toBe(10);
+    expect(comp.selectedPatientId()).toBeNull();
+    expect(store.dispatch).toHaveBeenCalledWith(loadEstudiosTodos({ patientIds: [10, 20] }));
+  });
+
+  it('al elegir un paciente puntual despacha loadEstudios', () => {
+    const comp = mount();
+    vi.mocked(store.dispatch).mockClear();
+    comp.selectedPatientId.set(10);
+    TestBed.flushEffects();
     expect(store.dispatch).toHaveBeenCalledWith(loadEstudios({ patientId: 10 }));
   });
 
@@ -155,17 +163,20 @@ describe('EstudiosComponent', () => {
     expect(comp.getIconForCategoria(undefined)).toBe('pi pi-file');
   });
 
-  it('al elegir "Todos" despacha loadEstudiosTodos con los ids de toda la familia', () => {
+  it('al volver a "Todos" tras elegir un paciente puntual, vuelve a hacer fan-out', () => {
     const comp = mount();
+    comp.selectedPatientId.set(10);
+    TestBed.flushEffects();
     vi.mocked(store.dispatch).mockClear();
     comp.selectedPatientId.set(null);
     TestBed.flushEffects();
     expect(store.dispatch).toHaveBeenCalledWith(loadEstudiosTodos({ patientIds: [10, 20] }));
   });
 
-  it('"Todos" no se revierte al paciente activo tras la siembra inicial', () => {
+  it('la selección no se ve afectada por cambios en el paciente activo (sin siembra)', () => {
     const comp = mount();
-    comp.selectedPatientId.set(null);
+    expect(comp.selectedPatientId()).toBeNull();
+    activeSignal.set(makeFam(20, 'Mateo'));
     TestBed.flushEffects();
     expect(comp.selectedPatientId()).toBeNull();
   });

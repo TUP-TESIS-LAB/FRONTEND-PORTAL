@@ -185,20 +185,9 @@ export class EstudiosComponent {
     return count;
   });
 
-  // Bandera plana (no signal): distingue "todavía no sembrado" de "Todos"
-  // seleccionado por el usuario — ambos casos comparten selectedPatientId===null.
-  private seeded = false;
-
   constructor() {
-    // Siembra el paciente seleccionado desde el paciente activo (solo una vez;
-    // de lo contrario, elegir "Todos" luego de sembrado se revertiría solo).
-    effect(() => {
-      const ap = this.activePatient.activePatient();
-      if (ap && !this.seeded) {
-        this.seeded = true;
-        this.selectedPatientId.set(ap.id);
-      }
-    });
+    // Sin siembra: el default del filtro es "Todos" (selectedPatientId null),
+    // la línea base de la pantalla — el usuario elige un paciente puntual a mano.
 
     // Carga (y recarga al cambiar de paciente) vía store. "Todos" (pid null)
     // hace fan-out sobre todos los pacientes accesibles.

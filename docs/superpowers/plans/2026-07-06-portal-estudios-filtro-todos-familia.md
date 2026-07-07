@@ -23,8 +23,13 @@ paciente (o vacía). Causa raíz:
    paciente activo usa `selectedPatientId() === null` como guarda, pero ese
    mismo `null` representa "Todos" elegido por el usuario. Si hay paciente
    activo, apenas se selecciona "Todos" el efecto se re-dispara y revierte la
-   selección al paciente activo. Se corrige con un flag `seeded` no reactivo
-   que sólo permite la siembra una vez.
+   selección al paciente activo.
+
+**Decisión de producto (validada en revisión manual):** el default de la
+pantalla debe ser "Todos", no el paciente activo. Se elimina por completo el
+efecto de siembra (y el flag intermedio `seeded` que se había agregado para
+mitigar el punto 5) — `selectedPatientId` arranca en `null` y se queda ahí
+salvo que el usuario elija un paciente puntual a mano.
 
 ## Solución (fan-out en el frontend)
 
@@ -50,6 +55,8 @@ paciente accesible y **fusionar** los resultados, enriqueciendo la persona
   - effect de carga: si `pid === null`, dispatch
     `loadEstudiosTodos({ patientIds: accessiblePatients().map(p => p.id) })`
     (sólo si hay ≥1).
+  - se elimina el effect de siembra del paciente activo; `selectedPatientId`
+    arranca en `null` ("Todos") y no se reasigna automáticamente.
 
 ### Tests
 
