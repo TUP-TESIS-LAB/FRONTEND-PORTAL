@@ -13,8 +13,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap">
+  <!-- Manifest neutro (mascota). TenantService.applyTheme() lo pisa por un
+       Blob URL generado en runtime con el logo del tenant si está configurado. -->
   <link rel="manifest" href="manifest.webmanifest">
-  <!-- iOS: instalación a homescreen (manifest per-tenant = follow-up backend) -->
+  <!-- iOS: instalación a homescreen. El ícono queda neutro (apple-touch-icon
+       no se resuelve por tenant, mismo criterio que el splash pre-tenant). -->
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">

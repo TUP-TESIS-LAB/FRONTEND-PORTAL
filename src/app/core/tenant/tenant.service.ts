@@ -2,6 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { TenantConfig } from './tenant-config.model';
+import { resolveTenantIcon, mimeTypeForIcon } from './tenant-icon.util';
 
 /** Shape de GET /public/tenants/{slug}/white-label (backend). */
 interface BackendWhiteLabel {
@@ -22,6 +23,18 @@ export class TenantService {
   // Solo lectura para el resto de la app
   readonly config   = this._config.asReadonly();
   readonly isLoaded = computed(() => this._config() !== null);
+
+  // Ícono a mostrar en la UI (topbar): logo propio del tenant si subió uno,
+  // si no el default (círculo con su color + silueta del tubo de ensayo).
+  // Misma regla que favicon/manifest, ver tenant-icon.util.ts.
+  readonly icon = computed(() => {
+    const config = this._config();
+    return config ? resolveTenantIcon(config.logo, config.colors.primary, 'color') : null;
+  });
+
+  // Object URL del manifest dinámico generado para el tenant activo (para
+  // poder revocarlo si se resuelve otro tenant en la misma sesión).
+  private manifestObjectUrl: string | null = null;
 
   // Degradé para la pantalla de auth derivado del color primario del tenant.
   // Se calcula como computed para que el template lo use con binding directo
@@ -121,18 +134,57 @@ export class TenantService {
     document.querySelector('meta[name="theme-color"]')
             ?.setAttribute('content', config.colors.primary);
 
-    // Favicon por tenant: si tiene mark propio lo usa; si no, queda el
-    // favicon.ico neutro del index.html.
-    if (config.logo.mark) {
-      const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-      if (link) {
-        link.href = config.logo.mark;
-        link.type = config.logo.mark.endsWith('.svg') ? 'image/svg+xml' : 'image/png';
-      }
+    // Ícono del tenant (favicon + manifest PWA): su logo propio si subió uno
+    // (mark > cualquier otra variante), si no el default de la plataforma.
+    // Misma regla y misma función que usa el ui-brand-mark en la UI.
+    const iconUrl = resolveTenantIcon(config.logo, config.colors.primary, 'mark');
+
+    const faviconLink = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (faviconLink) {
+      faviconLink.href = iconUrl;
+      faviconLink.type = mimeTypeForIcon(iconUrl);
     }
+
+    this.applyDynamicManifest(config, iconUrl);
 
     // Título de la pestaña
     document.title = config.shortName + ' — Portal';
+  }
+
+  /**
+   * PWA instalable con ícono propio por tenant: sin endpoint de manifest
+   * por tenant en el backend, generamos el manifest.webmanifest en runtime
+   * (Blob URL) con el ícono resuelto por `resolveTenantIcon`. El navegador
+   * no valida que el ícono mida realmente lo declarado en `sizes`, así que
+   * "any" es válido acá.
+   */
+  private applyDynamicManifest(config: TenantConfig, iconUrl: string): void {
+    const link = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (!link) return;
+
+    if (this.manifestObjectUrl) {
+      URL.revokeObjectURL(this.manifestObjectUrl);
+    }
+
+    const manifest = {
+      name: config.fullName,
+      short_name: config.shortName,
+      description: `Portal de pacientes de ${config.fullName}.`,
+      lang: 'es',
+      dir: 'ltr',
+      display: 'standalone',
+      scope: '/',
+      start_url: '/',
+      background_color: '#F7F8FA',
+      theme_color: config.colors.primary,
+      icons: [
+        { src: iconUrl, sizes: 'any', type: mimeTypeForIcon(iconUrl), purpose: 'any' },
+      ],
+    };
+
+    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+    this.manifestObjectUrl = URL.createObjectURL(blob);
+    link.href = this.manifestObjectUrl;
   }
 
   // Genera un tono claro mezclando el hex con blanco al porcentaje indicado

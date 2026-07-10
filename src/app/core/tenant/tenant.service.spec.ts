@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -24,11 +24,20 @@ const tick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
 describe('TenantService', () => {
   let service: TenantService;
   let httpMock: HttpTestingController;
+  let createObjectURL: ReturnType<typeof vi.fn>;
+  let revokeObjectURL: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     // Limpia las variables inline de corridas anteriores para que los asserts
     // de "no vacía" no pasen por residuos de otro test
     document.documentElement.removeAttribute('style');
+
+    // jsdom no implementa URL.createObjectURL; applyDynamicManifest() lo usa
+    // en TODO loadTenant() ahora (el ícono es siempre generado), así que se
+    // stubea acá para toda la suite, no solo en los tests de manifest.
+    createObjectURL = vi.fn(() => 'blob:fake-manifest');
+    revokeObjectURL = vi.fn();
+    vi.stubGlobal('URL', { createObjectURL, revokeObjectURL });
 
     TestBed.configureTestingModule({
       providers: [
@@ -39,6 +48,10 @@ describe('TenantService', () => {
     });
     service = TestBed.inject(TenantService);
     httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   /** Ejecuta loadTenant('x') mockeando la config estática y con el
@@ -89,7 +102,7 @@ describe('TenantService', () => {
     });
   });
 
-  describe('favicon por tenant', () => {
+  describe('ícono por tenant: logo propio si existe, si no círculo + silueta', () => {
     function conLinkFavicon(): HTMLLinkElement {
       document.querySelector('link[rel="icon"]')?.remove();
       const link = document.createElement('link');
@@ -100,21 +113,64 @@ describe('TenantService', () => {
       return link;
     }
 
-    it('con logo.mark apunta el favicon al mark del tenant', async () => {
+    it('sin logo propio, el favicon es el SVG data-URI con el color del tenant y la silueta neutra', async () => {
+      const link = conLinkFavicon();
+      await loadTenantConEstatico();
+
+      expect(link.type).toBe('image/svg+xml');
+      expect(link.href.startsWith('data:image/svg+xml')).toBe(true);
+      const svg = decodeURIComponent(link.href.split(',')[1]);
+      expect(svg).toContain('fill="#2563EB"');
+      expect(svg).toContain('data:image/png;base64,');
+    });
+
+    it('con logo propio (mark) configurado, el favicon usa ese logo y no el default', async () => {
       const link = conLinkFavicon();
       await loadTenantConEstatico({
         ...STATIC_CONFIG,
         logo: { color: null, white: null, mark: '/assets/tenants/x/logo-mark.svg' },
       });
+
       expect(link.href).toContain('/assets/tenants/x/logo-mark.svg');
       expect(link.type).toBe('image/svg+xml');
     });
 
-    it('sin mark deja el favicon default intacto', async () => {
-      const link = conLinkFavicon();
+    it('tenant.icon() (usado por la UI) sigue la misma regla que el favicon', async () => {
+      await loadTenantConEstatico({
+        ...STATIC_CONFIG,
+        logo: { color: '/assets/tenants/x/logo.png', white: null, mark: null },
+      });
+
+      expect(service.icon()).toBe('/assets/tenants/x/logo.png');
+    });
+  });
+
+  describe('manifest PWA por tenant', () => {
+    function conLinkManifest(): HTMLLinkElement {
+      document.querySelector('link[rel="manifest"]')?.remove();
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = 'manifest.webmanifest';
+      document.head.appendChild(link);
+      return link;
+    }
+
+    it('genera siempre un manifest dinámico (Blob URL) con el ícono círculo+silueta', async () => {
+      const link = conLinkManifest();
       await loadTenantConEstatico();
-      expect(link.href).toContain('/favicon.ico');
-      expect(link.type).toBe('image/x-icon');
+
+      expect(createObjectURL).toHaveBeenCalledTimes(1);
+      const blob = createObjectURL.mock.calls[0][0] as Blob;
+      expect(blob.type).toBe('application/manifest+json');
+      expect(link.href).toBe('blob:fake-manifest');
+    });
+
+    it('revoca el manifest anterior si se resuelve otro tenant en la misma sesión', async () => {
+      conLinkManifest();
+      await loadTenantConEstatico();
+      await loadTenantConEstatico({ ...STATIC_CONFIG, id: 'y' });
+
+      expect(revokeObjectURL).toHaveBeenCalledWith('blob:fake-manifest');
     });
   });
 

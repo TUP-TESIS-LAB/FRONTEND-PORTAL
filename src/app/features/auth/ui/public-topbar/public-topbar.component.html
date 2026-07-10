@@ -1,7 +1,7 @@
 <header class="ui-topbar">
   <div class="ui-topbar__left">
     <ui-brand-mark
-      [logoUrl]="tenant.config()?.logo?.color ?? null"
+      [logoUrl]="tenant.icon()"
       [name]="tenant.config()?.fullName ?? ''"
       [shortName]="tenant.config()?.shortName ?? ''"
     />
