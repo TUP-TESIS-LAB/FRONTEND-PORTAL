@@ -722,13 +722,24 @@
 
 // ─── Toast ───────────────────────────────────────────
 .p-toast {
+  // El contenedor del toast vive fijo en el viewport aunque no haya mensajes:
+  // jamás debe capturar taps (en mobile llegaba a estirarse a pantalla completa
+  // por el override de `top` de abajo y bloqueaba TODA la UI). Los mensajes
+  // sí vuelven a ser interactivos.
+  pointer-events: none;
+
   // En mobile ("top-center") el toast se posiciona pegado arriba sin
   // respetar el safe-area ni dejar aire — tapa el título de la pantalla.
-  @include mobile-only {
-    top: calc(var(--space-3) + var(--ds-safe-top)) !important;
+  // Solo para toasts superiores: forzar `top` en un "bottom-*" (que ya trae
+  // `bottom` seteado) estira el contenedor fixed a toda la altura del viewport.
+  &:not(.p-toast-bottom-center):not(.p-toast-bottom-left):not(.p-toast-bottom-right) {
+    @include mobile-only {
+      top: calc(var(--space-3) + var(--ds-safe-top)) !important;
+    }
   }
 
   .p-toast-message {
+    pointer-events: auto;
     border-radius: var(--ds-radius-md);
     box-shadow: var(--ds-shadow-md);
   }
