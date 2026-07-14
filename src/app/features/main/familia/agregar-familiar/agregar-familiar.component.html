@@ -12,44 +12,47 @@
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="af-form">
 
     <!-- Nombre -->
-    <p-floatlabel class="af-field" variant="on">
+    <div class="af-field">
       <input
         id="firstName"
         pInputText
         formControlName="firstName"
         autocomplete="given-name"
+        placeholder="Nombre *"
+        aria-label="Nombre"
         class="af-input"
       />
-      <label for="firstName">Nombre *</label>
-    </p-floatlabel>
+    </div>
 
     <!-- Apellido -->
-    <p-floatlabel class="af-field" variant="on">
+    <div class="af-field">
       <input
         id="lastName"
         pInputText
         formControlName="lastName"
         autocomplete="family-name"
+        placeholder="Apellido *"
+        aria-label="Apellido"
         class="af-input"
       />
-      <label for="lastName">Apellido *</label>
-    </p-floatlabel>
+    </div>
 
     <!-- DNI -->
-    <p-floatlabel class="af-field" variant="on">
+    <div class="af-field">
       <input
         id="dni"
         pInputText
         formControlName="dni"
         inputmode="numeric"
         autocomplete="off"
+        placeholder="DNI *"
+        aria-label="DNI"
         class="af-input"
       />
-      <label for="dni">DNI *</label>
-    </p-floatlabel>
+    </div>
 
     <!-- Fecha de nacimiento -->
-    <p-floatlabel class="af-field" variant="on">
+    <div class="af-field">
       <p-datepicker
         inputId="birthDate"
         formControlName="birthDate"
@@ -59,39 +62,40 @@
         appendTo="body"
         dateFormat="dd/mm/yy"
         [maxDate]="today"
+        placeholder="Fecha de nacimiento"
+        ariaLabel="Fecha de nacimiento"
         class="af-input"
       />
-      <label for="birthDate">Fecha de nacimiento</label>
-    </p-floatlabel>
+    </div>
 
     <!-- Género -->
-    <p-floatlabel class="af-field" variant="on">
+    <div class="af-field">
       <p-select
         inputId="gender"
         formControlName="gender"
         [options]="genderOptions"
         optionLabel="label"
         optionValue="value"
-        placeholder="Seleccioná un género"
+        placeholder="Género"
         [showClear]="true"
+        appendTo="body"
         class="af-input"
       />
-      <label for="gender">Género</label>
-    </p-floatlabel>
+    </div>
 
     <!-- Parentesco -->
-    <p-floatlabel class="af-field" variant="on">
+    <div class="af-field">
       <p-select
         inputId="bond"
         formControlName="bond"
         [options]="bondOptions"
         optionLabel="label"
         optionValue="value"
-        placeholder="Seleccioná el parentesco"
+        placeholder="Parentesco *"
+        appendTo="body"
         class="af-input"
       />
-      <label for="bond">Parentesco *</label>
-    </p-floatlabel>
+    </div>
 
   </form>
 

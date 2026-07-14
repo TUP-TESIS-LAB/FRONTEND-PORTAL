@@ -15,7 +15,6 @@ import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
-import { FloatLabelModule } from 'primeng/floatlabel';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { addFamilyMember, addFamilyMemberSuccess, addFamilyMemberFailure } from '../store/family.actions';
@@ -40,7 +39,6 @@ export interface BondOption {
     ButtonModule,
     DialogModule,
     InputTextModule,
-    FloatLabelModule,
     SelectModule,
     DatePickerModule,
   ],
