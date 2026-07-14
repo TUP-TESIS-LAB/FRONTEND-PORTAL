@@ -8,7 +8,6 @@ import {
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
-import { CheckboxModule } from 'primeng/checkbox';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
@@ -26,7 +25,6 @@ import { mapApiError } from '../../../shared/utils/api-error-mapper';
     ButtonModule,
     InputTextModule,
     PasswordModule,
-    CheckboxModule,
     FloatLabelModule,
     ToastModule,
     PublicTopbarComponent,
@@ -46,9 +44,8 @@ export class LoginComponent {
   submitting = signal(false);
 
   form = this.fb.group({
-    dni:        ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
-    password:   ['', [Validators.required, Validators.minLength(6)]],
-    rememberMe: [true],
+    dni:      ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
   get f() { return this.form.controls; }
