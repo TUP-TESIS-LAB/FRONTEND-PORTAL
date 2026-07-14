@@ -36,17 +36,26 @@ export class EstudiosEffects {
 
   // "Todos": el back es por-paciente, así que se hace fan-out y se fusionan
   // las listas en el cliente (no existe endpoint de familia).
+  //
+  // Cada request individual atrapa su propio error (ej. 403 de un familiar
+  // pendiente de verificación, que todavía no tiene acceso a resultados) y
+  // lo trata como "sin estudios" para ESE paciente — sin este catchError
+  // interno, forkJoin aborta el batch entero ante la primera falla y esconde
+  // los estudios del resto de la familia (incluidos los propios del usuario).
   loadEstudiosTodos$ = createEffect(() =>
     this.actions$.pipe(
       ofType(loadEstudiosTodos),
       switchMap(({ patientIds }) =>
         patientIds.length === 0
           ? of(loadEstudiosTodosSuccess({ estudios: [] }))
-          : forkJoin(patientIds.map(id => this.service.getEstudios(id))).pipe(
-              map(lists => loadEstudiosTodosSuccess({ estudios: lists.flat() })),
-              catchError((error: HttpErrorResponse) =>
-                of(loadEstudiosFailure({ error })),
+          : forkJoin(
+              patientIds.map(id =>
+                this.service.getEstudios(id).pipe(
+                  catchError(() => of([])),
+                ),
               ),
+            ).pipe(
+              map(lists => loadEstudiosTodosSuccess({ estudios: lists.flat() })),
             ),
       ),
     ),
