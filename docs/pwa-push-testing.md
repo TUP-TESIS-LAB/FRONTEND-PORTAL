@@ -16,7 +16,10 @@
 2. `npm run serve:pwa` → sirve el build de producción (SW activo) en :8081 proxeando /api y /public.
 3. `cloudflared tunnel --url http://localhost:8081` → copia la URL https://<random>.trycloudflare.com
    (TLS válido, gratis, sin cuenta: sin warnings de certificado).
-4. En el celular: abrir `https://<random>.trycloudflare.com/?tenant=<slug>` →
+4. En el celular: abrir `https://<random>.trycloudflare.com/?tenant=<slug>` —
+   el `?tenant=` es OBLIGATORIO la primera vez (en hosts de túnel el subdominio
+   random no es un slug; el tenant queda persistido en localStorage y la PWA
+   instalada, que abre sin query, lo reutiliza) →
    menú del navegador → "Agregar a pantalla de inicio" → abrir la PWA instalada.
 5. Login como paciente/responsable → en el dashboard tocar "Activar notificaciones" → aceptar el permiso.
 6. Desde el front administrativo: firmar un resultado o estudio del paciente.

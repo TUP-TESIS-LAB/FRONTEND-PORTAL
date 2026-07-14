@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "vitest run",
     "test:watch": "vitest",
-    "serve:pwa": "ng build && ws --directory dist/TUP-TESIS-LAB-PORTAL/browser --spa index.html --rewrite \"/api/(.*) -> http://localhost:8080/api/$1\" \"/public/(.*) -> http://localhost:8080/public/$1\" --port 8081"
+    "serve:pwa": "ng build && ws --directory dist/TUP-TESIS-LAB-PORTAL/browser --spa index.html --rewrite '/api/(.*) -> http://localhost:8080/api/$1' '/public/(.*) -> http://localhost:8080/public/$1' --port 8081"
   },
   "private": true,
   "packageManager": "npm@10.9.0",
