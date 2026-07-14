@@ -63,7 +63,7 @@
 
 <!-- Contenido reutilizado en ambos -->
 <ng-template #filtersContent>
-  <div class="ui-turnos-filters__group">
+  <div class="ui-turnos-filters__group ui-turnos-filters__group--grow">
     <span class="ui-turnos-filters__label">Estado</span>
     <p-selectbutton
       [options]="estadoOptions"
@@ -135,8 +135,8 @@
           [month]="turno.mes"
           [title]="turno.tipo"
           [details]="sedeDetailsFor(turno)"
-          [statusKey]="turno.estado | estadoTurnoKey"
-          [statusLabel]="turno.estado | estadoTurnoLabel"
+          [statusKey]="turno.estado | estadoTurnoKey:turno.fechaTs"
+          [statusLabel]="turno.estado | estadoTurnoLabel:turno.fechaTs"
           [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"
           [class.ui-card-selected]="selectedTurno()?.id === turno.id"
           (click)="onTurnoClick(turno)"
@@ -153,8 +153,8 @@
           [month]="turno.mes"
           [title]="turno.tipo"
           [details]="sedeDetailsFor(turno)"
-          [statusKey]="turno.estado | estadoTurnoKey"
-          [statusLabel]="turno.estado | estadoTurnoLabel"
+          [statusKey]="turno.estado | estadoTurnoKey:turno.fechaTs"
+          [statusLabel]="turno.estado | estadoTurnoLabel:turno.fechaTs"
           [persona]="{ nombre: turno.personaNombre, iniciales: turno.personaIniciales }"
           [class.ui-card-selected]="selectedTurno()?.id === turno.id"
           (click)="onTurnoClick(turno)"

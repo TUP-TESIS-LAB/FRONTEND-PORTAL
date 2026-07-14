@@ -136,14 +136,17 @@ export class TurnosComponent implements OnInit, OnDestroy {
     return this.applyFilters(byPatient);
   });
 
-  /** Turnos pendientes (arriba, antes del HR). */
+  /** Turnos pendientes (arriba, antes del HR). Un pendiente con fecha ya
+   *  pasada no cuenta como "programado" — el backend no transiciona a
+   *  NO_SHOW hoy, así que lo tratamos como no-asistido (ver `otrosTurnos`). */
   protected readonly pendientes = computed(() =>
-    this.visibleTurnos().filter(t => t.estado === 'pendiente')
+    this.visibleTurnos().filter(t => t.estado === 'pendiente' && t.fechaTs >= Date.now())
   );
 
-  /** Resto de turnos (después del HR): asistidos, cancelados, completados. */
+  /** Resto de turnos (después del HR): asistidos, cancelados, completados
+   *  y pendientes cuya fecha ya pasó (mostrados como "No asistido"). */
   protected readonly otrosTurnos = computed(() =>
-    this.visibleTurnos().filter(t => t.estado !== 'pendiente')
+    this.visibleTurnos().filter(t => t.estado !== 'pendiente' || t.fechaTs < Date.now())
   );
 
   // ─── Drawer de filtros en mobile ─────────────────────────
@@ -255,7 +258,10 @@ export class TurnosComponent implements OnInit, OnDestroy {
     // Carga inicial: todos los pacientes accesibles (vos + dependientes).
     // El filtro de paciente acota client-side; no recargamos por paciente.
     this.reload$.next(undefined);
-    this.showPendingBookingToast();
+    // setTimeout(0): <p-toast> (mismo template) todavía no se suscribió al
+    // MessageService en este mismo tick de ngOnInit — el mensaje se perdía
+    // silenciosamente (Subject sin subscriptores todavía, no hay replay).
+    setTimeout(() => this.showPendingBookingToast());
   }
 
   /**
