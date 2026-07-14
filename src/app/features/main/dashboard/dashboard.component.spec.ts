@@ -60,11 +60,4 @@ describe('DashboardComponent — próximo turno (el más cercano de cualquiera)'
     expect((comp as any).proximoTurno()?.id).toBe(2);
     expect((comp as any).turnosCount()).toBe(2);
   });
-
-  it('las notificaciones arrancan vacías (sin backend todavía, sin mock)', () => {
-    let comp!: DashboardComponent;
-    runInInjectionContext(injector, () => { comp = new DashboardComponent(); });
-
-    expect((comp as any).notifications()).toEqual([]);
-  });
 });

@@ -11,47 +11,6 @@
   border-radius: var(--ds-radius-lg);
 }
 
-// Campanita de notificaciones en el page-header (reemplaza al CTA "Sacar turno").
-.ui-dashboard__bell {
-  position: relative;
-  appearance: none;
-  background: transparent;
-  border: 1px solid var(--ds-surface-dark);
-  border-radius: 999px;
-  width: 40px;
-  height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--ds-text);
-  transition: background 0.12s, border-color 0.12s;
-
-  i { font-size: 1.1rem; }
-
-  &:hover {
-    background: var(--ds-surface);
-    border-color: var(--brand-primary);
-  }
-}
-
-.ui-dashboard__bell-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: var(--ds-danger);
-  color: white;
-  font-size: 10px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
 // ─── Accesos rápidos (cards grandes) ────────────────────────────
 .ui-dashboard__accesos {
   margin-top: var(--space-5);

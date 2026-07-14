@@ -6,7 +6,6 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
 import { HeroCardComponent, HeroCardDetail } from '../../../shared/ui/components/hero-card/hero-card.component';
 import { PlaceholderCardComponent } from '../../../shared/ui/components/placeholder-card/placeholder-card.component';
-import { TopSheetComponent, TopSheetItem } from '../../../shared/ui/overlays/top-sheet/top-sheet.component';
 import { AppointmentService } from '../turnos/services/appointment.service';
 import { EstudioService } from '../estudios/estudio.service';
 import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
@@ -23,7 +22,6 @@ import { Estudio } from '../../../core/models/estudio.model';
     PageHeaderComponent,
     HeroCardComponent,
     PlaceholderCardComponent,
-    TopSheetComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -56,12 +54,6 @@ export class DashboardComponent implements OnDestroy {
     if (e.sucursal) details.push({ icon: 'pi-map-marker', text: e.sucursal });
     return details;
   });
-
-  /** Sheet de notificaciones (campanita en el header del dashboard). */
-  protected readonly notificationsOpen = signal(false);
-
-  // TODO: reemplazar por endpoint real de notificaciones cuando exista en el backend
-  protected readonly notifications = signal<TopSheetItem[]>([]);
 
   protected readonly nombrePaciente = computed(() => {
     const u = this.auth.currentUser();
