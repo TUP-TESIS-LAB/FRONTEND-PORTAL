@@ -17,6 +17,7 @@
 .ui-turnos-filters {
   display: flex;
   align-items: flex-end;
+  justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
   background: var(--ds-white);
@@ -32,6 +33,28 @@
     min-width: 0;
   }
 
+  // El grupo "Estado" es el único con contenido naturalmente elástico
+  // (varios toggles) — lo estiramos para que absorba el espacio en blanco
+  // que sobra en la barra en vez de dejarlo vacío a la derecha.
+  //
+  // Esta clase (por nombre, no por ancestro — el mismo template #filtersContent
+  // se reusa en el bottom-sheet mobile) NO puede tener flex-grow suelto: en
+  // el sheet mobile el eje del flex-column es vertical, y "flex:1" estira el
+  // grupo Estado hacia abajo dejando un hueco vacío antes de Fecha desde. Se
+  // acota a desktop-up, que es donde .ui-turnos-filters realmente es una fila.
+  &__group--grow {
+    @include desktop-up {
+      flex: 1 1 260px;
+    }
+
+    ::ng-deep .p-selectbutton {
+      display: flex;
+      width: 100%;
+
+      .p-togglebutton { flex: 1; }
+    }
+  }
+
   &__label {
     font-size: 11px;
     font-weight: 700;
@@ -41,7 +64,6 @@
   }
 
   &__clear {
-    margin-left: auto;
     align-self: flex-end;
   }
 

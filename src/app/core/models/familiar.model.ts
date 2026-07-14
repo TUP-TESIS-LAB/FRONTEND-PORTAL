@@ -7,7 +7,8 @@ export interface Familiar {
   nombre: string;
   apellido: string;
   iniciales: string;
-  edad: number;
+  /** null si el familiar no tiene fecha de nacimiento cargada (campo opcional al alta). */
+  edad: number | null;
   vinculo: Vinculo;
   dni: string;
   /** True si el paciente tiene su propia cuenta del portal (vínculo PROPIO

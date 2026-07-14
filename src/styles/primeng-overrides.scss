@@ -466,6 +466,13 @@
 
 // ─── Wizard bottom sheet (mobile) ────────────────────
 // Drawer full-height para el wizard de sacar turno.
+//
+// Probamos un sheet de altura acotada (92dvh, como .ui-reprogramar-sheet)
+// pero "Sacar turno" es una RUTA propia (/turnos/sacar), no un overlay que
+// se queda montado sobre /turnos como reprogramar/detalle — al navegar acá
+// Angular desmonta la pantalla de turnos, así que atrás del sheet no hay
+// nada para atenuar (fondo en blanco/gris plano, no la lista real). Volvió
+// a full-height hasta que se convierta en un modal real sobre /turnos.
 // El drawer se renderiza como portal al <body>, por eso va aquí.
 .ui-wizard-sheet {
   height: 100dvh !important;
@@ -476,9 +483,19 @@
   flex-direction: column;
 
   // Full-height: el header "Nuevo turno" (elemento superior del sheet) respeta
-  // el safe-area superior (notch). Additivo: 0 en devices sin notch → sin cambio visual.
+  // el safe-area superior (notch) + un aire base — sin esto queda pegado al
+  // borde de arriba (y sin padding lateral, pegado a los costados también).
   .ui-sacar-page__header {
-    padding-top: var(--ds-safe-top);
+    padding: calc(var(--space-3) + var(--ds-safe-top)) var(--space-4) var(--space-2);
+  }
+
+  // El stepper (circulitos + fondo gris) es un elemento full-bleed dentro del
+  // sheet — a diferencia del contenido de cada paso, que sí tiene padding
+  // lateral (.ui-wizard__content). Lo inseteamos para que no quede pegado a
+  // los bordes de la pantalla ni ocupe el 100% del ancho.
+  .ui-wizard__stepper {
+    margin: 0 var(--space-3);
+    border-radius: var(--ds-radius-md);
   }
 
   .p-drawer-content {
@@ -705,6 +722,12 @@
 
 // ─── Toast ───────────────────────────────────────────
 .p-toast {
+  // En mobile ("top-center") el toast se posiciona pegado arriba sin
+  // respetar el safe-area ni dejar aire — tapa el título de la pantalla.
+  @include mobile-only {
+    top: calc(var(--space-3) + var(--ds-safe-top)) !important;
+  }
+
   .p-toast-message {
     border-radius: var(--ds-radius-md);
     box-shadow: var(--ds-shadow-md);
@@ -945,6 +968,21 @@
   max-width: calc(100vw - 24px);
   @include mobile-only {
     width: calc(100vw - 24px);
+
+    // El panel (no el inline) se ancla por default al borde izquierdo del
+    // input que lo dispara — como el input casi siempre está offseteado
+    // dentro de un modal/card, el panel casi full-width queda pegado a un
+    // costado en vez de centrado en la pantalla. Fijamos los dos bordes
+    // (no left+transform: PrimeNG posiciona el overlay con su propio
+    // transform inline, y translateX competía con eso y lo rompía) y
+    // anulamos su transform para que no se sume ningún offset extra.
+    &:not(.p-datepicker-panel-inline) {
+      position: fixed !important;
+      left: 12px !important;
+      right: 12px !important;
+      width: auto !important;
+      transform: none !important;
+    }
   }
   background: var(--ds-white);
   border: 1px solid var(--ds-surface-dark);
@@ -980,7 +1018,8 @@
 //    Los igualamos al resto de los controles del portal y a la altura del botón
 //    "Filtros" (48px / radius 10px): filtro de paciente y select de ordenar.
 .p-select.ui-patient-filter-select,
-.p-select.ui-sort-select {
+.p-select.ui-sort-select,
+.p-select.af-input {
   display: inline-flex;
   align-items: center;
   background: var(--ds-white);

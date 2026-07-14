@@ -8,7 +8,7 @@ interface PatientFamilyResponse {
   firstName: string;
   lastName: string;
   dni: string;
-  birthDate: string;
+  birthDate: string | null;
   bond: string;        // PROPIO | MADRE | PADRE | HIJO | HIJA | HERMANO | HERMANA | TUTOR | OTROS
   isOwner: boolean;
   status: string;
@@ -55,9 +55,11 @@ export class FamilyService {
   refresh(): void { this.cached.set(null); }
 
   private toFamiliar(p: PatientFamilyResponse, idx: number): Familiar {
-    const edad = Math.floor(
+    // Sin fecha de nacimiento (campo opcional al alta), no calculamos edad:
+    // `new Date(null)` cae en epoch (1970) y da una edad inventada sin sentido.
+    const edad = p.birthDate ? Math.floor(
       (Date.now() - new Date(p.birthDate).getTime()) / (365.25 * 24 * 3600 * 1000),
-    );
+    ) : null;
     const vinculo: Familiar['vinculo'] =
       p.bond === 'PROPIO' ? 'Yo' : this.normalizeBond(p.bond);
     return {

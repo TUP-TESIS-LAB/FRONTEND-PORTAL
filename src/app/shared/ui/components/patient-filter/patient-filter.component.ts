@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
+import { capitalizeWords } from '../../../utils/capitalize-words';
 
 export interface PatientFilterOption {
   id: number;
@@ -58,10 +59,13 @@ export class PatientFilterComponent {
   }
 
   private rebuild(): void {
-    const patients: SelectItem[] = this._raw.map(o => ({
-      label: o.sublabel ? `${o.nombre} · ${o.sublabel}` : o.nombre,
-      value: o.id as number | null,
-    }));
+    const patients: SelectItem[] = this._raw.map(o => {
+      const nombre = capitalizeWords(o.nombre);
+      return {
+        label: o.sublabel ? `${nombre} · ${o.sublabel}` : nombre,
+        value: o.id as number | null,
+      };
+    });
     this.selectOptions = this._includeTodos
       ? [{ label: 'Todos', value: null }, ...patients]
       : patients;

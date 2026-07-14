@@ -50,6 +50,12 @@
     background: var(--ds-surface);
     border-bottom: 1px solid var(--ds-surface-dark);
   }
+
+  // PrimeNG no fuerza el ancho del <table> interno — sin esto, con pocas filas
+  // la tabla se encoge al contenido en vez de ocupar el wrapper completo.
+  ::ng-deep .p-datatable-table {
+    width: 100%;
+  }
 }
 
 .ui-estudios-aside {
@@ -148,6 +154,7 @@
   justify-content: center;
   font-size: 10px;
   font-weight: 700;
+  line-height: 1;
   color: white;
   flex-shrink: 0;
 }
@@ -200,6 +207,7 @@
     justify-content: center;
     font-size: 14px;
     font-weight: 700;
+    line-height: 1;
     color: white;
   }
 

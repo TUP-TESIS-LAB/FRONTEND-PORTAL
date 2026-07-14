@@ -46,17 +46,6 @@
   gap: var(--space-5);
 }
 
-.login__remember {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: 14px;
-  color: var(--ds-text-muted);
-  margin-top: calc(-1 * var(--space-2));
-
-  label { cursor: pointer; }
-}
-
 .login__submit {
   margin-top: var(--space-2);
 }

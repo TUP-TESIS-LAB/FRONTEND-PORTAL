@@ -73,14 +73,13 @@ describe('EstudiosEffects', () => {
     });
   }));
 
-  it('loadEstudiosTodos$ despacha loadEstudiosFailure si falla algún paciente', () => new Promise<void>(done => {
-    const error = new HttpErrorResponse({ status: 500 });
-    const eff = setup(
-      { getEstudios: () => throwError(() => error) },
-      loadEstudiosTodos({ patientIds: [10, 20] }),
-    );
+  it('loadEstudiosTodos$ no aborta el batch si falla un solo paciente (ej. familiar sin acceso todavía)', () => new Promise<void>(done => {
+    const error = new HttpErrorResponse({ status: 403 });
+    const getEstudios = vi.fn((id: number) => id === 10 ? of([ESTUDIO]) : throwError(() => error));
+    const eff = setup({ getEstudios }, loadEstudiosTodos({ patientIds: [10, 20] }));
     eff.loadEstudiosTodos$.subscribe(a => {
-      expect(a).toEqual(loadEstudiosFailure({ error }));
+      // El paciente que falla aporta lista vacía — no esconde los estudios del resto.
+      expect(a).toEqual(loadEstudiosTodosSuccess({ estudios: [ESTUDIO] }));
       done();
     });
   }));

@@ -42,9 +42,16 @@
       }
       @if (turno.sede.telefono || turno.sede.horario) {
         <span class="ui-turno-detail__sede-meta">
-          @if (turno.sede.telefono) { <i class="pi pi-phone" aria-hidden="true"></i> {{ turno.sede.telefono }} }
-          @if (turno.sede.telefono && turno.sede.horario) { &nbsp;·&nbsp; }
-          @if (turno.sede.horario) { <i class="pi pi-clock" aria-hidden="true"></i> {{ turno.sede.horario }} }
+          @if (turno.sede.telefono) {
+            <span class="ui-turno-detail__sede-meta-item">
+              <i class="pi pi-phone" aria-hidden="true"></i>{{ turno.sede.telefono }}
+            </span>
+          }
+          @if (turno.sede.horario) {
+            <span class="ui-turno-detail__sede-meta-item">
+              <i class="pi pi-clock" aria-hidden="true"></i>{{ turno.sede.horario }}
+            </span>
+          }
         </span>
       }
     </div>

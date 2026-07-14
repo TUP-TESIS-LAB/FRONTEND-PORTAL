@@ -69,4 +69,10 @@
     min-height: 0;
     display: block;
   }
+
+  &__step-hint {
+    margin: 0 0 var(--space-3);
+    font-size: 13px;
+    color: var(--ds-text-muted);
+  }
 }

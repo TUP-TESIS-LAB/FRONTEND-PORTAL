@@ -16,7 +16,10 @@
 
 .ui-sede-card {
   display: flex;
-  align-items: flex-start;
+  // Centrado: con dirección + teléfono + horario el bloque de texto tiene
+  // 3-4 líneas — flex-start dejaba el ícono pegado arriba, desalineado del
+  // resto de la card.
+  align-items: center;
   gap: var(--space-3);
   padding: var(--space-3);
   background: var(--ds-white);
@@ -52,8 +55,6 @@
     flex-shrink: 0;
     color: var(--ds-text-muted);
     font-size: 18px;
-    // Pequeño ajuste vertical para alinear con la primera línea de texto
-    margin-top: 2px;
   }
 
   &__info {

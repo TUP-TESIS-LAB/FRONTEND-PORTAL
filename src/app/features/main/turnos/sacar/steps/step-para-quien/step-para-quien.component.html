@@ -7,6 +7,7 @@
       <ui-family-card
         [familiar]="family()[0]"
         [selected]="isSelected(family()[0])"
+        [compact]="true"
         (click)="onSelect(family()[0])">
       </ui-family-card>
     </div>
@@ -20,6 +21,7 @@
         <ui-family-card
           [familiar]="f"
           [selected]="isSelected(f)"
+          [compact]="true"
           (click)="onSelect(f)">
         </ui-family-card>
       }

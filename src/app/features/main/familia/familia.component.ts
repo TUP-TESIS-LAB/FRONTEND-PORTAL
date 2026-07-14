@@ -13,6 +13,7 @@ import { FamilyGridComponent } from '../../../shared/ui/components/family-grid/f
 import { AddFamilyCardComponent } from '../../../shared/ui/components/add-family-card/add-family-card.component';
 import { AgregarFamiliarComponent } from './agregar-familiar/agregar-familiar.component';
 import { Familiar } from '../../../core/models/familiar.model';
+import { capitalizeWords } from '../../../shared/utils/capitalize-words';
 import { selectAllFamily, selectFamilyPending } from './store/family.selectors';
 import { loadFamily, removeFamilyMember, removeFamilyMemberSuccess, removeFamilyMemberFailure } from './store/family.actions';
 
@@ -77,7 +78,7 @@ export class FamiliaComponent implements OnInit {
 
   onRemoveFamiliar(f: Familiar): void {
     this.confirmService.confirm({
-      message: `¿Quitar a ${f.nombre} ${f.apellido} de tu grupo familiar?`,
+      message: `¿Quitar a ${capitalizeWords(f.nombre)} ${capitalizeWords(f.apellido)} de tu grupo familiar?`,
       header: 'Confirmar',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Sí, quitar',

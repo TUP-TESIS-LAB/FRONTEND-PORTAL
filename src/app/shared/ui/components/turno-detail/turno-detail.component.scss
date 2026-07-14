@@ -105,11 +105,22 @@
     color: var(--ds-text-muted);
     display: flex;
     align-items: center;
-    gap: var(--space-1);
+    gap: var(--space-2);
     flex-wrap: wrap;
     margin-top: var(--space-1);
 
     .pi { font-size: 11px; }
+  }
+
+  // Ícono + texto agrupados: el wrap de línea pasa ENTRE items (teléfono vs
+  // horario) o dentro del propio texto de un item — nunca deja al ícono
+  // solo en una línea separado del texto que le sigue.
+  &__sede-meta-item {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 4px;
+
+    .pi { margin-top: 1px; }
   }
 
   // ─── Labels de sección ───────────────────────────────
