@@ -13,7 +13,7 @@ describe('PatientFilterComponent', () => {
     expect(cmp.selectOptions.length).toBe(3); // Todos + 2
     expect(cmp.selectOptions[0]).toEqual({ label: 'Todos', value: null });
     expect(cmp.selectOptions[1]).toEqual({ label: 'Carlos · vos', value: 1 });
-    expect(cmp.selectOptions[2]).toEqual({ label: 'mateo · Hijo', value: 2 });
+    expect(cmp.selectOptions[2]).toEqual({ label: 'Mateo · Hijo', value: 2 });
   });
 
   it('sin sublabel usa solo el nombre', () => {
