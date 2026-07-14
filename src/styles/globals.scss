@@ -51,3 +51,19 @@ a  { color: var(--brand-primary); text-decoration: none; }
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
+
+// ─── Wizard de Sacar Turno (desktop): scroll interno, no de página ────
+// .ui-patient-content es flex:1 dentro de .ui-patient-layout__main (el
+// scroll container real de toda la app), pero por default un flex item
+// tiene min-height:auto — con contenido lo bastante alto (ej. muchas
+// tarjetas de "Tipo de análisis"), crece más allá del viewport y termina
+// scrolleando LA PÁGINA entera en vez de la lista del wizard, arrastrando
+// los botones Continuar/Volver fuera de vista. El wizard ya maneja su
+// propio scroll interno (.ui-wizard__content) con footer sticky — solo
+// necesita que el contenedor no le pise ese comportamiento creciendo sin
+// límite. Acotado a esta página nada más: el resto de las pantallas
+// (turnos, estudios, etc.) sí dependen del crecimiento natural + scroll
+// de página, así que no tocamos el min-height ahí.
+.ui-patient-content:has(.ui-sacar-page) {
+  min-height: 0;
+}

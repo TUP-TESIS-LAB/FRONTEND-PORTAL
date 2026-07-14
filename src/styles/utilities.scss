@@ -225,8 +225,9 @@
 
 // Tags de los 3 estados visibles al paciente en /turnos (matchean
 // EstadoTurnoKeyPipe: programado, asistido, cancelado).
-.ui-tag-programado { background: var(--ds-success-light);    color: var(--ds-success);    }
-.ui-tag-asistido   { background: var(--brand-primary-light); color: var(--brand-primary); }
+.ui-tag-programado  { background: var(--ds-success-light);    color: var(--ds-success);    }
+.ui-tag-asistido    { background: var(--brand-primary-light); color: var(--brand-primary); }
+.ui-tag-no-asistido { background: var(--ds-surface-dark);     color: var(--ds-text-muted); }
 
 // ─── Formularios ─────────────────────────────────────
 .ui-form-grid {
