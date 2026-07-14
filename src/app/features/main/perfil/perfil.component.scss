@@ -118,6 +118,41 @@
   span { font-size: 13px; color: var(--ds-text-muted); }
 }
 
+// ─── Notificaciones (toggle push) ────────────────────────────
+.ui-perfil__notificaciones {
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-sm);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.ui-perfil__notificaciones-title {
+  margin: 0 0 var(--space-3);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ds-text);
+}
+
+.ui-perfil__notificaciones-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+
+  span {
+    font-size: 13px;
+    color: var(--ds-text-muted);
+  }
+}
+
+.ui-perfil__notificaciones-hint {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: 12px;
+  color: var(--ds-text-muted);
+}
+
 // ─── Banner informativo inferior ────────────────────────────
 .ui-perfil__banner {
   display: flex;
