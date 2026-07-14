@@ -26,10 +26,23 @@
     </ng-template>
   </p-drawer>
 
+  <!-- Campanita: fija en la esquina, visible solo en mobile (sin topbar propio;
+       en tablet vive en .ui-topbar__right, en desktop en .ui-sidebar__header). -->
+  <button
+    type="button"
+    class="ui-notif-bell ui-notif-bell--mobile"
+    aria-label="Notificaciones"
+    (click)="openNotifications()">
+    <i class="pi pi-bell"></i>
+    @if (unreadCount() > 0) {
+      <span class="ui-notif-bell__badge">{{ unreadCount() }}</span>
+    }
+  </button>
+
   <!-- Área principal: topbar + contenido con router-outlet -->
   <div class="ui-patient-layout__main">
 
-    <!-- Topbar: visible solo en tablet (hamburguesa para abrir el menú) -->
+    <!-- Topbar: visible solo en tablet (hamburguesa para abrir el menú + campanita) -->
     <header class="ui-topbar">
       <div class="ui-topbar__left">
         <p-button
@@ -38,6 +51,18 @@
           [text]="true"
           ariaLabel="Abrir menú"
           (onClick)="drawerOpen.set(true)" />
+      </div>
+      <div class="ui-topbar__right">
+        <button
+          type="button"
+          class="ui-notif-bell"
+          aria-label="Notificaciones"
+          (click)="openNotifications()">
+          <i class="pi pi-bell"></i>
+          @if (unreadCount() > 0) {
+            <span class="ui-notif-bell__badge">{{ unreadCount() }}</span>
+          }
+        </button>
       </div>
     </header>
 
@@ -58,5 +83,12 @@
     title="Más"
     [items]="moreSheetItems"
     (itemClick)="onMoreItemClick($event)" />
+
+  <!-- Bandeja de notificaciones: se abre desde la campanita (desktop/tablet/mobile) -->
+  <ui-top-sheet
+    [visible]="notifOpen()"
+    (visibleChange)="notifOpen.set($event)"
+    title="Notificaciones"
+    [items]="notifItems()" />
 
 </div>
