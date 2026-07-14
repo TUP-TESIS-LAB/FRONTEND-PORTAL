@@ -22,13 +22,22 @@
   &__stepper {
     display: flex;
     align-items: flex-start; // los conectores usan margin-top para alinearse al centro
+    // Centra el grupo cuando el wizard tiene menos pasos (ej. se oculta
+    // "Para quién" con un solo familiar) — sin esto el flex-start default
+    // hace que la fila quede pegada a la izquierda en vez de centrada.
+    // En desktop no cambia nada (los conectores flex:1 ya llenan el 100%).
+    justify-content: center;
     padding: var(--space-5) var(--space-6);
     background: var(--ds-bg);
     border-bottom: 1px solid var(--ds-surface-dark);
     gap: var(--space-2);
 
     @include mobile-only {
-      padding: var(--space-4);
+      // Padding chico: con 5 pasos el contenido es justo en el ancho de un
+      // modal mobile — cada px de aire lateral cuenta. Si algún día hay más
+      // pasos, este es el primer valor a bajar (después el min-width del
+      // paso y el ancho del conector, más abajo).
+      padding: var(--space-3) var(--space-2);
       gap: var(--space-1);
     }
   }
@@ -42,7 +51,7 @@
     min-width: 80px;
 
     @include mobile-only {
-      min-width: 56px;
+      min-width: 44px;
     }
   }
 
@@ -114,6 +123,11 @@
 
     @include mobile-only {
       margin-top: 14px;
+      // Ancho fijo chico en vez de flex:1 — con 5 pasos, dejar que crezca
+      // hace que 4 conectores le saquen ancho a los círculos/labels. Si
+      // algún día hay más de 5 pasos, este es el segundo valor a bajar.
+      flex: 0 0 6px;
+      min-width: 6px;
     }
 
     &--done {

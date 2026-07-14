@@ -56,6 +56,9 @@
       }
 
       @case ('tipo') {
+        <p class="ui-sacar-page__step-hint">
+          Opcional: si no sabés qué análisis te van a pedir, podés continuar sin elegir ninguno.
+        </p>
         <ui-analysis-card-grid
           [tipos]="tiposAnalisis()"
           [selectedIds]="selectedTipoIds()"

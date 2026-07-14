@@ -132,7 +132,9 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
   readonly canProceed = computed(() => {
     switch (this.currentStepId()) {
       case 'para-quien': return this.selectedPatientId() !== null;
-      case 'tipo':       return this.selectedTipoIds().length > 0;
+      // Elegir un tipo de análisis es opcional: el backend acepta el turno
+      // sin determinations (se completa después en el laboratorio).
+      case 'tipo':       return true;
       case 'sede':       return this.selectedSedeId() !== null;
       case 'fecha':      return this.selectedFecha() !== null && this.selectedHora() !== null;
       case 'confirmar':  return true;
@@ -272,7 +274,8 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
     const hora      = this.selectedHora();
     const tipoIds   = this.selectedTipoIds();
 
-    if (!patientId || !sedeId || !fecha || !hora || tipoIds.length === 0) return;
+    // tipoIds puede venir vacío: elegir tipo de análisis es opcional (ver 'tipo' en canProceed).
+    if (!patientId || !sedeId || !fecha || !hora) return;
 
     const [hh, mm] = hora.split(':').map(Number);
     const scheduledAt = new Date(fecha);

@@ -6,6 +6,57 @@
     outline: 2px solid var(--brand-primary);
     background: var(--brand-primary-light);
   }
+
+  // Variante compacta: fila horizontal en vez de card centrada — pensada para
+  // el wizard de Sacar Turno, donde puede haber que elegir entre varios
+  // familiares dentro de un modal angosto y de altura acotada.
+  &.is-compact .family-card {
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+
+  &.is-compact .avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+    margin-bottom: 0;
+  }
+
+  &.is-compact .name {
+    font-size: 14px;
+  }
+
+  &.is-compact .meta {
+    font-size: 12px;
+  }
+
+  &.is-compact .info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+
+    .name {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
+// Default (no compacto): el wrapper desaparece del box model — sus hijos
+// (name/meta/badge) se comportan como items directos del flex column de
+// .family-card, igual que antes de introducir el wrapper .info.
+.info {
+  display: contents;
 }
 
 .family-card {

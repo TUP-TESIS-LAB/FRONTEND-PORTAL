@@ -12,6 +12,7 @@ import { Familiar } from '../../../../core/models/familiar.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.is-selected]': 'selected',
+    '[class.is-compact]': 'compact',
   },
 })
 export class FamilyCardComponent {
@@ -24,6 +25,9 @@ export class FamilyCardComponent {
    * En pantallas donde la card es solo informativa (ej. Familia), pasar false.
    */
   @Input() interactive = true;
+
+  /** Variante compacta (menos padding/altura) para contextos angostos como el wizard de Sacar Turno. */
+  @Input() compact = false;
 
   /** Emitido cuando el usuario hace click en la zona de la tarjeta (seleccionar). Solo si `interactive`. */
   @Output() select = new EventEmitter<Familiar>();

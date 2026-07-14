@@ -12,14 +12,16 @@
     </div>
   }
 
-  <div class="ui-turno-resumen__section">
-    <span class="ui-turno-resumen__label">Tipo de análisis</span>
-    <ul class="ui-turno-resumen__lista">
-      @for (tipo of tipos; track tipo.id) {
-        <li>{{ tipo.nombre }}</li>
-      }
-    </ul>
-  </div>
+  @if (tipos.length > 0) {
+    <div class="ui-turno-resumen__section">
+      <span class="ui-turno-resumen__label">Tipo de análisis</span>
+      <ul class="ui-turno-resumen__lista">
+        @for (tipo of tipos; track tipo.id) {
+          <li>{{ tipo.nombre }}</li>
+        }
+      </ul>
+    </div>
+  }
 
   <div class="ui-turno-resumen__section">
     <span class="ui-turno-resumen__label">Sede</span>
