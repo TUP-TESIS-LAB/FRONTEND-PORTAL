@@ -10,6 +10,7 @@ import { ActivePatientService } from '../../../../core/active-patient/active-pat
 import { PushService } from '../../../../core/push/push.service';
 import { NOTIFICATIONS_KEY, initialNotificationsState } from '../../../../core/notifications/store/notifications.state';
 import { startNotificationsPolling, stopNotificationsPolling, markNotificationsRead } from '../../../../core/notifications/store/notifications.actions';
+import { selectUnreadCount } from '../../../../core/notifications/store/notifications.selectors';
 import type { Familiar } from '../../../../core/models/familiar.model';
 import type { Notificacion } from '../../../../core/models/notificacion.model';
 
@@ -98,5 +99,14 @@ describe('PatientShellComponent', () => {
     cmp.openNotifications();
     expect(cmp.notifOpen()).toBe(true);
     expect(store.dispatch).toHaveBeenCalledWith(markNotificationsRead({ ids: [] }));
+  });
+
+  it('openNotifications sin no-leidas abre la bandeja pero no despacha markNotificationsRead', () => {
+    store.overrideSelector(selectUnreadCount, 0);
+    store.refreshState();
+    const cmp = runInInjectionContext(injector, () => new PatientShellComponent());
+    cmp.openNotifications();
+    expect(cmp.notifOpen()).toBe(true);
+    expect(store.dispatch).not.toHaveBeenCalledWith(markNotificationsRead({ ids: [] }));
   });
 });

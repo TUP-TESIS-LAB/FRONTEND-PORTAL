@@ -82,7 +82,9 @@ export class PatientShellComponent implements OnInit, OnDestroy {
 
   openNotifications(): void {
     this.notifOpen.set(true);
-    this.store.dispatch(markNotificationsRead({ ids: [] }));
+    if (this.unreadCount() > 0) {
+      this.store.dispatch(markNotificationsRead({ ids: [] }));
+    }
   }
 
   private patientName(patientId: number): string {
