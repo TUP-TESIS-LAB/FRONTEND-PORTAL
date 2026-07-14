@@ -44,10 +44,30 @@ export class PushService {
     if (!this.swPush.isEnabled) {
       return;
     }
+
+    let publicKey: string;
     try {
-      const publicKey = await firstValueFrom(this.api.getVapidPublicKey());
-      const sub = await this.swPush.requestSubscription({ serverPublicKey: publicKey });
-      const json = sub.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } };
+      publicKey = await firstValueFrom(this.api.getVapidPublicKey());
+    } catch {
+      // Fallo de red/backend al pedir la clave VAPID: no es un tema de permiso.
+      this._enabled.set(false);
+      return;
+    }
+
+    let sub: PushSubscription;
+    try {
+      sub = await this.swPush.requestSubscription({ serverPublicKey: publicKey });
+    } catch {
+      // requestSubscription rechaza tanto por permiso denegado como por prompt cerrado.
+      // jsdom no define `Notification`: sin esa API no podemos distinguir el motivo del
+      // rechazo, así que se asume denegado (mismo resultado que el caso real de permiso denegado).
+      this._permissionDenied.set(typeof Notification === 'undefined' || Notification.permission === 'denied');
+      this._enabled.set(false);
+      return;
+    }
+
+    const json = sub.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } };
+    try {
       await firstValueFrom(
         this.api.registerSubscription({
           endpoint: json.endpoint,
@@ -56,16 +76,21 @@ export class PushService {
           userAgent: navigator.userAgent,
         }),
       );
-      this.currentEndpoint = json.endpoint;
-      this._enabled.set(true);
-      this._permissionDenied.set(false);
     } catch {
-      // requestSubscription rechaza tanto por permiso denegado como por prompt cerrado.
-      // jsdom no define `Notification`: sin esa API no podemos distinguir el motivo del
-      // rechazo, así que se asume denegado (mismo resultado que el caso real de permiso denegado).
-      this._permissionDenied.set(typeof Notification === 'undefined' || Notification.permission === 'denied');
+      // El backend no conoce esta suscripción; desuscribir para no quedar desincronizados
+      // (una suscripción viva solo en el navegador nunca recibiría notificaciones).
+      try {
+        await sub.unsubscribe();
+      } catch {
+        // rollback best-effort
+      }
       this._enabled.set(false);
+      return;
     }
+
+    this.currentEndpoint = json.endpoint;
+    this._enabled.set(true);
+    this._permissionDenied.set(false);
   }
 
   async disable(): Promise<void> {

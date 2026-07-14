@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { SwPush } from '@angular/service-worker';
-import { Subject, of } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PushService } from './push.service';
@@ -34,6 +34,7 @@ describe('PushService', () => {
   }
 
   beforeEach(() => {
+    (fakeBrowserSub.unsubscribe as ReturnType<typeof vi.fn>).mockClear();
     swPushMock = {
       isEnabled: true,
       subscription: new Subject<PushSubscription | null>(),
@@ -75,6 +76,24 @@ describe('PushService', () => {
     await svc.enable();
     expect(svc.permissionDenied()).toBe(true);
     expect(notificationsMock.registerSubscription).not.toHaveBeenCalled();
+  });
+
+  it('enable con fallo del backend hace rollback de la suscripcion del navegador', async () => {
+    notificationsMock.registerSubscription = vi.fn().mockReturnValue(throwError(() => new Error('500')));
+    const svc = build();
+    await svc.enable();
+    expect(fakeBrowserSub.unsubscribe).toHaveBeenCalled();
+    expect(svc.enabled()).toBe(false);
+    expect(svc.permissionDenied()).toBe(false);
+  });
+
+  it('enable con fallo al obtener la clave VAPID no marca permissionDenied', async () => {
+    notificationsMock.getVapidPublicKey = vi.fn().mockReturnValue(throwError(() => new Error('500')));
+    const svc = build();
+    await svc.enable();
+    expect(svc.enabled()).toBe(false);
+    expect(svc.permissionDenied()).toBe(false);
+    expect(swPushMock.requestSubscription).not.toHaveBeenCalled();
   });
 
   it('disable desuscribe y borra en el backend', async () => {
