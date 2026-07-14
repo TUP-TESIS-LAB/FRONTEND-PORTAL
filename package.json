@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "serve:pwa": "ng build && ws --directory dist/TUP-TESIS-LAB-PORTAL/browser --spa index.html --rewrite \"/api/(.*) -> http://localhost:8080/api/$1\" \"/public/(.*) -> http://localhost:8080/public/$1\" --port 8081"
   },
   "private": true,
   "packageManager": "npm@10.9.0",
@@ -37,6 +38,7 @@
     "@angular/cli": "^21.2.9",
     "@angular/compiler-cli": "^21.2.0",
     "jsdom": "^28.0.0",
+    "local-web-server": "^5.4.0",
     "prettier": "^3.8.1",
     "sass": "^1.99.0",
     "typescript": "~5.9.2",
