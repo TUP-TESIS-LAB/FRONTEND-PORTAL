@@ -2,6 +2,19 @@
   [title]="cargando() ? 'Hola' : 'Hola, ' + nombrePaciente()"
   subtitle="Esto es lo que está pasando con tu cuenta." />
 
+<!-- Banner de activación de notificaciones push: solo tras gesto explícito del usuario -->
+@if (showPushBanner()) {
+  <ui-notice-card
+    icon="pi-bell"
+    variant="info"
+    title="Enterate cuando tus resultados estén listos"
+    text="Activá las notificaciones y te avisamos apenas haya un informe nuevo." />
+  <div class="ui-dashboard__push-actions">
+    <p-button label="Activar notificaciones" (onClick)="activarNotificaciones()" />
+    <p-button label="Ahora no" severity="secondary" [text]="true" (onClick)="dismissPushBanner()" />
+  </div>
+}
+
 <!-- Hero: prioridad próximo turno → último estudio → empty state -->
 @if (cargando()) {
   <p-skeleton height="180px" styleClass="ui-dashboard__skeleton" />

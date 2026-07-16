@@ -1,11 +1,9 @@
 @use 'breakpoints' as *;
 
-// Solo se usa en mobile (igual que bottom-sheet).
-:host {
-  @include desktop-up {
-    display: none;
-  }
-}
+// Se usa en todos los breakpoints (campanita de notificaciones): en mobile es un
+// sheet full-width desde arriba; en desktop, un panel acotado arriba a la derecha
+// (ver .ui-top-sheet-drawer en primeng-overrides.scss — el p-drawer no hereda
+// estilos del host).
 
 .ui-top-sheet {
   padding-top: calc(var(--space-3) + env(safe-area-inset-top, 0px));

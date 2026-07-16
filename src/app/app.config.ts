@@ -36,6 +36,9 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { estudiosReducer } from './features/main/estudios/store/estudios.reducer';
 import { EstudiosEffects } from './features/main/estudios/store/estudios.effects';
 import { ESTUDIOS_KEY } from './features/main/estudios/store/estudios.state';
+import { NOTIFICATIONS_KEY } from './core/notifications/store/notifications.state';
+import { notificationsReducer } from './core/notifications/store/notifications.reducer';
+import { NotificationsEffects } from './core/notifications/store/notifications.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -47,8 +50,8 @@ export const appConfig: ApplicationConfig = {
     // root). Las páginas siguen proveyendo el suyo propio — este no las pisa.
     MessageService,
 
-    provideStore({ router: routerReducer, passwordRecovery: passwordRecoveryReducer, perfil: perfilReducer, turnos: turnosReducer, [FAMILY_KEY]: familyReducer, [FIRST_LOGIN_KEY]: firstLoginReducer, [ESTUDIOS_KEY]: estudiosReducer }, { metaReducers }),
-    provideEffects(PasswordRecoveryEffects, PerfilEffects, TurnosEffects, FamilyEffects, FirstLoginEffects, EstudiosEffects),
+    provideStore({ router: routerReducer, passwordRecovery: passwordRecoveryReducer, perfil: perfilReducer, turnos: turnosReducer, [FAMILY_KEY]: familyReducer, [FIRST_LOGIN_KEY]: firstLoginReducer, [ESTUDIOS_KEY]: estudiosReducer, [NOTIFICATIONS_KEY]: notificationsReducer }, { metaReducers }),
+    provideEffects(PasswordRecoveryEffects, PerfilEffects, TurnosEffects, FamilyEffects, FirstLoginEffects, EstudiosEffects, NotificationsEffects),
     provideRouterStore(),
 
     providePrimeNG({

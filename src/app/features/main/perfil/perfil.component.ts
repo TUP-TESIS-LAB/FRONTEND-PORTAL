@@ -1,5 +1,6 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -8,9 +9,11 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ToastModule } from 'primeng/toast';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
 import { PatientFilterComponent, PatientFilterOption } from '../../../shared/ui/components/patient-filter/patient-filter.component';
 import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
+import { PushService } from '../../../core/push/push.service';
 import * as A from './store/perfil.actions';
 import {
   selectUser, selectLoading, selectSaving, selectProfileSaved,
@@ -23,12 +26,14 @@ import {
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    FormsModule,
     ButtonModule,
     DialogModule,
     InputTextModule,
     PasswordModule,
     SkeletonModule,
     ToastModule,
+    ToggleSwitchModule,
     PageHeaderComponent,
     PatientFilterComponent,
   ],
@@ -41,6 +46,7 @@ export class PerfilComponent {
   private readonly store          = inject(Store);
   private readonly fb             = inject(FormBuilder);
   private readonly activePatient  = inject(ActivePatientService);
+  protected readonly push         = inject(PushService);
 
   readonly user    = this.store.selectSignal(selectUser);
   readonly loading = this.store.selectSignal(selectLoading);
@@ -201,6 +207,14 @@ export class PerfilComponent {
     if (this.passForm.invalid) { this.passForm.markAllAsTouched(); return; }
     const { currentPassword, newPassword } = this.passForm.getRawValue();
     this.store.dispatch(A.changePassword({ currentPassword: currentPassword!, newPassword: newPassword! }));
+  }
+
+  toggleNotificacionesPush(activar: boolean): void {
+    if (activar) {
+      void this.push.enable();
+    } else {
+      void this.push.disable();
+    }
   }
 
   abrirEdicion(): void {

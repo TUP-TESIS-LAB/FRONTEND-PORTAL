@@ -78,6 +78,77 @@ ui-bottom-nav {
     align-items: center;
     gap: var(--space-3);
   }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-left: auto;
+  }
+}
+
+// Campanita de notificaciones. En tablet vive dentro de .ui-topbar__right
+// (ver arriba); en mobile (sin topbar propio) se fija en la esquina superior
+// derecha. En desktop la sidebar es fija y no tiene topbar, así que también
+// se muestra ahí como fallback flotante — evita extender la API de ui-sidebar
+// (componente puro del DS que no conoce el store de notificaciones).
+.ui-notif-bell {
+  position: relative;
+  width: var(--ds-touch-target);
+  height: var(--ds-touch-target);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--ds-text-muted);
+  transition: background 0.2s, color 0.2s;
+
+  i { font-size: 18px; }
+
+  &:hover {
+    background: var(--ds-surface-dark);
+    color: var(--ds-text);
+  }
+
+  &__badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--ds-danger);
+    color: var(--ds-white);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+  }
+
+  // Variante flotante fija: cubre mobile (sin topbar) y desktop (topbar
+  // oculto, sidebar fija sin slot para acciones). En tablet no se muestra
+  // porque ahí ya está la campanita dentro de .ui-topbar__right.
+  &--mobile {
+    display: none;
+    position: fixed;
+    top: max(var(--space-3), var(--ds-safe-top));
+    right: max(var(--space-3), var(--ds-safe-right));
+    background: var(--ds-white);
+    box-shadow: var(--ds-shadow-sm);
+    z-index: var(--z-sticky);
+
+    @include mobile-only {
+      display: flex;
+    }
+
+    @include desktop-up {
+      display: flex;
+    }
+  }
 }
 
 .ui-patient-content {

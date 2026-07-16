@@ -9,6 +9,7 @@ import { PerfilService } from './perfil.service';
 import { initialPerfilState } from './store/perfil.state';
 import * as A from './store/perfil.actions';
 import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
+import { PushService } from '../../../core/push/push.service';
 import type { Familiar } from '../../../core/models/familiar.model';
 
 const USER = { patientId: 1, firstName: 'Ana', lastName: 'Lopez', dni: '123', email: 'a@b.com', phone: '111', address: 'calle 1', coverageName: 'OSDE' };
@@ -19,17 +20,31 @@ function fam(id: number, vinculo: Familiar['vinculo'], tieneCuenta: boolean, sta
     totalTurnos: 0, totalEstudios: 0, accentColor: 'primary' };
 }
 
+function pushStub(overrides: Partial<{ supported: boolean; enabled: boolean; permissionDenied: boolean }> = {}) {
+  const { supported = true, enabled = false, permissionDenied = false } = overrides;
+  return {
+    supported: () => supported,
+    enabled: () => enabled,
+    permissionDenied: () => permissionDenied,
+    enable: vi.fn().mockResolvedValue(undefined),
+    disable: vi.fn().mockResolvedValue(undefined),
+  };
+}
+
 describe('PerfilComponent', () => {
   let store: MockStore; let injector: Injector;
   const familia = signal<Familiar[]>([]);
+  let pushSvc: ReturnType<typeof pushStub>;
   beforeEach(() => {
     familia.set([]);
+    pushSvc = pushStub();
     TestBed.configureTestingModule({
       providers: [
         provideMockStore({ initialState: { perfil: { ...initialPerfilState, user: USER } } }),
         MessageService,
         { provide: PerfilService, useValue: { getPerfil: () => of(USER) } },
         { provide: ActivePatientService, useValue: { accessiblePatients: familia.asReadonly(), reload: vi.fn() } },
+        { provide: PushService, useValue: pushSvc },
       ],
     });
     store = TestBed.inject(MockStore);
@@ -102,5 +117,61 @@ describe('PerfilComponent', () => {
       cmp.selectedPatientId.set(4);
       expect(canEdit(cmp)).toBe(false);
     });
+  });
+
+  describe('toggleNotificacionesPush', () => {
+    it('activar (true) llama a push.enable()', () => {
+      const cmp = runInInjectionContext(injector, () => new PerfilComponent());
+      cmp.toggleNotificacionesPush(true);
+      expect(pushSvc.enable).toHaveBeenCalled();
+      expect(pushSvc.disable).not.toHaveBeenCalled();
+    });
+
+    it('desactivar (false) llama a push.disable()', () => {
+      const cmp = runInInjectionContext(injector, () => new PerfilComponent());
+      cmp.toggleNotificacionesPush(false);
+      expect(pushSvc.disable).toHaveBeenCalled();
+      expect(pushSvc.enable).not.toHaveBeenCalled();
+    });
+  });
+});
+
+describe('PerfilComponent — estados de notificaciones push', () => {
+  let injector: Injector;
+  const familia = signal<Familiar[]>([fam(1, 'Yo', true)]);
+
+  function build(pushSvc: ReturnType<typeof pushStub>): PerfilComponent {
+    TestBed.configureTestingModule({
+      providers: [
+        provideMockStore({ initialState: { perfil: { ...initialPerfilState, user: USER } } }),
+        MessageService,
+        { provide: PerfilService, useValue: { getPerfil: () => of(USER) } },
+        { provide: ActivePatientService, useValue: { accessiblePatients: familia.asReadonly(), reload: vi.fn() } },
+        { provide: PushService, useValue: pushSvc },
+      ],
+    });
+    injector = TestBed.inject(Injector);
+    return runInInjectionContext(injector, () => new PerfilComponent());
+  }
+
+  it('soportado → expone push.supported()=true (muestra el switch)', () => {
+    const cmp = build(pushStub({ supported: true }));
+    expect(cmp.push.supported()).toBe(true);
+    expect(cmp.push.permissionDenied()).toBe(false);
+  });
+
+  it('permiso bloqueado → expone permissionDenied()=true (mensaje en vez de switch)', () => {
+    const cmp = build(pushStub({ supported: true, permissionDenied: true }));
+    expect(cmp.push.permissionDenied()).toBe(true);
+  });
+
+  it('no soportado → expone supported()=false (mensaje de navegador no compatible)', () => {
+    const cmp = build(pushStub({ supported: false }));
+    expect(cmp.push.supported()).toBe(false);
+  });
+
+  it('refleja push.enabled() como estado del switch', () => {
+    const cmp = build(pushStub({ enabled: true }));
+    expect(cmp.push.enabled()).toBe(true);
   });
 });

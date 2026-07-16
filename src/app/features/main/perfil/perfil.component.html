@@ -107,6 +107,31 @@
     </div>
   }
 
+  <!-- Notificaciones: solo en el perfil propio (la suscripción push es del dispositivo/cuenta) -->
+  @if (viewingOwn()) {
+    <div class="ui-perfil__notificaciones">
+      <h3 class="ui-perfil__notificaciones-title">Notificaciones</h3>
+      @if (push.supported()) {
+        <div class="ui-perfil__notificaciones-row">
+          <p-toggleswitch
+            [ngModel]="push.enabled()"
+            (ngModelChange)="toggleNotificacionesPush($event)"
+            ariaLabel="Notificaciones push" />
+          <span>Recibir un aviso cuando haya un informe nuevo</span>
+        </div>
+        @if (push.permissionDenied()) {
+          <small class="ui-perfil__notificaciones-hint">
+            Bloqueaste las notificaciones en el navegador. Activalas desde la configuración del sitio.
+          </small>
+        }
+      } @else {
+        <small class="ui-perfil__notificaciones-hint">
+          Las notificaciones no están disponibles en este navegador.
+        </small>
+      }
+    </div>
+  }
+
   <!-- Banner informativo inferior -->
   <div class="ui-perfil__banner">
     <i class="pi pi-shield ui-perfil__banner-icon"></i>

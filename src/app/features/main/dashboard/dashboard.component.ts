@@ -6,12 +6,16 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { PageHeaderComponent } from '../../../shared/ui/layout/page-header/page-header.component';
 import { HeroCardComponent, HeroCardDetail } from '../../../shared/ui/components/hero-card/hero-card.component';
 import { PlaceholderCardComponent } from '../../../shared/ui/components/placeholder-card/placeholder-card.component';
+import { NoticeCardComponent } from '../../../shared/ui/components/notice-card/notice-card.component';
 import { AppointmentService } from '../turnos/services/appointment.service';
 import { EstudioService } from '../estudios/estudio.service';
 import { ActivePatientService } from '../../../core/active-patient/active-patient.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { PushService } from '../../../core/push/push.service';
 import { Turno } from '../../../core/models/turno.model';
 import { Estudio } from '../../../core/models/estudio.model';
+
+const PUSH_BANNER_DISMISSED_KEY = 'portal_push_banner_dismissed';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,6 +26,7 @@ import { Estudio } from '../../../core/models/estudio.model';
     PageHeaderComponent,
     HeroCardComponent,
     PlaceholderCardComponent,
+    NoticeCardComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -32,6 +37,19 @@ export class DashboardComponent implements OnDestroy {
   private readonly activePatient = inject(ActivePatientService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  protected readonly push = inject(PushService);
+
+  /** Nunca volver a mostrar el banner tras rechazo o dismiss manual (persistido). */
+  private readonly bannerDismissed = signal(localStorage.getItem(PUSH_BANNER_DISMISSED_KEY) === 'true');
+
+  /** Solo se muestra tras gesto explícito del usuario: nunca al cargar la página. */
+  protected readonly showPushBanner = computed(
+    () =>
+      this.push.supported() &&
+      !this.push.enabled() &&
+      !this.push.permissionDenied() &&
+      !this.bannerDismissed(),
+  );
 
   protected readonly cargando = signal(true);
   protected readonly proximoTurno = signal<Turno | null>(null);
@@ -154,6 +172,19 @@ export class DashboardComponent implements OnDestroy {
   }
   protected onVerPerfil(): void {
     this.router.navigate(['/perfil']);
+  }
+
+  protected async activarNotificaciones(): Promise<void> {
+    await this.push.enable();
+    if (this.push.permissionDenied()) {
+      // El usuario denegó el permiso del navegador: no insistir nunca más.
+      this.dismissPushBanner();
+    }
+  }
+
+  protected dismissPushBanner(): void {
+    localStorage.setItem(PUSH_BANNER_DISMISSED_KEY, 'true');
+    this.bannerDismissed.set(true);
   }
 
   ngOnDestroy(): void {

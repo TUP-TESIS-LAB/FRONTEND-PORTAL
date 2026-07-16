@@ -11,6 +11,14 @@
   border-radius: var(--ds-radius-lg);
 }
 
+// ─── Banner de activación de notificaciones push ────────────────
+.ui-dashboard__push-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: var(--space-3) 0 var(--space-5);
+}
+
 // ─── Accesos rápidos (cards grandes) ────────────────────────────
 .ui-dashboard__accesos {
   margin-top: var(--space-5);
