@@ -1,0 +1,186 @@
+<p-toast position="top-right" />
+
+<ui-page-header
+  title="Mi perfil"
+  subtitle="Tus datos personales y de contacto.">
+  <div class="ui-perfil__header-actions">
+    <!-- Desktop: el selector va al lado del botón Editar -->
+    @if (patientFilterOptions().length > 1) {
+      <div class="ui-show-desktop">
+        <app-patient-filter
+          [options]="patientFilterOptions()"
+          [includeTodos]="false"
+          [selectedId]="selectedPatientId()"
+          (selectedIdChange)="onSelectPatient($event)" />
+      </div>
+    }
+    @if (canEditSelected()) {
+      <p-button
+        label="Editar perfil"
+        icon="pi pi-pencil"
+        severity="primary"
+        [disabled]="!user()"
+        (onClick)="abrirEdicion()" />
+    }
+  </div>
+</ui-page-header>
+
+<!-- Mobile: el selector va debajo del header (en desktop ya está arriba) -->
+@if (patientFilterOptions().length > 1) {
+  <div class="ui-perfil__patient ui-show-mobile">
+    <span class="ui-perfil__patient-label">Ver perfil de</span>
+    <app-patient-filter
+      [options]="patientFilterOptions()"
+      [includeTodos]="false"
+      [selectedId]="selectedPatientId()"
+      (selectedIdChange)="onSelectPatient($event)" />
+  </div>
+}
+
+<!-- CTA: la cuenta de gestión todavía no es paciente → ofrecer autoalta -->
+@if (!esPaciente()) {
+  <div class="ui-perfil__alta">
+    <i class="pi pi-user-plus ui-perfil__alta-icon"></i>
+    <div class="ui-perfil__alta-text">
+      <strong>Tu cuenta gestiona a otros pacientes, pero todavía no sos paciente.</strong>
+      <span>Si también te vas a atender, registrate como paciente para sacar turnos y ver tus estudios.</span>
+    </div>
+    <p-button
+      label="Darme de alta como paciente"
+      icon="pi pi-user-plus"
+      severity="primary"
+      [loading]="registering()"
+      (onClick)="darmeDeAlta()" />
+  </div>
+}
+
+<!-- Estado loading -->
+@if (loading() && !user()) {
+  <div class="ui-perfil__content">
+    <p-skeleton height="280px" />
+  </div>
+} @else if (user(); as u) {
+
+  <!-- Datos del perfil (lista clave-valor) -->
+  <div class="ui-perfil__content">
+    <div class="ui-field-list">
+      <div class="ui-field">
+        <span class="ui-field__label"><i class="pi pi-user"></i> Nombre completo</span>
+        <span class="ui-field__value">{{ u.firstName }} {{ u.lastName }}</span>
+      </div>
+      <div class="ui-field">
+        <span class="ui-field__label"><i class="pi pi-id-card"></i> DNI</span>
+        <span class="ui-field__value">{{ u.dni }}</span>
+      </div>
+      <div class="ui-field">
+        <span class="ui-field__label"><i class="pi pi-envelope"></i> Email</span>
+        <span class="ui-field__value">{{ u.email || '—' }}</span>
+      </div>
+      <div class="ui-field">
+        <span class="ui-field__label"><i class="pi pi-phone"></i> Teléfono</span>
+        <span class="ui-field__value">{{ u.phone || '—' }}</span>
+      </div>
+      <div class="ui-field">
+        <span class="ui-field__label"><i class="pi pi-map-marker"></i> Dirección</span>
+        <span class="ui-field__value">{{ u.address || '—' }}</span>
+      </div>
+      <div class="ui-field">
+        <span class="ui-field__label"><i class="pi pi-building"></i> Cobertura</span>
+        <span class="ui-field__value">{{ u.coverageName || '—' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Seguridad: solo en el perfil propio (la contraseña es de tu cuenta) -->
+  @if (viewingOwn()) {
+    <div class="ui-perfil__seguridad">
+      <div class="ui-perfil__seguridad-text">
+        <strong>Contraseña</strong>
+        <span>Cambiá tu contraseña de acceso al portal.</span>
+      </div>
+      <p-button
+        label="Cambiar contraseña"
+        icon="pi pi-lock"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="abrirCambioPass()" />
+    </div>
+  }
+
+  <!-- Banner informativo inferior -->
+  <div class="ui-perfil__banner">
+    <i class="pi pi-shield ui-perfil__banner-icon"></i>
+    <p class="ui-perfil__banner-text">
+      Mantener esta información actualizada ayuda al laboratorio a interpretar mejor tus resultados.
+    </p>
+  </div>
+}
+
+<!-- Modal: editar datos de contacto -->
+<p-dialog
+  [(visible)]="mostrarEdicion"
+  header="Editar datos de contacto"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [style]="{ width: '480px' }"
+  [breakpoints]="{ '768px': '100vw' }"
+  styleClass="ui-dialog-fullscreen-mobile">
+  <form id="perfil-edit-form" class="ui-perfil__form" [formGroup]="editForm" (ngSubmit)="guardarEdicion()">
+    <div class="ui-field">
+      <label class="ui-field__label" for="edit-email">Email</label>
+      <input pInputText id="edit-email" type="email" inputmode="email" formControlName="email" placeholder="tu@email.com" />
+      @if (editForm.controls.email.invalid && editForm.controls.email.touched) {
+        <small class="p-error">Ingresá un email válido.</small>
+      }
+    </div>
+    <div class="ui-field">
+      <label class="ui-field__label" for="edit-phone">Teléfono</label>
+      <input pInputText id="edit-phone" inputmode="tel" formControlName="phone" placeholder="Ej. 3514567890" />
+    </div>
+    <div class="ui-field">
+      <label class="ui-field__label" for="edit-address">Dirección</label>
+      <input pInputText id="edit-address" formControlName="address" placeholder="Calle, número, ciudad" />
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="cancelarEdicion()" />
+    <p-button label="Guardar" icon="pi pi-check" severity="primary" [loading]="saving()"
+              type="submit" (onClick)="guardarEdicion()" />
+  </ng-template>
+</p-dialog>
+
+<!-- Modal: cambiar contraseña -->
+<p-dialog
+  [(visible)]="mostrarCambioPass"
+  header="Cambiar contraseña"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '440px' }"
+  [breakpoints]="{ '768px': '100vw' }"
+  styleClass="ui-dialog-fullscreen-mobile"
+  (onHide)="cerrarCambioPass()">
+  <form id="perfil-pass-form" class="ui-perfil__form" [formGroup]="passForm" (ngSubmit)="guardarPassword()">
+    <div class="ui-field">
+      <label class="ui-field__label" for="cur-pass">Contraseña actual</label>
+      <p-password inputId="cur-pass" formControlName="currentPassword" [feedback]="false"
+                  [toggleMask]="true" placeholder="Contraseña actual" styleClass="ui-w-full" />
+    </div>
+    <div class="ui-field">
+      <label class="ui-field__label" for="new-pass">Nueva contraseña</label>
+      <p-password inputId="new-pass" formControlName="newPassword" [feedback]="false" [toggleMask]="true"
+                  placeholder="Nueva contraseña" styleClass="ui-w-full" />
+      <small class="ui-field__hint"
+             [class.p-error]="passForm.controls.newPassword.invalid && passForm.controls.newPassword.touched">
+        Mínimo 8 caracteres.
+      </small>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="cerrarCambioPass()" />
+    <p-button label="Guardar" icon="pi pi-check" severity="primary" [loading]="passwordChanging()"
+              type="submit" (onClick)="guardarPassword()" />
+  </ng-template>
+</p-dialog>

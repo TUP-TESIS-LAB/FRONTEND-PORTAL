@@ -1,0 +1,12 @@
+// ═══════════════════════════════════════════════════════
+// Design System — punto de entrada SCSS
+// Tailwind e íconos viven en styles.css (PostCSS nativo)
+// ═══════════════════════════════════════════════════════
+
+// @use SIEMPRE primero (regla estricta de Sass)
+@use 'styles/tokens';
+@use 'styles/globals';
+@use 'styles/utilities';
+@use 'styles/tenants/castillo-chidiak';
+@use 'styles/tenants/bioquimica-norte';
+@use 'styles/primeng-overrides';

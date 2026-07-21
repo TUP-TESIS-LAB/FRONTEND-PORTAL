@@ -1,0 +1,62 @@
+<div class="ui-patient-layout">
+
+  <!-- Desktop: sidebar fija oscura -->
+  <ui-sidebar
+    [navGroups]="navGroups"
+    [user]="user()"
+    [tenant]="tenant()!"
+    (logout)="logout()">
+  </ui-sidebar>
+
+  <!-- Mobile/tablet: mismo sidebar dentro de un drawer off-canvas -->
+  <p-drawer
+    [visible]="drawerOpen()"
+    (visibleChange)="drawerOpen.set($event)"
+    position="left"
+    [style]="{ width: 'var(--ds-sidebar-w)', padding: '0' }"
+    styleClass="ui-drawer">
+    <ng-template pTemplate="headless">
+      <ui-sidebar
+        [navGroups]="navGroups"
+        [user]="user()"
+        [tenant]="tenant()!"
+        (itemClick)="drawerOpen.set(false)"
+        (logout)="logout()">
+      </ui-sidebar>
+    </ng-template>
+  </p-drawer>
+
+  <!-- Área principal: topbar + contenido con router-outlet -->
+  <div class="ui-patient-layout__main">
+
+    <!-- Topbar: visible solo en tablet (hamburguesa para abrir el menú) -->
+    <header class="ui-topbar">
+      <div class="ui-topbar__left">
+        <p-button
+          icon="pi pi-bars"
+          [rounded]="true"
+          [text]="true"
+          ariaLabel="Abrir menú"
+          (onClick)="drawerOpen.set(true)" />
+      </div>
+    </header>
+
+    <main class="ui-patient-content">
+      <router-outlet />
+    </main>
+  </div>
+
+  <!-- Mobile: bottom navigation (app-like) -->
+  <ui-bottom-nav
+    [items]="mainNavItems"
+    (moreClick)="moreSheetOpen.set(true)" />
+
+  <!-- Mobile: bottom sheet con opciones secundarias (Mi perfil, Mi familia, Cerrar sesión) -->
+  <ui-bottom-sheet
+    [visible]="moreSheetOpen()"
+    (visibleChange)="moreSheetOpen.set($event)"
+    title="Más"
+    [items]="moreSheetItems"
+    (itemClick)="onMoreItemClick($event)" />
+
+</div>

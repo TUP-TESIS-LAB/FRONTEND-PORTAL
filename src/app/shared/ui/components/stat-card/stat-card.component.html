@@ -1,0 +1,7 @@
+<div class="ui-stat-card" [style.border-left-color]="accentColor">
+  <div class="ui-stat-card__label">{{ label }}</div>
+  <div class="ui-stat-card__value">{{ value }}</div>
+  @if (sub) {
+    <div class="ui-stat-card__sub">{{ sub }}</div>
+  }
+</div>

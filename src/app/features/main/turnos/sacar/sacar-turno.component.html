@@ -1,0 +1,98 @@
+<p-toast [position]="bp.isMobile() ? 'top-center' : 'top-right'" />
+<p-confirmDialog />
+
+<!-- ─── Mobile: drawer bottom-sheet con el wizard ─── -->
+@if (bp.isMobile()) {
+  <p-drawer
+    [visible]="true"
+    position="bottom"
+    [modal]="true"
+    [closable]="false"
+    [closeOnEscape]="false"
+    styleClass="ui-bottom-sheet-drawer ui-wizard-sheet">
+    <ng-template pTemplate="headless">
+      <div class="ui-sacar-page ui-sacar-page--mobile">
+        <ng-container [ngTemplateOutlet]="wizardContent" />
+      </div>
+    </ng-template>
+  </p-drawer>
+} @else {
+  <!-- ─── Desktop: página con max-width ─── -->
+  <div class="ui-sacar-page">
+    <ng-container [ngTemplateOutlet]="wizardContent" />
+  </div>
+}
+
+<!-- Contenido compartido (header + wizard) -->
+<ng-template #wizardContent>
+  <header class="ui-sacar-page__header">
+    <button type="button"
+            class="ui-sacar-page__back-btn"
+            (click)="onCancel()"
+            aria-label="Volver a turnos">
+      <i class="pi pi-arrow-left"></i>
+    </button>
+    <h1>Nuevo turno</h1>
+  </header>
+
+  <ui-wizard
+    [steps]="steps()"
+    [currentStep]="currentStep()"
+    [canProceed]="canProceed()"
+    confirmLabel="Confirmar turno"
+    [loading]="saving()"
+    (next)="onNext()"
+    (back)="onBack()"
+    (confirmed)="onConfirm()"
+    (cancelled)="onCancel()">
+
+    @switch (currentStepId()) {
+
+      @case ('para-quien') {
+        <app-step-para-quien
+          [family]="family()"
+          [selectedPatientId]="selectedPatientId()"
+          (selectionChange)="selectedPatientId.set($event)" />
+      }
+
+      @case ('tipo') {
+        <p class="ui-sacar-page__step-hint">
+          Opcional: si no sabés qué análisis te van a pedir, podés continuar sin elegir ninguno.
+        </p>
+        <ui-analysis-card-grid
+          [tipos]="tiposAnalisis()"
+          [selectedIds]="selectedTipoIds()"
+          (selectionChange)="selectedTipoIds.set($event)" />
+      }
+
+      @case ('sede') {
+        <ui-sede-list
+          [sedes]="sedes()"
+          [selectedId]="selectedSedeId()"
+          (selectionChange)="onSedeChange($event)" />
+      }
+
+      @case ('fecha') {
+        <ui-slot-picker
+          [fecha]="selectedFecha()"
+          [selectedHora]="selectedHora()"
+          [slots]="slots()"
+          [loading]="loadingSlots()"
+          [minDate]="minBookingDate"
+          (fechaChange)="onFechaChange($event)"
+          (horaChange)="selectedHora.set($event)" />
+      }
+
+      @case ('confirmar') {
+        <ui-turno-resumen
+          [paraQuien]="paraQuienLabel()"
+          [tipos]="selectedTipos()"
+          [sede]="selectedSede()!"
+          [fecha]="selectedFecha()!"
+          [hora]="selectedHora()!"
+          [requiereAyuno]="requiereAyuno()" />
+      }
+
+    }
+  </ui-wizard>
+</ng-template>

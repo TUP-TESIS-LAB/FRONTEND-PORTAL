@@ -1,0 +1,96 @@
+<p-toast></p-toast>
+<div class="ui-auth-page" [style.background]="tenant.authPageBg()">
+  <app-public-topbar />
+
+  <div class="ui-auth-page__content">
+    <div class="ui-auth-card">
+
+      <div class="login__header">
+        <h1>Primer acceso</h1>
+        <p class="ui-text-muted">Creá tu contraseña para acceder al portal de pacientes.</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="login__form" novalidate>
+
+        <div class="ui-field">
+          <p-floatlabel>
+            <input
+              pInputText
+              id="token"
+              formControlName="token"
+              autocomplete="off"
+              class="w-full"
+              [class.ng-invalid]="hasError('token')"
+            />
+            <label for="token">Código de primer acceso</label>
+          </p-floatlabel>
+          <small class="p-hint ui-text-muted">Lo recibiste por email</small>
+          @if (hasError('token')) {
+            <small class="p-error">
+              @if (f.token.errors?.['required'])  { El código es requerido. }
+              @if (f.token.errors?.['minlength']) { El código debe tener al menos 8 caracteres. }
+            </small>
+          }
+        </div>
+
+        <div class="ui-field">
+          <p-floatlabel>
+            <p-password
+              inputId="password"
+              formControlName="password"
+              [feedback]="false"
+              [toggleMask]="true"
+              autocomplete="new-password"
+              styleClass="w-full"
+              [class.ng-invalid]="hasError('password')"
+            />
+            <label for="password">Nueva contraseña</label>
+          </p-floatlabel>
+          @if (hasError('password')) {
+            <small class="p-error">
+              @if (f.password.errors?.['required'])  { La contraseña es requerida. }
+              @if (f.password.errors?.['minlength']) { Mínimo 8 caracteres. }
+            </small>
+          }
+        </div>
+
+        <div class="ui-field">
+          <p-floatlabel>
+            <p-password
+              inputId="confirm"
+              formControlName="confirm"
+              [feedback]="false"
+              [toggleMask]="true"
+              autocomplete="new-password"
+              styleClass="w-full"
+              [class.ng-invalid]="hasError('confirm') || mismatch"
+            />
+            <label for="confirm">Repetir contraseña</label>
+          </p-floatlabel>
+          @if (hasError('confirm') && f.confirm.errors?.['required']) {
+            <small class="p-error">Repetí la contraseña.</small>
+          } @else if (mismatch) {
+            <small class="p-error">Las contraseñas no coinciden.</small>
+          }
+        </div>
+
+        <p-button
+          type="submit"
+          label="Crear contraseña"
+          icon="pi pi-check"
+          iconPos="right"
+          severity="primary"
+          styleClass="w-full login__submit"
+          [loading]="submitting()"
+          [disabled]="form.invalid || mismatch"
+        />
+
+        <div class="login__forgot">
+          <a routerLink="/login" class="ui-text-primary ui-touch-link">Volver al inicio de sesión</a>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>

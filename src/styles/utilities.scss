@@ -1,0 +1,352 @@
+@use 'breakpoints' as *;
+
+// ═══════════════════════════════════════════════════════
+// Utilities — clases utilitarias del Design System
+// Prefijo: .ui-*
+// ═══════════════════════════════════════════════════════
+
+// ─── Visibilidad responsive ──────────────────────────
+.ui-show-mobile  { display: block; }
+.ui-show-desktop { display: none;  }
+
+@include desktop-up {
+  .ui-show-mobile  { display: none;  }
+  .ui-show-desktop { display: block; }
+}
+
+.ui-flex-mobile  { display: flex; }
+.ui-flex-desktop { display: none; }
+
+@include desktop-up {
+  .ui-flex-mobile  { display: none;  }
+  .ui-flex-desktop { display: flex;  }
+}
+
+// Oculta en desktop (topbar mobile toggle)
+.ui-show-mobile-tablet {
+  @include desktop-up { display: none; }
+}
+
+// ─── Texto ───────────────────────────────────────────
+.ui-text-muted    { color: var(--ds-text-muted); }
+.ui-text-primary  { color: var(--brand-primary); }
+.ui-text-danger   { color: var(--ds-danger); }
+.ui-text-success  { color: var(--ds-success); }
+.ui-text-center   { text-align: center; }
+
+.ui-text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ─── Touch link (área táctil mínima de 48px para links de navegación) ─
+.ui-touch-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--ds-touch-target); // 48px
+  padding-block: var(--space-2);
+}
+
+// Contenedor de un grupo de ui-data-field
+.ui-field-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+
+  // Permite mezclar titulos de sección dentro del listado
+  .ui-grupo-titulo { margin-bottom: 0; }
+}
+
+.ui-grupo-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: var(--space-5) 0 var(--space-2);
+
+  &:first-child { margin-top: 0; }
+}
+
+// ─── Layout de autenticación ─────────────────────────
+.ui-auth-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  // El background lo inyecta TenantService.authPageBg() como [style.background]
+  // directo en el template para evitar dependencia de color-mix() + CSS vars en runtime
+  background: var(--ds-bg); // fallback si el signal no cargó aún
+}
+
+.ui-auth-page__content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4) var(--space-4);
+
+  @include desktop-up {
+    padding: var(--space-6) var(--space-6);
+  }
+}
+
+.ui-auth-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-md);
+  padding: var(--space-8);
+
+  @include mobile-only {
+    padding: var(--space-6);
+    border-radius: var(--ds-radius-md);
+    box-shadow: var(--ds-shadow-sm);
+  }
+}
+
+// ─── Topbar ──────────────────────────────────────────
+.ui-topbar {
+  height: calc(var(--ds-topbar-h) + var(--ds-safe-top));
+  padding-top: var(--ds-safe-top);
+  padding-left:  max(var(--space-4), var(--ds-safe-left));
+  padding-right: max(var(--space-4), var(--ds-safe-right));
+  background: var(--ds-white);
+  border-bottom: 1px solid var(--ds-surface-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--ds-shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-topbar);
+
+  @include desktop-up {
+    padding-left:  var(--space-6);
+    padding-right: var(--space-6);
+  }
+
+  &__left, &__right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+}
+
+// ─── Logo del tenant ─────────────────────────────────
+.ui-tenant-logo {
+  height: 32px;
+  width: auto;
+  max-width: 140px;
+  object-fit: contain;
+}
+
+// ─── Áreas de contenido ──────────────────────────────
+.ui-content {
+  padding: var(--space-4);
+  background: var(--ds-bg);
+  min-height: calc(100vh - var(--ds-topbar-h));
+
+  @include desktop-up { padding: var(--space-6); }
+}
+
+.ui-page-header {
+  margin-bottom: var(--space-5);
+
+  h1 { margin: 0 0 var(--space-1); }
+  p  { margin: 0; color: var(--ds-text-muted); font-size: 14px; }
+}
+
+// ─── Stat cards ──────────────────────────────────────
+.ui-stats-grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(2, 1fr);
+  margin-bottom: var(--space-5);
+
+  @include desktop-up {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+  }
+}
+
+.ui-stat-card {
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--ds-shadow-sm);
+  border-left: 4px solid var(--brand-secondary);
+
+  @include desktop-up { padding: var(--space-5); }
+
+  &__label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ds-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__value {
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 700;
+    color: var(--brand-primary);
+    margin: var(--space-1) 0;
+  }
+
+  &__sub { font-size: 12px; color: var(--ds-text-muted); }
+}
+
+// ─── Empty state ─────────────────────────────────────
+.ui-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-4);
+  color: var(--ds-text-muted);
+  text-align: center;
+  min-height: 280px;
+
+  i  { font-size: 3rem; color: var(--ds-text-muted); margin-bottom: var(--space-2); }
+  h4 { color: var(--ds-text); margin: 0; }
+  p  { margin: 0 0 var(--space-3); font-size: 14px; max-width: 320px; }
+}
+
+// ─── Tags de estado (semánticos, nunca de marca) ─────
+.ui-tag-pendiente  { background: var(--ds-warning-light); color: var(--ds-warning); }
+.ui-tag-confirmado { background: var(--ds-success-light); color: var(--ds-success); }
+.ui-tag-cancelado  { background: var(--ds-danger-light);  color: var(--ds-danger);  }
+.ui-tag-completado { background: var(--brand-primary-light); color: var(--brand-primary); }
+.ui-tag-info       { background: var(--ds-info-light);    color: var(--ds-info);    }
+
+// Tags de los 3 estados visibles al paciente en /turnos (matchean
+// EstadoTurnoKeyPipe: programado, asistido, cancelado).
+.ui-tag-programado  { background: var(--ds-success-light);    color: var(--ds-success);    }
+.ui-tag-asistido    { background: var(--brand-primary-light); color: var(--brand-primary); }
+.ui-tag-no-asistido { background: var(--ds-surface-dark);     color: var(--ds-text-muted); }
+
+// ─── Formularios ─────────────────────────────────────
+.ui-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+
+  @include tablet-up {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4) var(--space-5);
+  }
+
+  .ui-form-full { grid-column: 1 / -1; }
+}
+
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+
+  .p-error {
+    font-size: 12px;
+    padding-left: var(--space-1);
+  }
+}
+
+.ui-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--ds-surface-dark);
+
+  @include mobile-only {
+    flex-direction: column-reverse;
+
+    .p-button { width: 100%; }
+  }
+}
+
+// ─── Dialog full-screen en mobile ────────────────────
+// La clase la aplica PrimeNG 21 directamente sobre .p-dialog (styleClass),
+// por eso el selector es .p-dialog.ui-dialog-fullscreen-mobile (mismo elemento),
+// no un descendiente. Unidades dvw/dvh para respetar el chrome del navegador mobile.
+.p-dialog.ui-dialog-fullscreen-mobile {
+  @include mobile-only {
+    width: 100dvw !important;
+    max-width: 100dvw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+
+    .p-dialog-header {
+      padding-top: calc(var(--space-4) + var(--ds-safe-top));
+    }
+
+    .p-dialog-content {
+      padding-bottom: calc(var(--space-4) + var(--ds-safe-bottom));
+    }
+  }
+}
+
+// ─── List card ───────────────────────────────────────
+.ui-list-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-md);
+  margin-bottom: var(--space-2);
+  text-decoration: none;
+  color: var(--ds-text);
+  box-shadow: var(--ds-shadow-sm);
+  min-height: var(--ds-touch-target);
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: var(--ds-shadow-md);
+  }
+
+  &__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    strong { font-size: 14px; }
+    span   { font-size: 12px; color: var(--ds-text-muted); }
+  }
+
+  > i { color: var(--ds-text-muted); }
+}
+
+// ─── FAB ─────────────────────────────────────────────
+.ui-fab {
+  position: fixed;
+  right: var(--space-4);
+  bottom: calc(var(--ds-bottom-nav-h) + var(--space-4) + var(--ds-safe-bottom));
+  z-index: var(--z-fab);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  box-shadow: var(--ds-shadow-lg);
+
+  @include desktop-up {
+    bottom: var(--space-6);
+    right:  var(--space-6);
+  }
+}
+
+// ─── Tabla responsive ────────────────────────────────
+@include mobile-only {
+  .ui-table-desktop { display: none; }
+}
+
+@include tablet-up {
+  .ui-list-mobile { display: none; }
+}

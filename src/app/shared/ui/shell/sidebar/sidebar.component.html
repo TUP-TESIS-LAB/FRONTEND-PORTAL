@@ -1,0 +1,57 @@
+<nav class="ui-sidebar" aria-label="Navegación lateral">
+
+  <!-- Header: identidad del tenant + portal -->
+  <div class="ui-sidebar__header">
+    <ui-brand-mark
+      class="ui-sidebar__logo-mark"
+      [logoUrl]="logoUrl"
+      [name]="tenant.fullName"
+      [shortName]="tenant.shortName"
+    />
+    <div class="ui-sidebar__logo-text">
+      <strong>{{ tenant.fullName }}</strong>
+      <span>{{ portalName }}</span>
+    </div>
+  </div>
+
+  <!-- Navegación: grupos con label + items -->
+  <div class="ui-sidebar__nav">
+    @for (group of navGroups; track group.label) {
+      <div class="ui-sidebar__group-label">{{ group.label }}</div>
+
+      @for (item of group.items; track item.id) {
+        <a class="ui-nav-item"
+           [routerLink]="item.route"
+           routerLinkActive="active"
+           #rla="routerLinkActive"
+           [routerLinkActiveOptions]="item.exactMatch ? { exact: true } : {}"
+           [attr.aria-current]="rla.isActive ? 'page' : null"
+           (click)="itemClick.emit(item)">
+          <i [class]="'pi ' + item.icon"></i>
+          <span>{{ item.label }}</span>
+          @if (item.badge) {
+            <span class="ui-nav-item__badge">{{ item.badge }}</span>
+          }
+        </a>
+      }
+    }
+  </div>
+
+  <!-- Footer: usuario logueado + salir -->
+  <div class="ui-sidebar__footer">
+    <div class="ui-sidebar__footer-avatar">
+      @if (user.iniciales) { {{ user.iniciales }} } @else { <i class="pi pi-user"></i> }
+    </div>
+    <div class="ui-sidebar__footer-name">
+      <strong>{{ user.nombre }} {{ user.apellido }}</strong>
+      @if (user.dni) { <span>{{ user.dni }}</span> }
+    </div>
+    <button type="button"
+            class="ui-sidebar__footer-action"
+            (click)="logout.emit()"
+            aria-label="Cerrar sesión">
+      <i class="pi pi-sign-out"></i>
+    </button>
+  </div>
+
+</nav>

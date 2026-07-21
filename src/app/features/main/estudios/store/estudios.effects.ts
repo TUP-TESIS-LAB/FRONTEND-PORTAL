@@ -1,0 +1,84 @@
+import { inject, Injectable } from '@angular/core';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { catchError, forkJoin, map, mergeMap, of, switchMap, tap } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { EstudioService } from '../estudio.service';
+import {
+  loadEstudios,
+  loadEstudiosSuccess,
+  loadEstudiosFailure,
+  loadEstudiosTodos,
+  loadEstudiosTodosSuccess,
+  descargarReporte,
+  descargarReporteSuccess,
+  descargarReporteFailure,
+} from './estudios.actions';
+
+@Injectable()
+export class EstudiosEffects {
+  private readonly actions$ = inject(Actions);
+  private readonly service = inject(EstudioService);
+
+  loadEstudios$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(loadEstudios),
+      // switchMap: un cambio de paciente cancela la request en vuelo del anterior.
+      switchMap(({ patientId }) =>
+        this.service.getEstudios(patientId).pipe(
+          map(estudios => loadEstudiosSuccess({ patientId, estudios })),
+          catchError((error: HttpErrorResponse) =>
+            of(loadEstudiosFailure({ error })),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  // "Todos": el back es por-paciente, así que se hace fan-out y se fusionan
+  // las listas en el cliente (no existe endpoint de familia).
+  //
+  // Cada request individual atrapa su propio error (ej. 403 de un familiar
+  // pendiente de verificación, que todavía no tiene acceso a resultados) y
+  // lo trata como "sin estudios" para ESE paciente — sin este catchError
+  // interno, forkJoin aborta el batch entero ante la primera falla y esconde
+  // los estudios del resto de la familia (incluidos los propios del usuario).
+  loadEstudiosTodos$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(loadEstudiosTodos),
+      switchMap(({ patientIds }) =>
+        patientIds.length === 0
+          ? of(loadEstudiosTodosSuccess({ estudios: [] }))
+          : forkJoin(
+              patientIds.map(id =>
+                this.service.getEstudios(id).pipe(
+                  catchError(() => of([])),
+                ),
+              ),
+            ).pipe(
+              map(lists => loadEstudiosTodosSuccess({ estudios: lists.flat() })),
+            ),
+      ),
+    ),
+  );
+
+  // Descarga del PDF firmado (KAN-168). La petición pasa por la store (regla del repo);
+  // el blob NO se guarda en state: se abre en una pestaña como efecto y se libera la URL.
+  descargarReporte$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(descargarReporte),
+      mergeMap(({ reportId }) =>
+        this.service.descargarReporte(reportId).pipe(
+          tap(blob => {
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            setTimeout(() => URL.revokeObjectURL(url), 60_000);
+          }),
+          map(() => descargarReporteSuccess()),
+          catchError((error: HttpErrorResponse) =>
+            of(descargarReporteFailure({ error })),
+          ),
+        ),
+      ),
+    ),
+  );
+}

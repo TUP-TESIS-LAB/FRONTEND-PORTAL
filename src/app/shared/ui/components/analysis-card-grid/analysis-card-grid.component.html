@@ -1,0 +1,30 @@
+@if (loading) {
+  @for (i of [1,2,3,4]; track i) {
+    <p-skeleton height="72px" styleClass="ui-analysis-skeleton" />
+  }
+} @else {
+  <div class="ui-analysis-card-grid">
+    @for (tipo of tipos; track tipo.id) {
+      <button
+        type="button"
+        class="ui-analysis-card"
+        [class.ui-analysis-card--selected]="isSelected(tipo.id)"
+        (click)="toggleTipo(tipo.id)"
+        [attr.aria-pressed]="isSelected(tipo.id)">
+
+        <div class="ui-analysis-card__icon">
+          <i [class]="icon(tipo)" aria-hidden="true"></i>
+        </div>
+
+        <div class="ui-analysis-card__info">
+          <span class="ui-analysis-card__nombre">{{ tipo.nombre }}</span>
+          <span class="ui-analysis-card__desc">{{ tipo.descripcionCorta }}</span>
+        </div>
+
+        <div class="ui-analysis-card__radio" aria-hidden="true">
+          <i [class]="isSelected(tipo.id) ? 'pi pi-circle-fill' : 'pi pi-circle'"></i>
+        </div>
+      </button>
+    }
+  </div>
+}

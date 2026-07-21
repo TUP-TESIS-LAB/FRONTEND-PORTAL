@@ -1,0 +1,33 @@
+<div class="tenant-switcher">
+
+  <button class="tenant-switcher__trigger"
+          (click)="toggle(); $event.stopPropagation()"
+          [title]="'Tenant activo: ' + (current?.label ?? '—')"
+          type="button">
+    <span class="tenant-switcher__dot"
+          [style.background]="current?.color">
+    </span>
+    <span class="tenant-switcher__label">{{ current?.short ?? '?' }}</span>
+    <i class="pi pi-chevron-up"
+       [class.tenant-switcher__arrow--open]="open()"></i>
+  </button>
+
+  @if (open()) {
+    <div class="tenant-switcher__panel" (click)="$event.stopPropagation()">
+      <p class="tenant-switcher__panel-title">Cambiar tenant</p>
+      @for (t of tenants; track t.id) {
+        <button class="tenant-switcher__item"
+                [class.tenant-switcher__item--active]="t.id === current?.id"
+                (click)="select(t.id)"
+                type="button">
+          <span class="tenant-switcher__dot" [style.background]="t.color"></span>
+          <span>{{ t.label }}</span>
+          @if (t.id === current?.id) {
+            <i class="pi pi-check tenant-switcher__check"></i>
+          }
+        </button>
+      }
+    </div>
+  }
+
+</div>

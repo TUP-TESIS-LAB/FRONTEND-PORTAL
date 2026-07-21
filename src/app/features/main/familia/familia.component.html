@@ -1,0 +1,52 @@
+<p-toast position="top-right" />
+<p-confirmdialog />
+
+<!-- Encabezado de página -->
+<ui-page-header
+  title="Mi grupo familiar"
+  subtitle="Gestioná turnos y resultados de las personas a tu cargo."
+>
+  <!-- Mobile: solo ícono circular -->
+  <p-button
+    class="ui-show-mobile"
+    icon="pi pi-plus"
+    severity="primary"
+    [rounded]="true"
+    ariaLabel="Agregar familiar"
+    (onClick)="onAddFamily()"
+  />
+  <!-- Desktop: botón con label -->
+  <p-button
+    class="ui-show-desktop"
+    label="Agregar familiar"
+    icon="pi pi-plus"
+    severity="primary"
+    size="small"
+    (onClick)="onAddFamily()"
+  />
+</ui-page-header>
+
+<!-- Grid de familiares -->
+@if (loading()) {
+  <ui-family-grid>
+    @for (i of [1, 2, 3]; track i) {
+      <p-skeleton height="340px" borderRadius="10px" />
+    }
+    <p-skeleton height="340px" borderRadius="10px" />
+  </ui-family-grid>
+} @else {
+  <ui-family-grid>
+    @for (familiar of familiares(); track familiar.id) {
+      <!-- Card informativa: no hay edición de familiar todavía, no debe parecer clickeable -->
+      <ui-family-card
+        [familiar]="familiar"
+        [interactive]="false"
+        (remove)="onRemoveFamiliar($event)"
+      />
+    }
+    <ui-add-family-card (addClick)="onAddFamily()" />
+  </ui-family-grid>
+}
+
+<!-- Diálogo agregar familiar -->
+<app-agregar-familiar />

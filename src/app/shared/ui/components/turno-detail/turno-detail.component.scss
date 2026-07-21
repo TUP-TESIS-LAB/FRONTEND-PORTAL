@@ -1,0 +1,195 @@
+@use 'breakpoints' as *;
+
+.ui-turno-detail {
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--ds-shadow-md);
+
+  // ─── Header ─────────────────────────────────────────
+  &__header {
+    background: var(--brand-primary);
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
+    position: relative;
+  }
+
+  &__close {
+    display: none; // solo visible en bottom sheet mobile
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    color: white;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .pi { font-size: 12px; }
+  }
+
+  &__header-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: var(--space-2);
+  }
+
+  &__header-fecha {
+    color: white;
+    margin: 0 0 var(--space-2);
+    font-size: 18px;
+  }
+
+  &__header-hora {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
+  }
+
+  &__header-llegar {
+    opacity: 0.75;
+  }
+
+  // ─── Body ────────────────────────────────────────────
+  &__body {
+    padding: var(--space-4) var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  // ─── Mapa placeholder ────────────────────────────────
+  // Iframe del mapa: ancho completo, altura util para ver el barrio,
+  // bg gris mientras carga.
+  &__map {
+    display: block;
+    width: 100%;
+    height: 180px;
+    border: none;
+    border-radius: var(--ds-radius-md);
+    background: var(--ds-surface);
+  }
+
+  // ─── Sede ────────────────────────────────────────────
+  &__sede {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  &__sede-nombre {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ds-text);
+  }
+
+  &__sede-dir {
+    font-size: 13px;
+    color: var(--ds-text-muted);
+  }
+
+  &__sede-meta {
+    font-size: 12px;
+    color: var(--ds-text-muted);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-top: var(--space-1);
+
+    .pi { font-size: 11px; }
+  }
+
+  // Ícono + texto agrupados: el wrap de línea pasa ENTRE items (teléfono vs
+  // horario) o dentro del propio texto de un item — nunca deja al ícono
+  // solo en una línea separado del texto que le sigue.
+  &__sede-meta-item {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 4px;
+
+    .pi { margin-top: 1px; }
+  }
+
+  // ─── Labels de sección ───────────────────────────────
+  &__section-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ds-text-muted);
+    margin-bottom: var(--space-2);
+  }
+
+  // ─── Chips de estudios ───────────────────────────────
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  // Placeholder cuando el turno no tiene estudios asociados
+  &__estudios-empty {
+    font-size: 13px;
+    color: var(--ds-text-muted);
+  }
+
+  &__chip {
+    background: var(--brand-secondary-light);
+    color: var(--brand-secondary-dark);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: var(--ds-radius-sm);
+  }
+
+  // ─── Separador ───────────────────────────────────────
+  &__sep {
+    border: none;
+    border-top: 1px solid var(--ds-surface-dark);
+    margin: 0;
+  }
+
+  // ─── Acciones ────────────────────────────────────────
+  &__actions {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+
+    @include mobile-only {
+      flex-direction: column;
+      // stretch hace que los <p-button> ocupen el cross-axis completo.
+      // align-items: center los dejaba como pildoras chiquitas centradas.
+      align-items: stretch;
+
+      // El host <p-button> queda alcanzable por tag (mismo encapsulation
+      // del padre). Pero el <button class="p-button"> interno vive en otro
+      // scope — para que tambien sea full width necesitamos ::ng-deep.
+      p-button { width: 100%; }
+      ::ng-deep .p-button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+// En bottom sheet mobile, el botón de cierre es visible
+.ui-turno-detail-sheet {
+  ui-turno-detail .ui-turno-detail__close {
+    display: flex;
+  }
+}

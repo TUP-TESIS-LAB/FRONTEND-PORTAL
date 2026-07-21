@@ -1,0 +1,18 @@
+@if (loading) {
+  <p-skeleton height="200px" />
+} @else {
+  <div class="ui-time-slots" role="group" aria-label="Horarios disponibles">
+    @for (slot of slots; track slot.hora) {
+      <button
+        type="button"
+        class="ui-time-slot"
+        [class.ui-time-slot--selected]="selectedHora === slot.hora"
+        [class.ui-time-slot--disabled]="!slot.disponible"
+        [disabled]="!slot.disponible"
+        (click)="selectSlot(slot)"
+        [attr.aria-label]="slot.hora + (!slot.disponible ? ' — no disponible' : '')">
+        {{ slot.hora }}
+      </button>
+    }
+  </div>
+}

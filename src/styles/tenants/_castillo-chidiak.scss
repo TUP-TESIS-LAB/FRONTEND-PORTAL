@@ -1,0 +1,22 @@
+// ═══════════════════════════════════════════════════════
+// Tenant: Laboratorio Castillo Chidiak
+// Override de variables --brand-* en build-time.
+// En runtime también las aplica TenantService.applyTheme().
+// ═══════════════════════════════════════════════════════
+
+[data-tenant="castillo-chidiak"] {
+  --brand-primary:        #1F6E70;
+  --brand-primary-dark:   #155052;
+  --brand-primary-light:  #E0F2F1;
+
+  --brand-secondary:      #2DA89A;
+  --brand-secondary-dark: #1F7A70;
+  --brand-secondary-light:#B2DFDB;
+
+  --brand-accent:         #F97316;
+  --brand-accent-dark:    #C2410C;
+  --brand-accent-light:   #FFEDD5;
+
+  --brand-logo:           url('/assets/tenants/castillo-chidiak/logo.svg');
+  --brand-logo-white:     url('/assets/tenants/castillo-chidiak/logo-white.svg');
+}

@@ -1,0 +1,42 @@
+<p-drawer
+  [visible]="visible"
+  (visibleChange)="onVisibleChange($event)"
+  position="bottom"
+  styleClass="ui-bottom-sheet-drawer"
+  [style]="{ height: 'auto' }"
+  [showCloseIcon]="false">
+
+  <ng-template pTemplate="headless">
+    <div class="ui-bottom-sheet">
+
+      <!-- Handle visual (drag indicator estilo iOS) -->
+      <div class="ui-bottom-sheet__handle"></div>
+
+      <!-- Título opcional -->
+      @if (title) {
+        <p class="ui-bottom-sheet__title">{{ title }}</p>
+      }
+
+      <!-- Lista de items -->
+      <ul class="ui-bottom-sheet__list" role="menu">
+        @for (item of items; track item.id) {
+          <li role="none">
+            <button
+              type="button"
+              class="ui-bottom-sheet__btn"
+              [class.ui-bottom-sheet__btn--destructive]="item.destructive"
+              role="menuitem"
+              (click)="onItemClick(item)">
+              <i class="pi {{ item.icon }}"></i>
+              <span>{{ item.label }}</span>
+              @if (item.route) {
+                <i class="pi pi-chevron-right ui-bottom-sheet__chevron"></i>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+
+    </div>
+  </ng-template>
+</p-drawer>

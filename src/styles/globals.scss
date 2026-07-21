@@ -1,0 +1,69 @@
+@use 'breakpoints' as *;
+
+// ═══════════════════════════════════════════════════════
+// Globals — estilos base aplicados a toda la app
+// ═══════════════════════════════════════════════════════
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--ds-font);
+  font-size: 14px;
+  color: var(--ds-text);
+  background: var(--ds-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  overscroll-behavior-y: contain;
+}
+
+// Tipografía fluida
+h1 { font-size: clamp(22px, 4vw, 28px); font-weight: 700; margin: 0 0 var(--space-3); }
+h2 { font-size: clamp(18px, 3vw, 22px); font-weight: 600; margin: 0 0 var(--space-3); }
+h3 { font-size: 18px; font-weight: 600; margin: 0 0 var(--space-2); }
+h4 { font-size: 16px; font-weight: 600; margin: 0 0 var(--space-2); }
+
+p  { margin: 0 0 var(--space-3); line-height: 1.5; }
+
+a  { color: var(--brand-primary); text-decoration: none; }
+
+// Touch targets mínimos en mobile
+@include mobile-only {
+  button,
+  .p-button,
+  a[role="button"],
+  .ui-clickable {
+    min-height: var(--ds-touch-target);
+    min-width:  var(--ds-touch-target);
+  }
+}
+
+// Scroll suave para contenedores internos
+.ui-scroll-y {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+// ─── Wizard de Sacar Turno (desktop): scroll interno, no de página ────
+// .ui-patient-content es flex:1 dentro de .ui-patient-layout__main (el
+// scroll container real de toda la app), pero por default un flex item
+// tiene min-height:auto — con contenido lo bastante alto (ej. muchas
+// tarjetas de "Tipo de análisis"), crece más allá del viewport y termina
+// scrolleando LA PÁGINA entera en vez de la lista del wizard, arrastrando
+// los botones Continuar/Volver fuera de vista. El wizard ya maneja su
+// propio scroll interno (.ui-wizard__content) con footer sticky — solo
+// necesita que el contenedor no le pise ese comportamiento creciendo sin
+// límite. Acotado a esta página nada más: el resto de las pantallas
+// (turnos, estudios, etc.) sí dependen del crecimiento natural + scroll
+// de página, así que no tocamos el min-height ahí.
+.ui-patient-content:has(.ui-sacar-page) {
+  min-height: 0;
+}

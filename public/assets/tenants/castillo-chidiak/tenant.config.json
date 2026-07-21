@@ -1,0 +1,20 @@
+{
+  "id": "castillo-chidiak",
+  "shortName": "LCC",
+  "fullName": "Laboratorio Castillo Chidiak",
+  "tagline": "Análisis clínicos de confianza",
+  "logo": {
+    "color": "/assets/tenants/castillo-chidiak/logo.svg",
+    "white": "/assets/tenants/castillo-chidiak/logo-white.svg",
+    "mark":  "/assets/tenants/castillo-chidiak/logo-mark.svg"
+  },
+  "colors": {
+    "primary":   "#1F6E70",
+    "secondary": "#2DA89A",
+    "accent":    "#F97316"
+  },
+  "contact": {
+    "helpPhone": "0800-555-LCC",
+    "address": "Av. Colón 245, Córdoba"
+  }
+}

@@ -23,6 +23,8 @@ mobile se siente como app nativa (bottom nav, full screen), desktop se ve como p
 
 **Alcance de esta skill:** únicamente diseño visual y componentes UI. Garantiza que toda la app tenga la misma apariencia y comportamiento de componentes en todos los tenants. Auth, arquitectura, servicios HTTP, guards, manejo de estado y errores **están fuera del alcance** y deben resolverse en otras skills/decisiones del equipo.
 
+> **Datos en componentes UI.** Cualquier dato que venga del backend (listas de turnos, pacientes, estudios, etc.) llega al componente **siempre vía `store.selectSignal(...)` según `ngrx-backend-request`**. Esta skill describe cómo se ven y comportan los componentes; nunca cómo se traen los datos. Si un patrón visual de esta skill muestra una lista o un detalle, asumir que el array o el objeto entró al componente como signal del store, no como `Observable` ni vía `resource()`.
+
 ---
 
 ## 1. White-label — qué es configurable por tenant
@@ -115,9 +117,11 @@ Los valores default son neutros y solo existen para que la app no se rompa si ar
 - Layout mobile: topbar con hamburguesa que abre `p-drawer` lateral + content full
 
 ### Portal Paciente
-- Módulos típicos: Inicio, Mis Turnos, Mis Estudios, Mi Perfil
-- Layout desktop: topbar + content centrado (max-width 1200px) + nav horizontal en topbar
-- Layout mobile: topbar mínimo + content full + **bottom navigation bar** con 4 ítems
+- Módulos típicos: Inicio, Mis Turnos, Mis Estudios, Mi Perfil, Mi Familia
+- Layout desktop: **sidebar fija oscura + topbar con título de página + content centrado** (max-width 1200px)
+- Layout mobile: topbar mínimo + content full + **bottom navigation bar** con 4-5 ítems
+
+**Nota:** Tanto el portal admin como el portal paciente usan el mismo patrón de sidebar en desktop. La diferencia entre ambos es el contenido de los nav items y, en mobile, que paciente tiene bottom nav (app-like) mientras admin usa drawer desde topbar.
 
 ---
 
@@ -155,13 +159,27 @@ La skill no cubre el setup técnico de PWA (eso es decisión arquitectónica), p
 
 ```html
 <ui-patient-shell>
-  <ui-patient-topbar />
-  <main class="ui-patient-content">
-    <router-outlet />
-  </main>
+  <!-- Desktop: sidebar fija oscura -->
+  <ui-patient-sidebar class="ui-show-desktop" />
+
+  <!-- Mobile/tablet: drawer con el mismo sidebar -->
+  <p-drawer [(visible)]="drawerOpen" position="left">
+    <ui-patient-sidebar (itemClick)="drawerOpen = false" />
+  </p-drawer>
+
+  <div class="ui-patient-shell__main">
+    <ui-patient-topbar (menuToggle)="drawerOpen = !drawerOpen" />
+    <main class="ui-patient-content">
+      <router-outlet />
+    </main>
+  </div>
+
+  <!-- Mobile: bottom nav (app-like) -->
   <ui-bottom-nav class="ui-show-mobile" />
 </ui-patient-shell>
 ```
+
+El bottom nav y el drawer **no son excluyentes**: el drawer se usa cuando el usuario abre menúes secundarios desde la topbar; el bottom nav siempre está visible para las 4-5 secciones principales.
 
 ---
 
@@ -183,12 +201,19 @@ Catálogo completo en `references/components.md`.
 
 ### Severities de botón mapeadas
 ```scss
-// p-button:
+// p-button severities válidas en PrimeNG v17:
+// 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'help' | 'danger' | 'contrast'
+//
+// Mapeo a tokens del DS:
 // primary   → --brand-primary
 // secondary → --brand-secondary
 // warning   → --brand-accent (no es warning de estado, es CTA secundario destacado)
 // danger    → --ds-danger
-// text      → sin fondo, color --brand-primary
+//
+// IMPORTANTE: para botones "text" (sin fondo, solo texto/ícono coloreado)
+// NO usar severity="text" — eso NO existe en v17.
+// Usar el input [text]="true" en su lugar.
+// Ejemplo: <p-button label="Cancelar" [text]="true" />
 ```
 
 **Importante:** la severity `warning` del botón usa el color de marca (`--brand-accent`), no el `--ds-warning` (que es para tags de estado). Los colores de estado son para señalización informativa, no para acciones.
@@ -439,6 +464,8 @@ Reglas estrictas que evitan inconsistencia y rompen el DS si se ignoran:
 - ❌ Crear modales propios → ✅ usar `p-dialog` con `ui-dialog-fullscreen-mobile`
 - ❌ Renderizar tablas tal cual en mobile → ✅ patrón "tabla adaptativa" (cards en mobile)
 - ❌ Usar prefijos de tenant en clases (`.lcc-card`) → ✅ siempre `.ui-*`
+- ❌ `import { DropdownModule } from 'primeng/dropdown'` → ✅ `import { Select } from 'primeng/select'` + selector `p-select` (renombrado en v17+)
+- ❌ `[badge]="condicion ? valor : null"` en `p-button` → ✅ `[badge]="condicion ? valor : undefined"` (`[badge]` acepta `string | undefined`, no acepta `null`)
 
 **Accesibilidad**
 - ❌ `p-button` con solo ícono sin `ariaLabel` → ✅ siempre con label accesible

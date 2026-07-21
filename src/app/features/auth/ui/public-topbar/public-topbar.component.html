@@ -1,0 +1,12 @@
+<header class="ui-topbar">
+  <div class="ui-topbar__left">
+    <ui-brand-mark
+      [logoUrl]="tenant.icon()"
+      [name]="tenant.config()?.fullName ?? ''"
+      [shortName]="tenant.config()?.shortName ?? ''"
+    />
+    <span class="public-topbar__name ui-show-desktop">
+      {{ tenant.config()?.fullName }}
+    </span>
+  </div>
+</header>

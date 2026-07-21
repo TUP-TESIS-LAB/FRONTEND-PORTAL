@@ -1,0 +1,102 @@
+@use 'breakpoints' as *;
+
+:host {
+  display: block;
+}
+
+.ui-patient-layout {
+  display: flex;
+  // Altura fija en viewport: el sidebar queda fijo y __main scrollea.
+  // min-height causaba que ambos crecieran juntos al tener contenido largo.
+  height: 100dvh;
+  overflow: hidden;
+
+  &__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    // Este es el scroll container: todo el contenido de la app scrollea acá,
+    // no en window. El sidebar queda fijo porque no está dentro de este overflow.
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
+
+// Visibilidad del sidebar y el bottom nav.
+// Las clases .ui-show-* de utilities.scss no sirven en elementos de componentes
+// porque el :host de cada componente tiene la misma especificidad (0,1,0) y,
+// al ser inyectado después, gana la cascada.
+// Los selectores de elemento en el SCSS del padre quedan escopados como
+// ui-sidebar[_ngcontent-xxx] → especificidad (0,1,1) → ganan al :host hijo.
+// IMPORTANTE: el selector usa > (hijo directo) para apuntar SOLO al sidebar
+// desktop. El sidebar dentro de p-drawer (mobile) queda libre de este rule
+// y se renderiza normal cuando el drawer está abierto.
+.ui-patient-layout > ui-sidebar {
+  display: none;
+
+  @include desktop-up {
+    display: block;
+  }
+}
+
+ui-bottom-nav {
+  @include desktop-up {
+    display: none;
+  }
+}
+
+// Topbar: visible solo en tablet (768-1023px).
+// Mobile usa bottom-nav + bottom-sheet para toda la navegación.
+// Desktop usa el sidebar fijo.
+.ui-topbar {
+  height: calc(var(--ds-topbar-h) + var(--ds-safe-top));
+  padding-top: var(--ds-safe-top);
+  padding-left: max(var(--space-4), var(--ds-safe-left));
+  padding-right: max(var(--space-4), var(--ds-safe-right));
+  background: var(--ds-white);
+  border-bottom: 1px solid var(--ds-surface-dark);
+  display: flex;
+  align-items: center;
+  box-shadow: var(--ds-shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-topbar);
+  flex-shrink: 0;
+
+  @include mobile-only {
+    display: none;
+  }
+
+  @include desktop-up {
+    display: none;
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+}
+
+.ui-patient-content {
+  flex: 1;
+  padding: var(--space-4);
+  // Clearance para el bottom-nav fijo en mobile: alto del nav + safe area
+  // + espacio visible. Margen generoso porque el box-shadow del nav se
+  // extiende hacia arriba y porque algunos browsers (Safari iOS) reservan
+  // espacio dinamico que recorta los ultimos px del scroll.
+  padding-bottom: calc(var(--ds-bottom-nav-h) + var(--ds-safe-bottom) + var(--space-10));
+  background: var(--ds-bg);
+
+  @include desktop-up {
+    // width:100% evita que el flex item se encoja al contenido (margin:auto +
+    // stretch hacían shrink-to-fit → perfil quedaba angosto). Ahora todas las
+    // pantallas usan el mismo ancho (content-max), centrado.
+    width: 100%;
+    max-width: var(--ds-content-max);
+    margin: 0 auto;
+    padding: var(--space-6);
+  }
+}

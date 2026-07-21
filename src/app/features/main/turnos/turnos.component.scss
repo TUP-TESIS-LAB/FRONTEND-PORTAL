@@ -1,0 +1,330 @@
+@use 'breakpoints' as *;
+
+// ─── Filtro de paciente (selectable Todos + cada paciente) ───
+// Desktop: vive como un grupo más dentro de .ui-turnos-filters; llena el grupo.
+.ui-turnos-filters .ui-turnos-filters__group app-patient-filter {
+  display: block;
+  ::ng-deep .ui-patient-filter-select { width: 100%; min-width: 220px; }
+}
+
+// Mobile: va al lado del botón "Filtros", con ancho natural (NO full-width).
+.ui-turnos-mobile-patient {
+  flex: 0 1 auto;
+  ::ng-deep .ui-patient-filter-select { min-width: 150px; }
+}
+
+// ─── Barra de filtros (chips + multi-select + rango fechas) ───
+.ui-turnos-filters {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-lg);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  // El grupo "Estado" es el único con contenido naturalmente elástico
+  // (varios toggles) — lo estiramos para que absorba el espacio en blanco
+  // que sobra en la barra en vez de dejarlo vacío a la derecha.
+  //
+  // Esta clase (por nombre, no por ancestro — el mismo template #filtersContent
+  // se reusa en el bottom-sheet mobile) NO puede tener flex-grow suelto: en
+  // el sheet mobile el eje del flex-column es vertical, y "flex:1" estira el
+  // grupo Estado hacia abajo dejando un hueco vacío antes de Fecha desde. Se
+  // acota a desktop-up, que es donde .ui-turnos-filters realmente es una fila.
+  &__group--grow {
+    @include desktop-up {
+      flex: 1 1 260px;
+    }
+
+    ::ng-deep .p-selectbutton {
+      display: flex;
+      width: 100%;
+
+      .p-togglebutton { flex: 1; }
+    }
+  }
+
+  &__label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--ds-text-muted);
+  }
+
+  &__clear {
+    align-self: flex-end;
+  }
+
+  ::ng-deep .ui-turnos-filters__multiselect {
+    min-width: 220px;
+  }
+
+  ::ng-deep .ui-turnos-filters__datepicker {
+    width: 180px;
+
+    input.p-inputtext,
+    .p-datepicker-input {
+      width: 100%;
+      min-width: 0;
+    }
+  }
+}
+
+// ─── HR separador pendientes / resto ───────────────────
+.ui-turnos-list__divider {
+  border: none;
+  border-top: 1px solid var(--ds-surface-dark);
+  margin: var(--space-4) 0;
+}
+
+// ─── Mobile filterbar (botón "Filtros" + Limpiar) ───────
+.ui-turnos-mobile-filterbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+// ─── Filters sheet (drawer en mobile) ──────────────────
+// Bottom-sheet que se ajusta al contenido natural (NO toma toda la pantalla).
+// Solo crece hasta 80dvh máx; si excede, el body scrollea internamente.
+.ui-turnos-filters-sheet {
+  display: flex;
+  flex-direction: column;
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
+  max-height: 80dvh;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--ds-surface-dark);
+    flex-shrink: 0;
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ds-text);
+    }
+  }
+
+  &__close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--ds-text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+
+    &:hover { background: var(--ds-surface); }
+  }
+
+  // SIN flex: 1 — body se ajusta al contenido natural. Scroll solo si excede.
+  &__body {
+    padding: var(--space-3) var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  &__footer {
+    display: flex;
+    // Centrado para que el caso de 1 solo boton (Cerrar) quede al medio
+    // y no anclado a la izquierda. Con 2 botones tambien se ven centrados
+    // como grupo, con el mismo ancho cada uno.
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--ds-safe-bottom));
+    border-top: 1px solid var(--ds-surface-dark);
+    background: var(--ds-white);
+    flex-shrink: 0;
+
+    // El host <p-button> ocupa hasta 280px, parejo entre todos los botones
+    // que haya. La <button> interna toma 100% del host (necesita ::ng-deep
+    // porque vive en otro scope de Angular).
+    p-button { flex: 1; max-width: 280px; }
+    ::ng-deep .p-button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+// ─── Layout principal ────────────────────────────────────
+.ui-turnos-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+
+  @include desktop-up {
+    grid-template-columns: 1fr 400px;
+    align-items: start;
+  }
+}
+
+// ─── Aside sticky ────────────────────────────────────────
+.ui-turnos-aside {
+  position: sticky;
+  top: var(--space-5);
+  height: fit-content;
+}
+
+// ─── Badge de conteo en los tabs ─────────────────────────
+.ui-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  background: var(--brand-primary-light);
+  color: var(--brand-primary);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 8px;
+  border-radius: 999px;
+  margin-left: var(--space-2);
+  vertical-align: middle;
+}
+
+// ─── Card seleccionada en desktop ────────────────────────
+::ng-deep .ui-card-selected .ui-event-card {
+  border-color: var(--brand-primary);
+  background: var(--brand-primary-light);
+  box-shadow: 0 0 0 3px var(--brand-primary-light), var(--ds-shadow-md);
+}
+
+// ─── Override: quitar padding del panel de tabs ──────────
+// El padding global de .p-tabs-panel no aplica aquí porque
+// las cards ya tienen su propio espaciado (margin-bottom).
+::ng-deep .p-tabs-panel {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+// ─── Reprogramar turno (drawer desktop / bottom sheet mobile) ───
+.ui-reprogramar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+
+  &__handle { display: none; }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+
+    h3 { margin: 0; font-size: 16px; font-weight: 600; color: var(--ds-text); }
+  }
+
+  &__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--ds-touch-target);
+    height: var(--ds-touch-target);
+    border: none;
+    background: transparent;
+    color: var(--ds-text-muted);
+    border-radius: var(--ds-radius-md);
+    cursor: pointer;
+    &:hover { background: var(--ds-surface); }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  &__footer {
+    margin-top: auto;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--ds-surface);
+    ::ng-deep .p-button { width: 100%; }
+  }
+
+  // Compactar el slot-picker dentro del drawer: menos gaps/márgenes y celdas
+  // de calendario más chicas, para que entre justo sin scroll en pantallas normales.
+  ::ng-deep .ui-fecha-hora-step {
+    gap: var(--space-3);
+
+    h4 { margin-bottom: var(--space-1); font-size: 13px; }
+
+    .p-datepicker {
+      font-size: 14px;
+      th, td { padding: 1px 0; }
+      .p-datepicker-day { width: 30px; height: 30px; }
+      .p-datepicker-header { padding: var(--space-1) var(--space-2); }
+    }
+
+    // Placeholder compacto (no el cuadro de 280px de sacar-turno) para no generar scroll.
+    .ui-fecha-hora-step__placeholder {
+      min-height: 0;
+      padding: var(--space-3);
+      i { font-size: 1.25rem; }
+      p { font-size: 13px; }
+    }
+  }
+
+  // Desktop (drawer lateral): si en una pantalla baja no entra, el cuerpo scrollea
+  // (salvaguarda) y el footer queda fijo abajo.
+  @include desktop-up {
+    height: 100%;
+
+    &__body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+    }
+
+    // Slots más bajos en desktop (no es contexto táctil; en mobile se mantienen 48px).
+    ::ng-deep .ui-time-slot {
+      min-height: 40px;
+      padding: var(--space-1) var(--space-2);
+    }
+  }
+}
+
+@include mobile-only {
+  .ui-reprogramar {
+    padding: var(--space-2) var(--space-4) calc(var(--space-4) + var(--ds-safe-bottom));
+    gap: var(--space-3);
+
+    &__handle {
+      display: block;
+      width: 40px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--ds-surface-dark);
+      margin: 0 auto var(--space-1);
+    }
+
+    &__body { gap: var(--space-4); }
+  }
+}

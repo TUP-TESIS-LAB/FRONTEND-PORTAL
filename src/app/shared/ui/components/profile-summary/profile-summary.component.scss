@@ -1,0 +1,51 @@
+@use 'breakpoints' as *;
+
+// Hero card: gradient oscuro, bordes redondeados, texto centrado y blanco
+.ui-profile-summary__hero {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-dark));
+  border-radius: var(--ds-radius-lg);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.ui-profile-summary__avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--brand-secondary);
+  color: var(--ds-white);
+  font-size: 28px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-2);
+  // Borde sutil para separar el avatar del fondo del hero
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+
+  @include desktop-up {
+    width: 96px;
+    height: 96px;
+    font-size: 32px;
+  }
+}
+
+.ui-profile-summary__nombre {
+  margin: 0;
+  font-size: clamp(16px, 3vw, 20px);
+  font-weight: 600;
+  color: var(--ds-white);
+  line-height: 1.2;
+}
+
+.ui-profile-summary__meta {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.4;
+}

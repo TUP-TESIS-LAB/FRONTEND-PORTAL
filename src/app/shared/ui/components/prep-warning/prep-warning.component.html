@@ -1,0 +1,11 @@
+<div class="ui-prep-warning">
+  <div class="ui-prep-warning__header">
+    <i class="pi pi-info-circle" aria-hidden="true"></i>
+    <span>{{ title }}</span>
+  </div>
+  <ul class="ui-prep-warning__list">
+    @for (item of instructions; track $index) {
+      <li>{{ item }}</li>
+    }
+  </ul>
+</div>

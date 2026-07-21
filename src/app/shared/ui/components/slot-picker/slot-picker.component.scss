@@ -1,0 +1,127 @@
+@use 'breakpoints' as *;
+
+.ui-fecha-hora-step {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+
+  @include tablet-up {
+    grid-template-columns: 1fr 1fr; // 50/50 calendario + slots/placeholder
+    gap: var(--space-5);
+    align-items: stretch;
+  }
+
+  // Mobile: calendario + horarios apilados en un modal de altura acotada —
+  // achicamos gaps/márgenes (no el touch target de los slots, que se
+  // mantiene en 48px a propósito) para que entre más sin scrollear tanto.
+  @include mobile-only {
+    gap: var(--space-3);
+  }
+
+  // Modo apilado (drawer angosto): siempre una sola columna, sin importar el viewport.
+  &--stacked {
+    grid-template-columns: 1fr !important;
+  }
+
+  h4 {
+    margin: 0 0 var(--space-2);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ds-text-muted);
+
+    @include mobile-only {
+      margin-bottom: var(--space-1);
+      font-size: 13px;
+    }
+  }
+
+  &__calendar,
+  &__slots {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-width: 0;
+
+    @include mobile-only { gap: var(--space-2); }
+  }
+
+  // El borde va en el panel (lo que se ve), no en el wrapper, para evitar el
+  // doble borde desfasado del datepicker inline.
+  ::ng-deep .p-datepicker-panel {
+    width: 100%;
+    border: 1px solid var(--ds-surface-dark);
+    border-radius: var(--ds-radius-md);
+    box-shadow: none;
+  }
+
+  // Datepicker inline: full-width de su columna con día cells distribuidos parejo.
+  ::ng-deep .p-datepicker {
+    width: 100%;
+    border: none;
+    box-shadow: none;
+    font-size: 15px;
+
+    table {
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    th, td {
+      text-align: center;
+      padding: 4px 0;
+      width: calc(100% / 7);
+    }
+
+    .p-datepicker-weekday {
+      font-size: 12px;
+      color: var(--ds-text-muted);
+      font-weight: 600;
+    }
+
+    .p-datepicker-day {
+      width: 36px;
+      height: 36px;
+      margin: 0 auto;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @include mobile-only {
+      font-size: 13px;
+
+      th, td { padding: 1px 0; }
+      .p-datepicker-weekday { font-size: 10px; }
+      .p-datepicker-day { width: 28px; height: 28px; font-size: 13px; }
+      .p-datepicker-header { padding: var(--space-1) var(--space-3); }
+    }
+  }
+
+  // Placeholder dashed (cuando no hay fecha)
+  &__placeholder {
+    flex: 1;
+    border: 2px dashed var(--ds-surface-dark);
+    border-radius: var(--ds-radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-6);
+    color: var(--ds-text-muted);
+    text-align: center;
+    min-height: 280px;
+
+    i { font-size: 2.5rem; opacity: 0.5; }
+    p { margin: 0; font-size: 14px; max-width: 240px; line-height: 1.4; }
+
+    @include mobile-only { display: none; }
+  }
+
+  // Time-slots: 4 columnas para que el texto se lea bien
+  ::ng-deep .ui-fecha-hora-step__slots .ui-time-slots {
+    @include tablet-up { grid-template-columns: repeat(4, 1fr); }
+    @include desktop-up { grid-template-columns: repeat(4, 1fr); }
+  }
+}

@@ -1,0 +1,46 @@
+<div class="ui-turno-resumen">
+
+  <div class="ui-turno-resumen__header">
+    <h3>Confirmá tu turno</h3>
+    <p class="ui-turno-resumen__subtitle">Revisá los datos antes de confirmar.</p>
+  </div>
+
+  @if (paraQuien) {
+    <div class="ui-turno-resumen__section">
+      <span class="ui-turno-resumen__label">Para quién</span>
+      <p class="ui-turno-resumen__value">{{ paraQuien }}</p>
+    </div>
+  }
+
+  @if (tipos.length > 0) {
+    <div class="ui-turno-resumen__section">
+      <span class="ui-turno-resumen__label">Tipo de análisis</span>
+      <ul class="ui-turno-resumen__lista">
+        @for (tipo of tipos; track tipo.id) {
+          <li>{{ tipo.nombre }}</li>
+        }
+      </ul>
+    </div>
+  }
+
+  <div class="ui-turno-resumen__section">
+    <span class="ui-turno-resumen__label">Sede</span>
+    <p class="ui-turno-resumen__value">{{ sede.nombre }}</p>
+    @if (hasDireccion(sede.direccion)) {
+      <p class="ui-turno-resumen__value ui-turno-resumen__value--muted">{{ sede.direccion }}</p>
+    }
+  </div>
+
+  <div class="ui-turno-resumen__section">
+    <span class="ui-turno-resumen__label">Fecha y hora</span>
+    <p class="ui-turno-resumen__value">{{ formatFecha(fecha) }} · {{ hora }} hs</p>
+  </div>
+
+  @if (requiereAyuno) {
+    <div class="ui-turno-resumen__ayuno" role="alert">
+      <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+      <span>Requiere 8 hs de ayuno antes del turno</span>
+    </div>
+  }
+
+</div>

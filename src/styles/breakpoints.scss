@@ -1,0 +1,13 @@
+// ═══════════════════════════════════════════════════════
+// Breakpoints — Design System
+// Usar con @use 'breakpoints' as *; en cada componente
+// ═══════════════════════════════════════════════════════
+
+$bp-mobile:  767px;
+$bp-tablet:  1023px;
+$bp-desktop: 1024px;
+
+@mixin mobile-only  { @media (max-width: #{$bp-mobile})  { @content; } }
+@mixin tablet-up    { @media (min-width: 768px)           { @content; } }
+@mixin desktop-up   { @media (min-width: #{$bp-desktop}) { @content; } }
+@mixin tablet-only  { @media (min-width: 768px) and (max-width: #{$bp-tablet}) { @content; } }

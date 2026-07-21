@@ -1,13 +1,72 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>TUPTESISLABPORTAL</title>
+  <title>Portal</title>
   <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Default neutro del DS; TenantService.applyTheme() lo pisa con el color del tenant -->
+  <meta name="theme-color" content="#2563EB">
+  <meta name="description" content="Portal de pacientes — turnos, resultados y grupo familiar.">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <!-- Montserrat — cargado antes del primer render para evitar FOUT -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap">
+  <!-- Manifest neutro (mascota). TenantService.applyTheme() lo pisa por un
+       Blob URL generado en runtime con el logo del tenant si está configurado. -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <!-- iOS: instalación a homescreen. El ícono queda neutro (apple-touch-icon
+       no se resuelve por tenant, mismo criterio que el splash pre-tenant). -->
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
 <body>
   <app-root></app-root>
+
+  <!--
+    Splash visible mientras Angular carga el tenant y arranca.
+    Se oculta automáticamente cuando app-root tiene contenido.
+  -->
+  <!-- Sin marca: en este punto el tenant todavía no se resolvió, y mostrar
+       la de un tenant puntual rompería el white-label -->
+  <div id="splash" aria-hidden="true">
+    <div class="splash__spinner"></div>
+  </div>
+
+  <style>
+    #splash {
+      position: fixed;
+      inset: 0;
+      /* Fondo neutro del DS (--ds-bg): acá todavía no hay tenant resuelto */
+      background: #F7F8FA;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      z-index: 9999;
+    }
+
+    .splash__spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(37, 99, 235, 0.25);
+      border-top-color: #2563EB;
+      border-radius: 50%;
+      animation: splash-spin 0.8s linear infinite;
+    }
+
+    @keyframes splash-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* El splash desaparece cuando app-root tiene contenido renderizado */
+    app-root:not(:empty) ~ #splash {
+      display: none;
+    }
+  </style>
+  <noscript>Activá JavaScript para usar el portal.</noscript>
 </body>
 </html>

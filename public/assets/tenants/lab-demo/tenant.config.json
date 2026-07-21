@@ -1,0 +1,20 @@
+{
+  "id": "lab-demo",
+  "shortName": "LD",
+  "fullName": "Laboratorio Demo",
+  "tagline": "Tenant de desarrollo local",
+  "logo": {
+    "color": null,
+    "white": null,
+    "mark":  null
+  },
+  "colors": {
+    "primary":   "#1976D2",
+    "secondary": "#0EA5A4",
+    "accent":    "#F97316"
+  },
+  "contact": {
+    "helpPhone": "0800-555-DEMO",
+    "address": "Local dev"
+  }
+}

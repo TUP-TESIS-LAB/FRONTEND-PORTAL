@@ -1,0 +1,32 @@
+:host {
+  display: block;
+}
+
+.ui-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-4);
+  text-align: center;
+  min-height: 280px;
+
+  i {
+    font-size: 3rem;
+    color: var(--ds-text-muted);
+    margin-bottom: var(--space-2);
+  }
+
+  h4 {
+    color: var(--ds-text);
+    margin: 0;
+  }
+
+  p {
+    margin: 0 0 var(--space-3);
+    font-size: 14px;
+    color: var(--ds-text-muted);
+    max-width: 320px;
+  }
+}

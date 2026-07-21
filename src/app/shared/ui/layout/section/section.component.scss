@@ -1,0 +1,28 @@
+@use 'breakpoints' as *;
+
+:host {
+  display: block;
+}
+
+.ui-section {
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  box-shadow: var(--ds-shadow-sm);
+
+  @include desktop-up {
+    padding: var(--space-5);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-3);
+
+    h3 {
+      margin: 0;
+    }
+  }
+}

@@ -1,0 +1,142 @@
+:host {
+  display: block;
+
+  &.is-selected .family-card {
+    border-color: var(--brand-primary);
+    outline: 2px solid var(--brand-primary);
+    background: var(--brand-primary-light);
+  }
+
+  // Variante compacta: fila horizontal en vez de card centrada — pensada para
+  // el wizard de Sacar Turno, donde puede haber que elegir entre varios
+  // familiares dentro de un modal angosto y de altura acotada.
+  &.is-compact .family-card {
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+
+  &.is-compact .avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+    margin-bottom: 0;
+  }
+
+  &.is-compact .name {
+    font-size: 14px;
+  }
+
+  &.is-compact .meta {
+    font-size: 12px;
+  }
+
+  &.is-compact .info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+
+    .name {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
+// Default (no compacto): el wrapper desaparece del box model — sus hijos
+// (name/meta/badge) se comportan como items directos del flex column de
+// .family-card, igual que antes de introducir el wrapper .info.
+.info {
+  display: contents;
+}
+
+.family-card {
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.2s, transform 0.1s;
+  padding: var(--space-6);
+  text-align: center;
+  font-family: var(--ds-font);
+
+  &:hover {
+    border-color: var(--brand-primary);
+    background: var(--brand-primary-light);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  // Variante no interactiva (ej. pantalla Familia): sin affordance de click
+  &--static {
+    cursor: default;
+
+    &:hover {
+      border-color: var(--ds-surface-dark);
+      background: var(--ds-white);
+    }
+
+    &:active {
+      transform: none;
+    }
+  }
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--brand-secondary-light);
+  color: var(--brand-secondary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-2);
+  flex-shrink: 0;
+}
+
+.name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ds-text);
+  // La data puede venir en minúsculas ("mateo pillado"); capitalizamos solo en presentación
+  text-transform: capitalize;
+}
+
+.meta {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ds-text-muted);
+}
+
+::ng-deep .family-card__pending-badge {
+  font-size: 11px;
+  margin-top: var(--space-1);
+}
+
+::ng-deep .family-card__remove-btn {
+  margin-top: var(--space-1);
+}

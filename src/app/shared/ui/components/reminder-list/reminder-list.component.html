@@ -1,0 +1,25 @@
+<div class="ui-reminder-list">
+  @if (title) {
+    <h4 class="ui-reminder-list__title">{{ title }}</h4>
+  }
+
+  <ul class="ui-reminder-list__items">
+    @for (reminder of reminders; track $index; let last = $last) {
+      <li class="ui-reminder-list__item" [class.ui-reminder-list__item--last]="last">
+        <span
+          class="ui-reminder-list__dot"
+          [style.background]="dotColor(reminder.color)">
+        </span>
+        <p class="ui-reminder-list__text">
+          @for (part of parseBold(reminder.text); track $index) {
+            @if (part.bold) {
+              <strong>{{ part.text }}</strong>
+            } @else {
+              {{ part.text }}
+            }
+          }
+        </p>
+      </li>
+    }
+  </ul>
+</div>

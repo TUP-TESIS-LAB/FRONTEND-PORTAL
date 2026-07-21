@@ -1,0 +1,189 @@
+<p-toast></p-toast>
+<div class="ui-auth-page" [style.background]="tenant.authPageBg()">
+  <app-public-topbar />
+
+  <div class="ui-auth-page__content">
+    <div class="ui-auth-card">
+
+      <!-- Encabezado -->
+      <div class="register__header">
+        <h1>Crear cuenta</h1>
+        <p class="ui-text-muted">Registrate para acceder a tus turnos y estudios.</p>
+      </div>
+
+      <!-- Tabs: Ingresar / Crear cuenta -->
+      <div class="register__tabs" role="tablist">
+        <button class="register__tab" role="tab" aria-selected="false"
+                routerLink="/login">
+          Ingresar
+        </button>
+        <button class="register__tab register__tab--active" role="tab" aria-selected="true">
+          Crear cuenta
+        </button>
+      </div>
+
+      <!-- Formulario -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="register__form" novalidate>
+
+        <!-- Nombre y Apellido (inputs separados, floating label para consistencia con el resto) -->
+        <div class="register__name-row">
+          <div class="ui-field">
+            <p-floatlabel>
+              <input
+                pInputText
+                id="firstName"
+                formControlName="firstName"
+                autocomplete="given-name"
+                [class.ng-invalid]="hasError('firstName')"
+                [class.ng-dirty]="f.firstName.dirty"
+              />
+              <label for="firstName">Nombre</label>
+            </p-floatlabel>
+            @if (hasError('firstName')) {
+              <small class="p-error">
+                @if (f.firstName.errors?.['required'])  { El nombre es requerido. }
+                @if (f.firstName.errors?.['minlength']) { Mínimo 2 caracteres. }
+              </small>
+            }
+          </div>
+
+          <div class="ui-field">
+            <p-floatlabel>
+              <input
+                pInputText
+                id="lastName"
+                formControlName="lastName"
+                autocomplete="family-name"
+                [class.ng-invalid]="hasError('lastName')"
+                [class.ng-dirty]="f.lastName.dirty"
+              />
+              <label for="lastName">Apellido</label>
+            </p-floatlabel>
+            @if (hasError('lastName')) {
+              <small class="p-error">
+                @if (f.lastName.errors?.['required'])  { El apellido es requerido. }
+                @if (f.lastName.errors?.['minlength']) { Mínimo 2 caracteres. }
+              </small>
+            }
+          </div>
+        </div>
+
+        <!-- DNI -->
+        <div class="ui-field">
+          <p-floatlabel>
+            <input
+              pInputText
+              id="dni"
+              formControlName="dni"
+              inputmode="numeric"
+              autocomplete="off"
+              [class.ng-invalid]="hasError('dni')"
+              [class.ng-dirty]="f.dni.dirty"
+            />
+            <label for="dni">DNI</label>
+          </p-floatlabel>
+          @if (hasError('dni')) {
+            <small class="p-error">
+              @if (f.dni.errors?.['required']) { El DNI es requerido. }
+              @if (f.dni.errors?.['pattern'])  { Ingresá 7 u 8 dígitos sin puntos. }
+            </small>
+          }
+        </div>
+
+        <!-- Email -->
+        <div class="ui-field">
+          <p-floatlabel>
+            <input
+              pInputText
+              type="email"
+              id="email"
+              formControlName="email"
+              inputmode="email"
+              autocomplete="email"
+              [class.ng-invalid]="hasError('email')"
+              [class.ng-dirty]="f.email.dirty"
+            />
+            <label for="email">Email</label>
+          </p-floatlabel>
+          @if (hasError('email')) {
+            <small class="p-error">
+              @if (f.email.errors?.['required']) { El email es requerido. }
+              @if (f.email.errors?.['email'])    { Ingresá un email válido. }
+            </small>
+          }
+        </div>
+
+        <!-- Contraseña -->
+        <div class="ui-field">
+          <p-floatlabel>
+            <p-password
+              inputId="password"
+              formControlName="password"
+              [feedback]="false"
+              [toggleMask]="true"
+              autocomplete="new-password"
+              styleClass="w-full"
+              [class.ng-invalid]="hasError('password')"
+            />
+            <label for="password">Contraseña</label>
+          </p-floatlabel>
+          <!-- Hint visible solo si no hay error activo (evita redundancia) -->
+          @if (!hasError('password')) {
+            <small class="register__password-hint pt-4">
+              Usá al menos 8 caracteres con mayúsculas y números.
+            </small>
+          }
+          @if (hasError('password')) {
+            <small class="p-error">
+              @if (f.password.errors?.['minlength']) { Mínimo 8 caracteres. }
+              @if (f.password.errors?.['pattern'])   { Debe incluir al menos una mayúscula y un número. }
+            </small>
+          }
+        </div>
+
+        <!-- Aceptar términos -->
+        <div class="register__terms" [class.register__terms--error]="hasError('aceptaTerminos')">
+          <p-checkbox
+            inputId="aceptaTerminos"
+            formControlName="aceptaTerminos"
+            [binary]="true"
+          />
+          <label for="aceptaTerminos">
+            Acepto los
+            <a routerLink="/terminos-y-condiciones" target="_blank" rel="noopener" class="ui-text-primary">
+              términos y condiciones
+            </a>
+          </label>
+        </div>
+        @if (hasError('aceptaTerminos')) {
+          <small class="p-error" style="margin-top: calc(-1 * var(--space-3))">
+            Debés aceptar los términos para continuar.
+          </small>
+        }
+
+        <!-- Botón submit -->
+        <p-button
+          type="submit"
+          label="Crear cuenta"
+          icon="pi pi-user-plus"
+          iconPos="right"
+          severity="primary"
+          styleClass="w-full"
+          [loading]="submitting()"
+          [disabled]="form.invalid || submitting()"
+        />
+
+      </form>
+
+      <!-- Footer con teléfono del tenant -->
+      @if (tenant.config()?.contact?.helpPhone) {
+        <div class="register__footer">
+          <i class="pi pi-phone"></i>
+          ¿Necesitás ayuda? Llamanos al
+          <strong>{{ tenant.config()?.contact?.helpPhone }}</strong>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>

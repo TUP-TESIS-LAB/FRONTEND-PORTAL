@@ -1,0 +1,61 @@
+<div class="ui-wizard">
+
+  <!-- Stepper header: círculos numerados + conectores + labels -->
+  <div class="ui-wizard__stepper" role="list" aria-label="Pasos del proceso">
+
+    @for (step of steps; track step.id; let i = $index) {
+
+      <div class="ui-wizard__step"
+           [class.ui-wizard__step--active]="currentStep === i"
+           [class.ui-wizard__step--done]="isStepCompleted(i)"
+           role="listitem"
+           [attr.aria-current]="currentStep === i ? 'step' : null">
+
+        <div class="ui-wizard__step-circle">
+          @if (isStepCompleted(i)) {
+            <i class="pi pi-check" aria-hidden="true"></i>
+          } @else {
+            {{ i + 1 }}
+          }
+        </div>
+
+        <div class="ui-wizard__step-label">{{ step.label }}</div>
+      </div>
+
+      <!-- Conector entre pasos (no se agrega después del último) -->
+      @if (i < steps.length - 1) {
+        <div class="ui-wizard__connector"
+             [class.ui-wizard__connector--done]="isStepCompleted(i)"
+             aria-hidden="true">
+        </div>
+      }
+
+    }
+  </div>
+
+  <!-- Contenido del paso actual — el padre proyecta con @switch (currentStep) -->
+  <div class="ui-wizard__content">
+    <ng-content />
+  </div>
+
+  <!-- Footer: navegación entre pasos -->
+  <footer class="ui-wizard__footer">
+    <p-button
+      [label]="currentStep === 0 ? 'Cancelar' : 'Volver'"
+      [icon]="currentStep === 0 ? 'pi pi-times' : 'pi pi-arrow-left'"
+      [text]="true"
+      type="button"
+      (onClick)="onBack()" />
+
+    <p-button
+      [label]="isLastStep ? confirmLabel : 'Continuar'"
+      [icon]="isLastStep ? 'pi pi-check' : 'pi pi-arrow-right'"
+      iconPos="right"
+      severity="primary"
+      type="button"
+      [disabled]="!canProceed"
+      [loading]="isLastStep && loading"
+      (onClick)="onNext()" />
+  </footer>
+
+</div>

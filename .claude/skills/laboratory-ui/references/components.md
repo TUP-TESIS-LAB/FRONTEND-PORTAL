@@ -38,19 +38,19 @@ constructor(public bp: BreakpointService) {}
 ```html
 <header class="ui-topbar">
   <div class="ui-topbar__left">
-    <p-button icon="pi pi-bars" [rounded]="true" severity="text"
+    <p-button icon="pi pi-bars" [rounded]="true" [text]="true"
               styleClass="ui-show-mobile-tablet"
               ariaLabel="Abrir menú"
               (onClick)="menuToggle.emit()" />
     <span class="ui-topbar__title">{{ pageTitle }}</span>
   </div>
   <div class="ui-topbar__right">
-    <p-button icon="pi pi-bell" [rounded]="true" severity="text"
+    <p-button icon="pi pi-bell" [rounded]="true" [text]="true"
               [badge]="unreadCount > 0 ? unreadCount.toString() : null"
               ariaLabel="Notificaciones" />
     <p-avatar [label]="userInitials" shape="circle" />
     <p-menu #menu [model]="userMenuItems" [popup]="true" />
-    <p-button icon="pi pi-chevron-down" severity="text"
+    <p-button icon="pi pi-chevron-down" [text]="true"
               ariaLabel="Menú de usuario"
               (onClick)="menu.toggle($event)" />
   </div>
@@ -110,51 +110,193 @@ Donde `brandLogoUrl` viene de un `BrandService` que lee la config del tenant.
 
 ---
 
-## Sidebar (desktop admin)
+## Sidebar (desktop, admin y paciente)
+
+El sidebar es el mismo componente para ambos portales. Solo cambia la configuración de `navGroups` y la información del footer.
+
+```typescript
+// model
+interface NavGroup {
+  label: string;       // 'Principal', 'Cuenta'
+  items: NavItem[];
+}
+interface NavItem {
+  id: string;
+  icon: string;        // 'pi-home', 'pi-calendar'
+  label: string;
+  route: string;
+  badge?: number;      // notificaciones / contadores
+}
+```
 
 ```html
-<nav class="ui-sidebar ui-show-desktop">
-  <div class="ui-sidebar__logo">
-    <span class="ui-tenant-logo ui-tenant-logo--white"></span>
+<nav class="ui-sidebar">
+  <!-- Header: marca + identidad del portal -->
+  <div class="ui-sidebar__header">
+    <div class="ui-sidebar__logo-mark">{{ tenantInitials }}</div>
+    <div class="ui-sidebar__logo-text">
+      <strong>{{ tenantName }}</strong>
+      <span>{{ portalName }}</span>
+    </div>
   </div>
-  <div class="ui-sidebar__nav">
-    @for (item of navItems; track item.route) {
-      <a class="ui-nav-item" [routerLink]="item.route" routerLinkActive="active">
-        <i [class]="'pi ' + item.icon"></i>
-        <span>{{ item.label }}</span>
-      </a>
+
+  <!-- Nav: grupos con label + items -->
+  <div class="ui-sidebar__nav" aria-label="Navegación principal">
+    @for (group of navGroups; track group.label) {
+      <div class="ui-sidebar__group-label">{{ group.label }}</div>
+      @for (item of group.items; track item.id) {
+        <a class="ui-nav-item"
+           [routerLink]="item.route"
+           routerLinkActive="active"
+           [attr.aria-current]="isActive(item) ? 'page' : null">
+          <i [class]="'pi ' + item.icon"></i>
+          <span>{{ item.label }}</span>
+          @if (item.badge) {
+            <span class="ui-nav-item__badge">{{ item.badge }}</span>
+          }
+        </a>
+      }
     }
   </div>
+
+  <!-- Footer: usuario logueado + acción de salir -->
   <div class="ui-sidebar__footer">
-    <a class="ui-nav-item" (click)="logout()">
+    <div class="ui-sidebar__footer-avatar">{{ user.iniciales }}</div>
+    <div class="ui-sidebar__footer-name">
+      <strong>{{ user.nombre }} {{ user.apellido }}</strong>
+      <span>{{ user.dni }}</span>
+    </div>
+    <button type="button" class="ui-sidebar__footer-action"
+            (click)="logout()" aria-label="Cerrar sesión">
       <i class="pi pi-sign-out"></i>
-      <span>Cerrar sesión</span>
-    </a>
+    </button>
   </div>
 </nav>
 ```
 
+```scss
+// Estilos clave (extender los ya definidos en tokens.md para .ui-sidebar)
+.ui-sidebar {
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-5) var(--space-5) var(--space-4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  &__logo-mark {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--ds-radius-sm);
+    background: var(--brand-secondary);
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    min-width: 0;
+    strong { font-size: 14px; color: white; }
+    span   { font-size: 11px; color: rgba(255,255,255,0.65);
+             text-transform: uppercase; letter-spacing: 0.5px; }
+  }
+
+  &__group-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: rgba(255, 255, 255, 0.45);
+    padding: var(--space-4) var(--space-5) var(--space-2);
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-5);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  &__footer-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--brand-secondary);
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__footer-name {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    strong { font-size: 13px; color: white; }
+    span   { font-size: 11px; color: rgba(255,255,255,0.55); }
+  }
+
+  &__footer-action {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    width: 32px;
+    height: 32px;
+    border-radius: var(--ds-radius-sm);
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(255,255,255,0.08);
+      color: white;
+    }
+  }
+}
+
+.ui-nav-item {
+  position: relative;
+
+  &__badge {
+    margin-left: auto;
+    background: var(--brand-secondary);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    min-width: 22px;
+    text-align: center;
+  }
+}
+```
+
+**Reglas:**
+- Los grupos son opcionales: si solo hay un grupo lógico, podés tener un único `NavGroup` sin label visible.
+- Cuando el sidebar se renderiza dentro del `p-drawer` (mobile/tablet en admin, o como menú secundario), tiene exactamente la misma estructura — no se hace una versión mobile distinta.
+- En el portal paciente con bottom nav activo, el footer puede ocultar el botón de salir (queda en otra parte de la UI).
+
 ---
 
-## Drawer (mobile/tablet admin)
+## Drawer (mobile/tablet)
 
 ```html
 <p-drawer [(visible)]="drawerOpen" position="left" styleClass="ui-drawer">
   <ng-template pTemplate="headless">
-    <div class="ui-sidebar">
-      <div class="ui-sidebar__logo">
-        <span class="ui-tenant-logo ui-tenant-logo--white"></span>
-      </div>
-      <div class="ui-sidebar__nav">
-        @for (item of navItems; track item.route) {
-          <a class="ui-nav-item" [routerLink]="item.route"
-             routerLinkActive="active" (click)="drawerOpen = false">
-            <i [class]="'pi ' + item.icon"></i>
-            <span>{{ item.label }}</span>
-          </a>
-        }
-      </div>
-    </div>
+    <ui-sidebar [navGroups]="navGroups" [user]="user"
+                (itemClick)="drawerOpen = false" />
   </ng-template>
 </p-drawer>
 ```
@@ -217,7 +359,7 @@ Mismo data, dos vistas controladas por CSS. Es uno de los patrones más importan
         </td>
         <td>{{ item.field3 }}</td>
         <td>
-          <p-button icon="pi pi-eye" [rounded]="true" severity="text"
+          <p-button icon="pi pi-eye" [rounded]="true" [text]="true"
                     [routerLink]="['...', item.id]"
                     pTooltip="Ver detalle" ariaLabel="Ver detalle" />
         </td>
@@ -291,6 +433,8 @@ Mismo data, dos vistas controladas por CSS. Es uno de los patrones más importan
 
 ## Filtros adaptativos (toolbar / drawer)
 
+> **⚠️ PrimeNG v17+:** `p-dropdown` fue renombrado a `p-select`. Módulo: `import { Select } from 'primeng/select'`, selector en template: `p-select`. Misma API, solo cambia el nombre. Los ejemplos de esta sección aún muestran `p-dropdown` como referencia histórica — usar `p-select` al implementar.
+
 ```html
 <!-- Desktop -->
 <p-toolbar styleClass="ui-show-desktop mb-4">
@@ -316,7 +460,7 @@ Mismo data, dos vistas controladas por CSS. Es uno de los patrones más importan
     <p-inputIcon styleClass="pi pi-search" />
     <input pInputText type="text" [(ngModel)]="searchTerm" placeholder="Buscar..." />
   </p-iconField>
-  <p-button icon="pi pi-filter" [rounded]="true" severity="text"
+  <p-button icon="pi pi-filter" [rounded]="true" [text]="true"
             (onClick)="filtersDrawer = true" ariaLabel="Filtros"
             [badge]="activeFiltersCount > 0 ? activeFiltersCount.toString() : null" />
 </div>
@@ -382,7 +526,7 @@ Mismo data, dos vistas controladas por CSS. Es uno de los patrones más importan
   </ng-template>
 
   <ng-template pTemplate="footer">
-    <p-button label="Cancelar" severity="text" (onClick)="showDialog = false" />
+    <p-button label="Cancelar" [text]="true" (onClick)="showDialog = false" />
     <p-button label="Guardar" severity="primary" (onClick)="onSave()" [loading]="saving" />
   </ng-template>
 </p-dialog>
@@ -391,7 +535,7 @@ Mismo data, dos vistas controladas por CSS. Es uno de los patrones más importan
 **Reglas:**
 - Desktop ancho estándar: 520px (form simple), 720px (form extenso), 900px (con tabla).
 - Mobile siempre full-screen vía `ui-dialog-fullscreen-mobile`.
-- Footer: cancelar a la izquierda (`severity="text"`), acción principal a la derecha.
+- Footer: cancelar a la izquierda (`[text]="true"` — NO `severity="text"`, ese valor no existe en v17), acción principal a la derecha.
 
 ---
 
@@ -533,7 +677,7 @@ export class EntityFormComponent {
 
   <!-- Patrón: footer con cancelar (text) + acción primaria (loading state) -->
   <div class="ui-form-actions ui-form-full">
-    <p-button label="Cancelar" severity="text" type="button" (onClick)="cerrar()" />
+    <p-button label="Cancelar" [text]="true" type="button" (onClick)="cerrar()" />
     <p-button label="Guardar" severity="primary" type="submit"
               [loading]="saving" [disabled]="form.invalid && form.touched" />
   </div>
@@ -704,7 +848,7 @@ Patrón para cards que muestran un resumen siempre visible y un detalle expandib
 
       <!-- Acciones opcionales al final del body -->
       <div class="ui-collapsible-card__actions">
-        <p-button label="..." icon="pi pi-..." severity="text" (onClick)="..." />
+        <p-button label="..." icon="pi pi-..." [text]="true" (onClick)="..." />
       </div>
     </div>
   }
@@ -955,7 +1099,7 @@ Patrón genérico para mostrar una entidad con identidad visual (avatar/iniciale
     <p>{{ entity.metadata }}</p>
   </div>
   <div class="ui-entity-card__actions">
-    <p-button icon="pi pi-..." severity="text"
+    <p-button icon="pi pi-..." [text]="true"
               ariaLabel="..." pTooltip="..." (onClick)="..." />
     <!-- ... más acciones ... -->
   </div>
@@ -995,3 +1139,1315 @@ Patrón genérico para mostrar una entidad con identidad visual (avatar/iniciale
 **Diferencia con `ui-list-card`:**
 - `ui-list-card`: lista densa, item entero clickeable (navega), sin acciones inline.
 - `ui-entity-card`: card más espaciosa, con acciones inline, no navega como un todo.
+
+---
+
+## Campo de dato con ícono (`ui-data-field`)
+
+Muestra un único par etiqueta/valor de forma destacada, con ícono a la izquierda y botón lápiz opcional. Ideal para pantallas de perfil o detalle de entidad donde cada campo merece peso visual propio.
+
+**Cuándo usar `ui-data-field` vs `ui-data-list`:**
+- `ui-data-field`: campos individuales destacados con ícono (perfil, detalle de contacto, cobertura). Uso cuando cada campo es importante por sí solo.
+- `ui-data-list`: lista densa tabular (`<dl>` con grid label/valor). Uso cuando hay muchos pares compactos y el ícono no agrega valor.
+
+### API
+
+```typescript
+// Inputs
+@Input({ required: true }) icon!: string;    // PrimeIcons sin 'pi ': 'pi-envelope'
+@Input({ required: true }) label!: string;   // 'EMAIL'
+@Input({ required: true }) value!: string;   // 'maria@email.com'
+@Input() editable = false;                   // muestra botón lápiz
+@Input() multiline = false;                  // value con white-space: pre-line
+
+// Outputs
+@Output() edit = new EventEmitter<void>();   // clic en el botón lápiz
+```
+
+Si `value` está vacío o es solo espacios, el componente muestra "—" en `--ds-text-disabled`.
+
+### Estructura visual
+
+```
+┌──────────────────────────────────────────────────┐
+│  [📧]  EMAIL                              [✏️]  │
+│        maria.fernandez@email.com                 │
+└──────────────────────────────────────────────────┘
+
+[📧] = cuadrado 40×40, bg --ds-surface, icono 18px --ds-text-muted
+EMAIL = 11px uppercase 600 --ds-text-muted
+valor = 14px 500 --ds-text
+[✏️] = p-button [text]="true" severity="primary" 36×36
+```
+
+### Uso básico
+
+```html
+<!-- Solo lectura -->
+<ui-data-field icon="pi-user" label="Nombre completo" [value]="user.nombre" />
+
+<!-- Editable -->
+<ui-data-field
+  icon="pi-envelope"
+  label="Email"
+  [value]="user.email"
+  [editable]="true"
+  (edit)="onEditCampo('email')" />
+
+<!-- Con valor vacío (muestra "—") -->
+<ui-data-field icon="pi-map" label="Dirección" [value]="user.direccion || ''" [editable]="true" />
+
+<!-- Valor multilinea -->
+<ui-data-field icon="pi-map" label="Dirección" [value]="user.direccion" [multiline]="true" />
+```
+
+### Contenedor recomendado: `.ui-field-list`
+
+Agrupa varios `ui-data-field` verticalmente con gap uniforme:
+
+```html
+<div class="ui-field-list">
+  <ui-data-field icon="pi-envelope" label="Email" [value]="user.email" [editable]="true" (edit)="..." />
+  <ui-data-field icon="pi-phone"    label="Teléfono" [value]="user.telefono" [editable]="true" (edit)="..." />
+
+  <h4 class="ui-grupo-titulo">Contacto de emergencia</h4>
+  <ui-data-field icon="pi-user" label="Nombre" [value]="user.contactoEmergencia?.nombre || ''" />
+</div>
+```
+
+### Importación
+
+```typescript
+import { DataFieldComponent } from '../../../shared/ui/components/data-field/data-field.component';
+```
+
+---
+
+## Tabs (`p-tabs`) — API de selectores
+
+> **⚠️ Trampa frecuente:** los selectores internos de `p-tabs` son **todos lowercase**. La documentación oficial y otros recursos los muestran en camelCase, pero el compilador Angular los rechaza. Usar siempre los nombres en minúsculas.
+
+### Selectores correctos
+
+| Componente  | Selector correcto | ❌ No usar    |
+|-------------|-------------------|---------------|
+| Tabs        | `p-tabs`          | —             |
+| TabList     | `p-tablist`       | `p-tabList`   |
+| Tab         | `p-tab`           | —             |
+| TabPanels   | `p-tabpanels`     | `p-tabPanels` |
+| TabPanel    | `p-tabpanel`      | `p-tabPanel`  |
+
+### Módulo a importar
+
+```typescript
+import { TabsModule } from 'primeng/tabs';
+// TabsModule exporta: Tabs, TabList, Tab, TabPanels, TabPanel
+```
+
+### Uso básico con valor inicial estático
+
+```html
+<p-tabs value="primer-tab">
+  <p-tablist>
+    <p-tab value="primer-tab">Primer tab</p-tab>
+    <p-tab value="segundo-tab">Segundo tab</p-tab>
+  </p-tablist>
+
+  <p-tabpanels>
+    <p-tabpanel value="primer-tab">
+      Contenido del primer tab
+    </p-tabpanel>
+    <p-tabpanel value="segundo-tab">
+      Contenido del segundo tab
+    </p-tabpanel>
+  </p-tabpanels>
+</p-tabs>
+```
+
+### Binding reactivo (tab activo controlado por el componente)
+
+El input `value` de `p-tabs` es un **model signal** de Angular 17. Para enlazarlo a un signal del componente usar la sintaxis explícita de signal:
+
+```typescript
+// En el componente
+activeTab = signal('primer-tab');
+```
+
+```html
+<!-- En el template: leer con () y escribir con .set() -->
+<p-tabs [value]="activeTab()" (valueChange)="activeTab.set($event)">
+  ...
+</p-tabs>
+```
+
+> **Nota:** `[(value)]="activeTab"` (two-way binding Angular clásico) **no funciona** con `WritableSignal` — Angular intenta asignar el signal completo, no llamar a `.set()`. Usar siempre la forma explícita `[value]="activeTab()" (valueChange)="activeTab.set($event)"`.
+
+### Responsive — tabs scrolleables en mobile
+
+Cuando los tabs no entran en pantalla, habilitar scroll horizontal con estos estilos:
+
+```scss
+// En el componente que usa p-tabs
+::ng-deep .p-tablist {
+  @include mobile-only {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+}
+```
+
+---
+
+## Wizard multi-paso (con stepper visual)
+
+Patrón para procesos guiados de N pasos. Aplica a cualquier flujo con selecciones secuenciales: reserva de turno (4 pasos), alta de familiar, configuración inicial, etc. La skill define la estructura visual y de Reactive Forms; el contenido de cada paso depende del feature.
+
+### Estructura visual
+
+**Tres regiones fijas:**
+1. **Stepper header:** indicador horizontal de pasos. Cada paso muestra un círculo con número (o check si está completado) y un label debajo. Los pasos están conectados por una línea (gris cuando no se llegó, primary cuando se completó).
+2. **Step content:** contenido del paso actual. Una sección por paso, mutuamente excluyentes.
+3. **Footer fijo:** botón "Volver/Cancelar" a la izquierda, "Continuar/Confirmar" a la derecha. El botón principal se deshabilita si el paso actual no es válido.
+
+### Comportamiento responsive
+
+- **Desktop:** stepper horizontal con todos los pasos visibles, número + label.
+- **Mobile:** stepper compacto (solo círculos con número + label del paso actual destacado), o tipografía reducida. Footer siempre full-width.
+
+### Modelo del componente
+
+```typescript
+import { Component, inject, signal, computed } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+
+interface WizardStep {
+  id: string;
+  label: string;
+  formGroup: FormGroup;
+}
+
+@Component({
+  selector: 'ui-turno-wizard',
+  standalone: true,
+  imports: [ReactiveFormsModule /* + módulos PrimeNG necesarios */],
+  templateUrl: './turno-wizard.component.html',
+  styleUrl: './turno-wizard.component.scss',
+})
+export class TurnoWizardComponent {
+  private fb = inject(FormBuilder);
+
+  currentStep = signal(0);
+
+  // Un FormGroup por paso, validables independientemente
+  form = this.fb.group({
+    paso1: this.fb.group({
+      tipoAnalisisIds: [[] as string[],
+        [Validators.required, Validators.minLength(1)]],
+    }),
+    paso2: this.fb.group({
+      sedeId: [null as string | null, Validators.required],
+    }),
+    paso3: this.fb.group({
+      fecha: [null as Date | null, Validators.required],
+      hora:  [null as string | null, Validators.required],
+    }),
+    paso4: this.fb.group({
+      // confirmación: no tiene controles, solo se muestra el resumen
+    }),
+  });
+
+  steps: WizardStep[] = [
+    { id: 'analisis',  label: 'Tipo de análisis', formGroup: this.f('paso1') },
+    { id: 'sede',      label: 'Sede',             formGroup: this.f('paso2') },
+    { id: 'fechaHora', label: 'Fecha y hora',     formGroup: this.f('paso3') },
+    { id: 'confirmar', label: 'Confirmar',        formGroup: this.f('paso4') },
+  ];
+
+  isLastStep = computed(() => this.currentStep() === this.steps.length - 1);
+
+  canProceed = computed(() => {
+    const idx = this.currentStep();
+    return this.steps[idx].formGroup.valid;
+  });
+
+  isStepCompleted(idx: number): boolean {
+    return idx < this.currentStep() && this.steps[idx].formGroup.valid;
+  }
+
+  next() {
+    const fg = this.steps[this.currentStep()].formGroup;
+    if (fg.invalid) {
+      fg.markAllAsTouched();
+      return;
+    }
+    if (this.isLastStep()) {
+      this.confirm();
+    } else {
+      this.currentStep.update(s => s + 1);
+    }
+  }
+
+  back() {
+    if (this.currentStep() === 0) {
+      this.cancel();
+    } else {
+      this.currentStep.update(s => s - 1);
+    }
+  }
+
+  confirm() {
+    // Emitir el FormGroup raíz al servicio
+    // this.confirmed.emit(this.form.getRawValue());
+  }
+
+  cancel() { /* emit close */ }
+
+  private f(key: string) { return this.form.get(key) as FormGroup; }
+}
+```
+
+### Template
+
+```html
+<div class="ui-wizard" [formGroup]="form">
+
+  <!-- Stepper header -->
+  <div class="ui-wizard__stepper">
+    @for (step of steps; track step.id; let i = $index) {
+      <div class="ui-wizard__step"
+           [class.ui-wizard__step--active]="currentStep() === i"
+           [class.ui-wizard__step--done]="isStepCompleted(i)">
+        <div class="ui-wizard__step-circle">
+          @if (isStepCompleted(i)) {
+            <i class="pi pi-check"></i>
+          } @else {
+            {{ i + 1 }}
+          }
+        </div>
+        <div class="ui-wizard__step-label">{{ step.label }}</div>
+      </div>
+
+      @if (i < steps.length - 1) {
+        <div class="ui-wizard__connector"
+             [class.ui-wizard__connector--done]="isStepCompleted(i)"></div>
+      }
+    }
+  </div>
+
+  <!-- Step content -->
+  <div class="ui-wizard__content">
+    @switch (currentStep()) {
+      @case (0) {
+        <section formGroupName="paso1">
+          <h3>Seleccioná el tipo de análisis</h3>
+          <p class="ui-text-muted">Podés elegir uno o más estudios.</p>
+          <!-- Grid de cards de tipos de análisis con multi-select -->
+          <!-- Cada card es un toggle: agrega/quita id al array tipoAnalisisIds -->
+        </section>
+      }
+      @case (1) {
+        <section formGroupName="paso2">
+          <h3>Elegí la sede</h3>
+          <!-- Lista de sedes (ui-list-card o radio cards) -->
+          <!-- Setear sedeId al hacer click -->
+        </section>
+      }
+      @case (2) {
+        <section formGroupName="paso3">
+          <h3>Fecha y horario</h3>
+          <p-datePicker formControlName="fecha"
+                        [inline]="true" [minDate]="today" />
+          <h4>Horarios disponibles</h4>
+          <!-- Grilla de slots de hora; los tomados se renderizan disabled -->
+        </section>
+      }
+      @case (3) {
+        <section>
+          <h3>Confirmá tu turno</h3>
+          <!-- Resumen de selección de los pasos anteriores -->
+          <!-- Mostrar tipos seleccionados, sede elegida, fecha y hora -->
+          <!-- Avisos de preparación (ej: "Requiere ayuno de 8 hs") -->
+        </section>
+      }
+    }
+  </div>
+
+  <!-- Footer fijo -->
+  <footer class="ui-wizard__footer">
+    <p-button [label]="currentStep() === 0 ? 'Cancelar' : 'Volver'"
+              icon="pi pi-arrow-left"
+              [text]="true"
+              type="button"
+              (onClick)="back()" />
+    <p-button [label]="isLastStep() ? 'Confirmar turno' : 'Continuar'"
+              [icon]="isLastStep() ? 'pi pi-check' : 'pi pi-arrow-right'"
+              iconPos="right"
+              severity="primary"
+              type="button"
+              [disabled]="!canProceed()"
+              (onClick)="next()" />
+  </footer>
+</div>
+```
+
+### Estilos
+
+```scss
+.ui-wizard {
+  display: flex;
+  flex-direction: column;
+  background: var(--ds-white);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-sm);
+  overflow: hidden;
+
+  // ─── Stepper header ─────────────────────
+  &__stepper {
+    display: flex;
+    align-items: flex-start;
+    padding: var(--space-5) var(--space-6);
+    background: var(--ds-bg);
+    border-bottom: 1px solid var(--ds-surface-dark);
+    gap: var(--space-2);
+
+    @include mobile-only {
+      padding: var(--space-4);
+      gap: var(--space-1);
+    }
+  }
+
+  &__step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+    min-width: 80px;
+
+    @include mobile-only {
+      min-width: 56px;
+    }
+  }
+
+  &__step-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--ds-surface-dark);
+    color: var(--ds-text-muted);
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+
+    @include mobile-only {
+      width: 30px;
+      height: 30px;
+      font-size: 12px;
+    }
+  }
+
+  &__step-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ds-text-muted);
+    text-align: center;
+    line-height: 1.2;
+
+    @include mobile-only {
+      font-size: 10px;
+    }
+  }
+
+  // Estado: paso activo
+  &__step--active {
+    .ui-wizard__step-circle {
+      background: var(--brand-primary);
+      color: white;
+      box-shadow: 0 0 0 4px var(--brand-primary-light);
+    }
+    .ui-wizard__step-label {
+      color: var(--brand-primary);
+      font-weight: 600;
+    }
+  }
+
+  // Estado: paso completado
+  &__step--done {
+    .ui-wizard__step-circle {
+      background: var(--ds-success);
+      color: white;
+    }
+  }
+
+  // Línea conectora entre pasos
+  &__connector {
+    flex: 1;
+    height: 2px;
+    background: var(--ds-surface-dark);
+    margin-top: 17px; // alinea con el centro del círculo (36/2 - 1)
+    min-width: 16px;
+    transition: background 0.2s;
+
+    @include mobile-only {
+      margin-top: 14px;
+    }
+
+    &--done {
+      background: var(--ds-success);
+    }
+  }
+
+  // ─── Step content ───────────────────────
+  &__content {
+    flex: 1;
+    padding: var(--space-6);
+    min-height: 320px;
+
+    @include mobile-only {
+      padding: var(--space-4);
+    }
+
+    section {
+      h3 { margin-top: 0; }
+      h4 { margin-top: var(--space-5); }
+    }
+  }
+
+  // ─── Footer fijo ────────────────────────
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--ds-surface-dark);
+    background: var(--ds-white);
+
+    @include mobile-only {
+      padding: var(--space-3) var(--space-4)
+               calc(var(--space-3) + var(--ds-safe-bottom));
+
+      flex-direction: row;
+      .p-button { flex: 1; }
+    }
+  }
+}
+```
+
+### Reglas
+
+- **Cuándo usarlo:** procesos secuenciales con 3+ pasos donde la respuesta a un paso puede afectar las opciones del siguiente.
+- **Cuándo NO usarlo:** formularios de 2-3 campos sin dependencia entre sí — usar dialog único.
+- Para reservar turno, **siempre** usar este wizard de 4 pasos: `Tipo de análisis → Sede → Fecha y hora → Confirmar`. No alterar el orden.
+- En desktop puede embeberse en un `p-dialog` ancho (≥720px). En mobile va full-screen vía `ui-dialog-fullscreen-mobile` o como ruta propia.
+- Validar SIEMPRE solo el FormGroup del paso actual antes de avanzar — nunca todo el form.
+- El paso de confirmación **no tiene controles editables**: muestra un resumen y permite volver para corregir.
+
+---
+
+## ui-placeholder-card
+
+Slot visual vacío con borde dashed. Indica que un área (aside, panel lateral) está esperando contenido. **No es clickeable** — a diferencia de `ui-add-family-card`, no tiene acción propia.
+
+### Cuándo usarlo
+
+- Aside de "Mis turnos" en desktop cuando no hay turno seleccionado.
+- Cualquier panel lateral o widget que aún no tenga contenido y donde se quiera comunicar visualmente que ahí va a ir algo.
+
+### API
+
+```typescript
+// Inputs
+@Input({ required: true }) icon!: string;       // PrimeIcons con prefijo 'pi ': 'pi pi-calendar'
+@Input({ required: true }) title!: string;
+@Input() description?: string;
+```
+
+### Uso
+
+```html
+<ui-placeholder-card
+  icon="pi-calendar"
+  title="Seleccioná un turno"
+  description="Hacé clic en un turno de la lista para ver su detalle." />
+```
+
+### Estructura visual
+
+```
+┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+                                            
+           🗓  (ícono 2.5rem gris)          
+                                            
+        Seleccioná un turno                 
+      (16px 600 --ds-text-muted)           
+                                            
+   Hacé clic en un turno de la lista       
+    para ver su detalle. (14px muted)      
+                                            
+└ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+  border: 2px dashed --ds-surface-dark
+  border-radius: --ds-radius-lg
+  min-height: 280px
+```
+
+### SCSS clave
+
+```scss
+.ui-placeholder-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  border: 2px dashed var(--ds-surface-dark);
+  border-radius: var(--ds-radius-lg);
+  background: transparent;
+  text-align: center;
+  min-height: 280px;
+
+  .pi { font-size: 2.5rem; color: var(--ds-text-disabled); }
+  &__title { font-size: 16px; font-weight: 600; color: var(--ds-text-muted); }
+  &__desc   { font-size: 14px; color: var(--ds-text-muted); max-width: 280px; line-height: 1.5; }
+}
+```
+
+### Importación
+
+```typescript
+import { PlaceholderCardComponent } from '../../../shared/ui/components/placeholder-card/placeholder-card.component';
+```
+
+---
+
+## ui-prep-warning
+
+Caja de advertencia amarilla con instrucciones de preparación para un turno o estudio. Semanticamente equivale a un banner de tipo `warning` estructurado como lista.
+
+### Cuándo usarlo
+
+- Panel de detalle de un turno (`ui-turno-detail`).
+- Paso de confirmación del wizard de reservar turno.
+- Cualquier lugar donde haya instrucciones previas obligatorias.
+
+### API
+
+```typescript
+@Input({ required: true }) instructions!: string[];
+@Input() title = 'Preparación';    // label superior, personalizable
+```
+
+### Uso
+
+```html
+<ui-prep-warning
+  [instructions]="['8 horas de ayuno', 'Llevar orden médica firmada']" />
+
+<!-- Con título personalizado -->
+<ui-prep-warning
+  title="Antes del turno"
+  [instructions]="turno.preparacion" />
+```
+
+### Estructura visual
+
+```
+┌──────────────────────────────────────┐  background: --ds-warning-light
+│  ⓘ  PREPARACIÓN                      │  header: 11px uppercase --ds-warning
+├──────────────────────────────────────┤
+│  • 8 horas de ayuno (puede tomar     │  lista: ul padding-left, 14px --ds-text
+│    agua)                             │
+│  • Evitar actividad física intensa   │
+│  • Llevar orden médica firmada       │
+└──────────────────────────────────────┘
+```
+
+### Importación
+
+```typescript
+import { PrepWarningComponent } from '../../../shared/ui/components/prep-warning/prep-warning.component';
+```
+
+---
+
+## ui-turno-detail
+
+Panel de detalle de un turno. Reutilizable: en desktop va en el aside sticky de "Mis turnos"; en mobile se embebe dentro del bottom sheet (drawer desde abajo).
+
+### Cuándo usarlo
+
+- Aside de "Mis turnos" (desktop).
+- Bottom sheet de "Mis turnos" (mobile).
+- Paso 4 "Confirmar" del wizard de reservar turno (modo solo-lectura, sin botones de acción).
+
+### API
+
+```typescript
+@Input({ required: true }) turno!: Turno;
+
+@Output() reprogramar = new EventEmitter<Turno>();
+@Output() cancelar    = new EventEmitter<Turno>();
+@Output() close       = new EventEmitter<void>();  // usado en bottom sheet mobile
+```
+
+### Uso
+
+```html
+<!-- Desktop: aside -->
+<ui-turno-detail
+  [turno]="selectedTurno()!"
+  (reprogramar)="onReprogramar($event)"
+  (cancelar)="onCancelar($event)" />
+
+<!-- Mobile: dentro del bottom sheet -->
+<p-drawer
+  [visible]="mobileDetailOpen()"
+  (visibleChange)="mobileDetailOpen.set($event)"
+  position="bottom"
+  styleClass="ui-bottom-sheet-drawer ui-turno-detail-sheet">
+  <ng-template pTemplate="headless">
+    <ui-turno-detail
+      [turno]="selectedTurno()!"
+      (reprogramar)="onReprogramar($event)"
+      (cancelar)="onCancelar($event)"
+      (close)="mobileDetailOpen.set(false)" />
+  </ng-template>
+</p-drawer>
+```
+
+### Estructura visual
+
+```
+┌──────────────────────────────────────┐
+│  [brand-primary bg]                  │
+│  TU PRÓXIMO TURNO (uppercase 11px)   │
+│  Martes 19 de mayo de 2026  (h3)     │
+│  08:30 hs · Llegá 10 min antes       │
+├──────────────────────────────────────┤
+│  [mapa placeholder — gris 160px]     │
+│                                      │
+│  SEDE                                │
+│  Sede Centro                         │
+│  Av. Colón 450, Córdoba              │
+│  📞 (0351)...  🕐 L-V 7:00 a 19:00   │
+│  ────────────────────────────        │
+│  ESTUDIOS                            │
+│  [chip teal] Hemoglobina  [chip teal]│
+│  ────────────────────────────        │
+│  [ui-prep-warning]                   │
+│  ────────────────────────────        │
+│  [Reprogramar]  [Cancelar turno]     │
+└──────────────────────────────────────┘
+```
+
+### Botón de cierre (mobile)
+
+El componente tiene un `__close` button que por defecto está `display: none`. Se vuelve visible cuando el padre tiene la clase `ui-turno-detail-sheet` en el drawer container. El override global en `primeng-overrides.scss` maneja esto porque el drawer se renderiza como portal al `<body>`.
+
+```scss
+// En primeng-overrides.scss (ya presente)
+.ui-turno-detail-sheet ui-turno-detail .ui-turno-detail__close {
+  display: flex;
+}
+```
+
+### Importación
+
+```typescript
+import { TurnoDetailComponent } from '../../../shared/ui/components/turno-detail/turno-detail.component';
+```
+
+---
+
+## Bottom sheet (mobile)
+
+**Solo mobile.** Para acciones secundarias que no entran en el bottom-nav. No usar para navegación primaria ni para formularios — esos van en el bottom-nav y en `p-dialog` respectivamente.
+
+Ubicación: `src/app/shared/ui/overlays/bottom-sheet/`
+
+### Cuándo usarlo
+
+- Menú de "Más" del bottom-nav: opciones de navegación secundaria (Perfil, Familia, Cerrar sesión).
+- Acciones contextuales sobre un item (editar, eliminar, compartir) cuando son 2-4 opciones y no justifican un dialog.
+- Nunca en desktop/tablet: el componente tiene `display: none` en `@include desktop-up`.
+
+### API
+
+```typescript
+export interface BottomSheetItem {
+  id: string;
+  icon: string;           // PrimeIcons sin 'pi ': 'pi-user', 'pi-sign-out'
+  label: string;
+  route?: any[];          // si está presente, navega al hacer click
+  action?: () => void;    // si está presente, ejecuta la función
+  destructive?: boolean;  // estilo danger (texto e ícono en --ds-danger)
+}
+
+// Inputs
+@Input() visible = false;
+@Input() title?: string;                          // label muted uppercase arriba de la lista
+@Input({ required: true }) items!: BottomSheetItem[];
+
+// Outputs
+@Output() visibleChange = new EventEmitter<boolean>();   // two-way binding
+@Output() itemClick     = new EventEmitter<BottomSheetItem>();
+```
+
+### Uso
+
+```html
+<ui-bottom-sheet
+  [visible]="sheetOpen()"
+  (visibleChange)="sheetOpen.set($event)"
+  title="Más"
+  [items]="sheetItems"
+  (itemClick)="onItemClick($event)" />
+```
+
+```typescript
+sheetOpen  = signal(false);
+sheetItems: BottomSheetItem[] = [
+  { id: 'perfil',  icon: 'pi-user',     label: 'Mi perfil',    route: ['/perfil'] },
+  { id: 'familia', icon: 'pi-users',    label: 'Mi familia',   route: ['/familia'] },
+  { id: 'logout',  icon: 'pi-sign-out', label: 'Cerrar sesión',
+    action: () => this.logout(), destructive: true },
+];
+```
+
+### Comportamiento interno
+
+- Usa `p-drawer position="bottom"` con `pTemplate="headless"` para control total del contenido.
+- El drawer maneja: animación slide-up (~250ms), backdrop, ESC key y focus-trap.
+- Al hacer click en un item: navega (si tiene `route`) o ejecuta `action()`, emite `itemClick` y cierra el sheet via `visibleChange`.
+- El backdrop nativo del drawer cierra el sheet sin pasar por `onItemClick`.
+
+### Estructura visual
+
+```
+┌─────────────────────────────────┐
+│            ─────                │  ← handle (40×4px, --ds-surface-dark)
+│  MÁS                            │  ← título (uppercase, muted) — opcional
+│  ─────────────────────────      │
+│  [ícono]  Mi perfil       ›    │  ← item con route: muestra chevron
+│  [ícono]  Mi familia      ›    │
+│  ─────────────────────────      │
+│  [ícono]  Cerrar sesión        │  ← item destructive: rojo, sin chevron
+└─────────────────────────────────┘
+   padding-bottom: safe-area-inset-bottom
+```
+
+### CSS overrides
+
+Los estilos del container del drawer van en `primeng-overrides.scss` (no en el SCSS del componente) porque `p-drawer` se renderiza como portal al `<body>`:
+
+```scss
+.ui-bottom-sheet-drawer {
+  height: auto !important;
+  border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+
+  .p-drawer-content { padding: 0; }
+}
+```
+
+---
+
+## ui-analysis-card-grid
+
+Lista vertical de cards seleccionables para tipos de análisis. Multi-select: cada click agrega o quita el tipo del array. Usado como Paso 1 del wizard de reservar turno.
+
+### Cuándo usarlo
+
+- Paso 1 "Tipo de análisis" del wizard de sacar turno.
+- Cualquier pantalla donde el usuario deba seleccionar uno o más estudios de un catálogo.
+
+### API
+
+```typescript
+// Inputs
+@Input({ required: true }) tipos!: TipoAnalisis[];
+@Input({ required: true }) selectedIds!: string[];   // array de ids seleccionados
+@Input() loading = false;                             // muestra 4 skeletons
+
+// Output
+@Output() selectionChange = new EventEmitter<string[]>(); // array completo actualizado
+```
+
+### Uso
+
+```html
+<ui-analysis-card-grid
+  [tipos]="tiposAnalisis()"
+  [selectedIds]="selectedTipoIds()"
+  (selectionChange)="selectedTipoIds.set($event)" />
+```
+
+### Estructura visual
+
+```
+┌─────────────────────────────────────────────┐
+│  [icon]  Hemograma completo            ⚪  │
+│          Glóbulos rojos, blancos, plaquetas │
+└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│  [icon]  Glucemia en ayunas            🔵  │  ← seleccionada
+│          Ayuno mínimo 8 hs                  │     border brand-primary + bg brand-primary-light
+└─────────────────────────────────────────────┘
+```
+
+- Cards en lista vertical con `gap: --space-2`.
+- Ícono a la izquierda: cuadrado 40×40, `--ds-surface`, icono 18px muted.
+- Radio custom a la derecha: `pi-circle-fill` (seleccionado) / `pi-circle` (vacío). **NO** usa `p-radioButton`.
+- Estado seleccionado: `border: 2px solid --brand-primary`, `background: --brand-primary-light`.
+- `min-height: --ds-touch-target` para mobile.
+- Loading: 4 `p-skeleton` de 72px.
+
+### SCSS clave
+
+```scss
+.ui-analysis-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-md);
+  min-height: var(--ds-touch-target);
+
+  &--selected {
+    border: 2px solid var(--brand-primary);
+    background: var(--brand-primary-light);
+    .ui-analysis-card__radio { color: var(--brand-primary); }
+  }
+}
+```
+
+### Importación
+
+```typescript
+import { AnalysisCardGridComponent } from '../../../shared/ui/components/analysis-card-grid/analysis-card-grid.component';
+```
+
+---
+
+## ui-sede-list
+
+Lista vertical de cards seleccionables de sedes del laboratorio. Single-select. Muestra nombre, dirección, horario y distancia en chip. Usado como Paso 2 del wizard de reservar turno.
+
+### Cuándo usarlo
+
+- Paso 2 "Sede" del wizard de sacar turno.
+- Cualquier pantalla de selección de sede o sucursal.
+
+### API
+
+```typescript
+// Inputs
+@Input({ required: true }) sedes!: Sede[];
+@Input({ required: true }) selectedId!: string | null;
+@Input() loading = false;
+
+// Output
+@Output() selectionChange = new EventEmitter<string>(); // id de la sede seleccionada
+```
+
+### Uso
+
+```html
+<ui-sede-list
+  [sedes]="sedes()"
+  [selectedId]="selectedSedeId()"
+  (selectionChange)="onSedeChange($event)" />
+```
+
+### Estructura visual
+
+```
+┌─────────────────────────────────────────────────┐
+│  [📍]  Sede Centro                    [1.2 km]  │
+│        Av. Colón 450, Córdoba                   │
+│        L-V 7:00 a 19:00                         │
+└─────────────────────────────────────────────────┘
+```
+
+- Mismo estilo base que `ui-analysis-card-grid` (hover, selected, touch target).
+- Ícono `pi-map-marker` en cuadrado 40×40.
+- Chip de distancia: `--brand-secondary-light` bg, `--brand-secondary-dark` texto, pill shape.
+- Loading: 3 `p-skeleton` de 88px.
+
+### SCSS clave
+
+```scss
+.ui-sede-card__distancia {
+  background: var(--brand-secondary-light);
+  color: var(--brand-secondary-dark);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px var(--space-2);
+  align-self: flex-start;
+}
+```
+
+### Importación
+
+```typescript
+import { SedeListComponent } from '../../../shared/ui/components/sede-list/sede-list.component';
+```
+
+---
+
+## ui-time-slots
+
+Grilla de botones de hora para seleccionar un slot de turno. Single-select. Los slots no disponibles se muestran disabled con tachado. Usado como parte del Paso 3 del wizard de reservar turno.
+
+### Cuándo usarlo
+
+- Paso 3 "Fecha y hora" del wizard de sacar turno (junto con `p-datepicker [inline]`).
+- Cualquier pantalla de selección de horario con disponibilidad variable.
+
+### API
+
+```typescript
+// Inputs
+@Input({ required: true }) slots!: SlotDisponible[];
+@Input({ required: true }) selectedHora!: string | null;
+@Input() loading = false;
+
+// Output
+@Output() selectionChange = new EventEmitter<string>(); // hora seleccionada: '08:30'
+```
+
+### Uso
+
+```html
+<ui-time-slots
+  [slots]="slots()"
+  [selectedHora]="selectedHora()"
+  [loading]="loadingSlots()"
+  (selectionChange)="selectedHora.set($event)" />
+```
+
+### Estructura visual
+
+```
+[ 07:00 ] [ 07:15 ] [~~07:30~~] [ 07:45 ]   ← 07:30 tomado (disabled)
+[ 08:00 ] [■08:15■] [ 08:30 ]  [ 08:45 ]   ← 08:15 seleccionado (brand-primary bg)
+```
+
+- Grid: **4 cols mobile**, **5 cols tablet**, **6 cols desktop** (vía breakpoints).
+- `min-width: 64px`, `min-height: --ds-touch-target` por slot.
+- Estado disabled: `background: --ds-surface`, `color: --ds-text-disabled`, `text-decoration: line-through`, `cursor: not-allowed`.
+- Estado selected: `background: --brand-primary`, `color: white`.
+- Loading: `p-skeleton` de 200px altura.
+
+### SCSS clave
+
+```scss
+.ui-time-slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+  @include tablet-up  { grid-template-columns: repeat(5, 1fr); }
+  @include desktop-up { grid-template-columns: repeat(6, 1fr); }
+}
+
+.ui-time-slot--disabled {
+  background: var(--ds-surface);
+  color: var(--ds-text-disabled);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+```
+
+### Importación
+
+```typescript
+import { TimeSlotsComponent } from '../../../shared/ui/components/time-slots/time-slots.component';
+```
+
+---
+
+## ui-turno-resumen
+
+Card de resumen de un turno antes de confirmarlo. Solo lectura: muestra los 4 datos seleccionados (tipos, sede, fecha/hora) y un banner de ayuno si aplica. Usado como Paso 4 del wizard de reservar turno.
+
+### Cuándo usarlo
+
+- Paso 4 "Confirmar" del wizard de sacar turno.
+- Cualquier pantalla de previsualización antes de un submit.
+
+### API
+
+```typescript
+// Inputs
+@Input({ required: true }) tipos!: TipoAnalisis[];    // tipos seleccionados
+@Input({ required: true }) sede!: Sede;
+@Input({ required: true }) fecha!: Date;
+@Input({ required: true }) hora!: string;             // '08:30'
+@Input() requiereAyuno = false;                       // computed por el padre
+```
+
+### Uso
+
+```html
+<ui-turno-resumen
+  [tipos]="selectedTipos()"
+  [sede]="selectedSede()!"
+  [fecha]="selectedFecha()!"
+  [hora]="selectedHora()!"
+  [requiereAyuno]="requiereAyuno()" />
+```
+
+El padre calcula `requiereAyuno` como:
+```typescript
+requiereAyuno = computed(() => this.selectedTipos().some(t => t.ayuno));
+```
+
+### Estructura visual
+
+```
+┌─────────────────────────────────────────────┐
+│  Confirmá tu turno                           │
+│  Revisá los datos antes de confirmar.        │
+│  ─────────────────────────────────────────  │
+│  TIPO DE ANÁLISIS                            │
+│  • Hemograma completo                        │
+│  • Glucemia en ayunas                        │
+│  ─────────────────────────────────────────  │
+│  SEDE                                        │
+│  Sede Centro                                 │
+│  Av. Colón 450, Córdoba                      │
+│  ─────────────────────────────────────────  │
+│  FECHA Y HORA                                │
+│  Martes 21 de mayo · 08:30 hs               │
+│  ─────────────────────────────────────────  │
+│  ⚠ Requiere 8 hs de ayuno antes del turno  │  ← solo si requiereAyuno
+└─────────────────────────────────────────────┘
+```
+
+- Secciones separadas por `border-top: 1px solid --ds-surface`.
+- Labels uppercase 11px `--ds-text-muted`.
+- Banner de ayuno: `background: --ds-warning-light`, `color: --ds-warning`, `role="alert"`.
+- `formatFecha(fecha)` produce "Martes 21 de mayo" con arrays locales en español (sin dependencia de locale Angular).
+
+### SCSS clave
+
+```scss
+.ui-turno-resumen__ayuno {
+  background: var(--ds-warning-light);
+  color: var(--ds-warning);
+  border-radius: var(--ds-radius-md);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+```
+
+### Importación
+
+```typescript
+import { TurnoResumenComponent } from '../../../shared/ui/components/turno-resumen/turno-resumen.component';
+```
+
+### Patrón completo del wizard
+
+Ver `SacarTurnoComponent` en `src/app/features/main/turnos/sacar/` para el ejemplo de integración de los 4 componentes con `ui-wizard`, `SacarTurnoService` y el patrón adaptativo dialog/drawer.
+
+---
+
+## ui-person-chips
+
+Selector horizontal de personas con avatares de color. Permite filtrar cualquier lista multi-persona (estudios, turnos, familia). Aparece en la pantalla `/estudios` y puede reutilizarse en cualquier feature con contexto de grupo familiar.
+
+### Cuándo usarlo
+
+- Pantalla que muestra ítems de múltiples personas y necesita un filtro rápido por persona.
+- El primer chip siempre es "Todos" (id `null`), los siguientes son personas reales.
+
+### API
+
+```typescript
+// Modelo
+export interface PersonaChip {
+  id: number | null;       // null = "Todos"
+  nombre: string;
+  iniciales: string;
+  avatarColor: 'primary' | 'secondary' | 'accent' | 'warning' | 'neutral';
+}
+
+// Inputs
+@Input({ required: true }) personas!: PersonaChip[];
+@Input() selectedId: number | null = null;   // null = "Todos" seleccionado
+
+// Outputs
+@Output() selectionChange = new EventEmitter<number | null>();
+```
+
+### Uso
+
+```html
+<ui-person-chips
+  [personas]="personas()"
+  [selectedId]="selectedPersonaId()"
+  (selectionChange)="selectedPersonaId.set($event)" />
+```
+
+```typescript
+// Datos (normalmente vienen del servicio)
+const PERSONAS: PersonaChip[] = [
+  { id: null, nombre: 'Todos',      iniciales: '·', avatarColor: 'neutral'   },
+  { id: 1,    nombre: 'María (yo)', iniciales: 'M', avatarColor: 'secondary' },
+  { id: 2,    nombre: 'Lucía',      iniciales: 'L', avatarColor: 'accent'    },
+];
+selectedPersonaId = signal<number | null>(null);
+```
+
+### Estructura visual
+
+```
+[ · Todos ] [ M María (yo) ] [ L Lucía ] [ T Tomás ] [ M Mamá ]
+  ↑ seleccionado: borde 2px del color del avatar + fondo suave
+```
+
+- Layout horizontal con scroll-x en mobile (sin scrollbar visible).
+- Cada chip: height 40px, pill (border-radius 999px), border 1.5px `--ds-surface-dark`.
+- Avatar circular 24px con iniciales blancas.
+- `avatarColor` mapea a: `primary → --brand-primary`, `secondary → --brand-secondary`, `accent → --brand-accent`, `warning → --ds-warning`, `neutral → --ds-text-muted`.
+- Estado seleccionado: `border-width: 2px` + borde y fondo del color del avatar.
+
+### Importación
+
+```typescript
+import { PersonChipsComponent } from '../../../shared/ui/components/person-chips/person-chips.component';
+```
+
+---
+
+## ui-filters-aside
+
+Panel de filtros reutilizable para listas con criterios múltiples. En desktop va en el aside derecho de la pantalla; en mobile se embebe dentro de un `p-drawer` bottom sheet.
+
+### Cuándo usarlo
+
+- Cualquier pantalla con una lista filtrable por rango de fechas, tipo/categoría y estado.
+- El mismo componente sirve para desktop (filtros live) y mobile (con `[mobileMode]="true"` activa los botones Aplicar/Limpiar en el footer).
+
+### API
+
+```typescript
+// Interfaces
+export interface EstudiosFiltros {
+  rangoFechas: { desde: Date; hasta: Date } | null;
+  tipos: CategoriaEstudio[];
+  estados: EstadoEstudio[];
+}
+
+// Inputs
+@Input() filtros: EstudiosFiltros = { rangoFechas: null, tipos: [], estados: [] };
+@Input() countsByTipo: Record<string, number> = {};
+@Input() countsByEstado: Record<EstadoEstudio, number> = {} as any;
+@Input() mobileMode = false;   // muestra botones Aplicar/Limpiar en el footer
+
+// Outputs
+@Output() filtrosChange = new EventEmitter<EstudiosFiltros>();  // cambio live (desktop)
+@Output() limpiar       = new EventEmitter<void>();
+@Output() aplicar       = new EventEmitter<EstudiosFiltros>(); // solo se emite desde mobile
+```
+
+### Uso — Desktop (aside)
+
+```html
+<aside class="ui-show-desktop">
+  <ui-filters-aside
+    [filtros]="filtros()"
+    [countsByTipo]="countsByTipo()"
+    [countsByEstado]="countsByEstado()"
+    (filtrosChange)="filtros.set($event)"
+    (limpiar)="onLimpiarFiltros()" />
+</aside>
+```
+
+### Uso — Mobile (bottom sheet)
+
+```html
+<p-drawer
+  [visible]="mobileFiltersOpen()"
+  (visibleChange)="mobileFiltersOpen.set($event)"
+  position="bottom"
+  styleClass="ui-bottom-sheet-drawer ui-filters-sheet">
+  <ng-template pTemplate="headless">
+    <ui-filters-aside
+      [mobileMode]="true"
+      [filtros]="filtros()"
+      [countsByTipo]="countsByTipo()"
+      [countsByEstado]="countsByEstado()"
+      (aplicar)="onFiltrosApplyMobile($event)"
+      (limpiar)="onLimpiarFiltros()" />
+  </ng-template>
+</p-drawer>
+```
+
+### Computed para contadores (en el componente padre)
+
+```typescript
+countsByTipo = computed<Record<string, number>>(() => {
+  const counts: Record<string, number> = {};
+  for (const e of this.estudios()) {
+    counts[e.categoria] = (counts[e.categoria] ?? 0) + 1;
+  }
+  return counts;
+});
+
+countsByEstado = computed<Record<EstadoEstudio, number>>(() => {
+  const counts = { 'disponible': 0, 'en-proceso': 0, 'pendiente': 0 };
+  for (const e of this.estudios()) {
+    counts[e.estado] = (counts[e.estado] ?? 0) + 1;
+  }
+  return counts;
+});
+```
+
+### Estructura visual
+
+```
+┌─────────────────────────────────┐
+│  Filtros                Limpiar │
+├─────────────────────────────────┤
+│  RANGO DE FECHAS                │
+│  [Último mes][3 meses][6m][Año] │
+│  Desde [__/__/__] Hasta [__/..] │
+├─────────────────────────────────┤
+│  TIPO DE ESTUDIO                │
+│  □ Hematología              3   │
+│  □ Bioquímica               5   │
+│  □ Hormonas                 2   │
+│  □ Orina                    1   │
+│  □ Coagulación              1   │
+├─────────────────────────────────┤
+│  ESTADO                         │
+│  □ 🟢 Disponible            8   │
+│  □ 🔵 En proceso            2   │
+│  □ 🟡 Pendiente             2   │
+└─────────────────────────────────┘
+```
+
+### Comportamiento
+
+- Desktop (`mobileMode = false`): cada cambio de checkbox o fecha emite `filtrosChange` de inmediato (filtrado live).
+- Mobile (`mobileMode = true`): los cambios son internos hasta que el usuario toca "Aplicar filtros", que emite `aplicar` con los filtros actualizados. El padre cierra el drawer al recibirlo.
+- Los chips de rango rápido (Último mes, 3 meses, 6 meses, Año) son toggleables: tocando el mismo chip activo lo desactiva y limpia las fechas.
+
+### Importación
+
+```typescript
+import { FiltersAsideComponent } from '../../../shared/ui/components/filters-aside/filters-aside.component';
+```

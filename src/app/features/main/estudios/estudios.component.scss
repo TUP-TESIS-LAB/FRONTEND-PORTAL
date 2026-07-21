@@ -1,0 +1,279 @@
+@use 'breakpoints' as *;
+
+// ── Toolbar (paciente + sort + filtros) ──────────────────
+.ui-estudios-toolbar {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+
+  @include mobile-only {
+    position: sticky;
+    top: var(--ds-topbar-h);
+    background: var(--ds-bg);
+    z-index: var(--z-sticky);
+    padding: var(--space-2) 0;
+    gap: var(--space-3);
+
+    // Igual que Turnos: select de ancho natural + botón Filtros agrupados a la izquierda.
+    .ui-estudios-patient { flex: 0 1 auto; }
+  }
+}
+
+// ── Layout principal ─────────────────────────────────────
+.ui-estudios-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  align-items: start;
+
+  @include desktop-up {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: var(--space-6);
+  }
+}
+
+.ui-estudios-list {
+  min-width: 0;
+}
+
+// ── Tabla desktop: contenedor de card + header con fondo ─
+.ui-table-wrapper {
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+
+  // Header con fondo gris para que se distinga del cuerpo (antes se veía "plano").
+  ::ng-deep .p-datatable-thead > tr > th {
+    background: var(--ds-surface);
+    border-bottom: 1px solid var(--ds-surface-dark);
+  }
+
+  // PrimeNG no fuerza el ancho del <table> interno — sin esto, con pocas filas
+  // la tabla se encoge al contenido en vez de ocupar el wrapper completo.
+  ::ng-deep .p-datatable-table {
+    width: 100%;
+  }
+}
+
+.ui-estudios-aside {
+  // OJO: sin `display` en base — el aside es `.ui-show-desktop` y setear display
+  // acá pisaría el `display:none` de mobile. El layout va dentro de desktop-up.
+  @include desktop-up {
+    position: sticky;
+    top: calc(var(--ds-topbar-h) + var(--space-4));
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  // Filtro de persona priorizado arriba del panel de filtros.
+  &__persona {
+    background: var(--ds-white);
+    border: 1px solid var(--ds-surface-dark);
+    border-radius: var(--ds-radius-lg);
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &__persona-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--ds-text-muted);
+  }
+
+  &__persona ::ng-deep .ui-patient-filter-select {
+    width: 100%;
+  }
+}
+
+// ── Tabla: nombre de estudio ─────────────────────────────
+.ui-estudio-nombre {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+// ── Ícono de categoría ───────────────────────────────────
+.ui-categoria-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--ds-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 13px;
+
+  &.ui-categoria-hematologia { background: rgba(226, 58, 71, 0.12);    color: var(--ds-danger);   }
+  &.ui-categoria-bioquimica  { background: rgba(34, 197, 94, 0.12);    color: var(--ds-success);  }
+  &.ui-categoria-hormonas    { background: rgba(245, 158, 11, 0.12);   color: var(--ds-warning);  }
+  &.ui-categoria-orina       { background: rgba(245, 158, 11, 0.10);   color: var(--ds-warning);  }
+  &.ui-categoria-coagulacion { background: rgba(59, 130, 246, 0.12);   color: var(--ds-info);     }
+}
+
+// ── Badge NUEVO ──────────────────────────────────────────
+.ui-badge-nuevo {
+  background: var(--brand-accent);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--ds-radius-sm);
+  flex-shrink: 0;
+}
+
+// ── Celda persona (tabla) ────────────────────────────────
+.ui-persona-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+// ── Colores de avatar (aplican a cualquier tamaño) ───────
+.ui-avatar-primary   { background: var(--brand-primary);   }
+.ui-avatar-secondary { background: var(--brand-secondary); }
+.ui-avatar-accent    { background: var(--brand-accent);    }
+.ui-avatar-warning   { background: var(--ds-warning);      }
+.ui-avatar-neutral   { background: var(--ds-text-muted);   }
+
+// ── Avatar mini (tabla desktop) ──────────────────────────
+.ui-avatar-mini {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  color: white;
+  flex-shrink: 0;
+}
+
+// ── Tags de estado (estudios) ────────────────────────────
+::ng-deep {
+  .ui-tag-disponible  { background: var(--ds-success-light) !important; color: var(--ds-success) !important; }
+  .ui-tag-en-proceso  { background: var(--ds-info-light)    !important; color: var(--ds-info)    !important; }
+  .ui-tag-pendiente   { background: var(--ds-warning-light) !important; color: var(--ds-warning) !important; }
+}
+
+// ── Cards mobile: estilo turno (avatar prominente) ───────
+.ui-estudios-cards {
+  @include mobile-only {
+    display: flex;
+  }
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+// Fila: avatar (izq) + info (centro, flexible) + estado/acción (der).
+.ui-estudio-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--ds-white);
+  border: 1px solid var(--ds-surface-dark);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-sm);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:active { transform: scale(0.99); }
+
+  &--disabled {
+    cursor: default;
+    .ui-estudio-card__title,
+    .ui-estudio-card__meta { opacity: 0.7; }
+  }
+
+  // Avatar prominente (mismo peso visual que el date-stamp de Turnos).
+  &__avatar {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    color: white;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__persona-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ds-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__title {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ds-text);
+    min-width: 0;
+  }
+
+  &__title-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__meta {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-3);
+    font-size: 12px;
+    color: var(--ds-text-muted);
+
+    i { font-size: 12px; flex-shrink: 0; }
+    span { min-width: 0; }
+  }
+
+  &__status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-2);
+    flex-shrink: 0;
+  }
+}
+
+// ── Visually hidden (accesibilidad) ─────────────────────
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}

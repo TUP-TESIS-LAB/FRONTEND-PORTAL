@@ -1,0 +1,61 @@
+@use 'breakpoints' as *;
+
+:host {
+  display: block;
+}
+
+// Ocultar el nav cuando un wizard / sheet full-screen está abierto. El
+// SacarTurnoComponent (y otros overlays grandes) agrega 'wizard-open' al
+// body en ngOnInit y lo quita en ngOnDestroy. Sin esto, el bottom-nav
+// (z-index 400) pinta encima del drawer del wizard (z-index 300) y deja
+// un strip blanco abajo que parece "espacio extra raro".
+:host-context(body.wizard-open) .ui-bottom-nav {
+  display: none;
+}
+
+.ui-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--ds-bottom-nav-h) + var(--ds-safe-bottom));
+  padding-bottom: var(--ds-safe-bottom);
+  background: var(--ds-white);
+  border-top: 1px solid var(--ds-surface-dark);
+  box-shadow: var(--ds-shadow-bottom-nav);
+  display: flex;
+  z-index: var(--z-bottom-nav);
+
+  &__item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    text-decoration: none;
+    color: var(--ds-text-muted);
+    font-size: 11px;
+    font-weight: 500;
+    font-family: var(--ds-font);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    min-height: var(--ds-touch-target);
+    transition: color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+
+    i { font-size: 22px; }
+
+    &.active {
+      color: var(--brand-primary);
+
+      i { color: var(--brand-secondary); }
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}

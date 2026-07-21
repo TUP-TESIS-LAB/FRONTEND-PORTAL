@@ -1,0 +1,99 @@
+<div class="ui-turno-detail">
+
+  <!-- Header con fondo de marca -->
+  <div class="ui-turno-detail__header">
+    <button
+      class="ui-turno-detail__close"
+      type="button"
+      aria-label="Cerrar detalle"
+      (click)="close.emit()">
+      <i class="pi pi-times"></i>
+    </button>
+    <span class="ui-turno-detail__header-label">{{ headerLabel }}</span>
+    <h3 class="ui-turno-detail__header-fecha">{{ turno.fechaCompleta }}</h3>
+    <p class="ui-turno-detail__header-hora">
+      {{ turno.hora }} hs
+      <span class="ui-turno-detail__header-llegar">
+        · Llegá {{ turno.llegarMinAntes }} min antes
+      </span>
+    </p>
+  </div>
+
+  <!-- Body -->
+  <div class="ui-turno-detail__body">
+
+    <!-- Mapa embebido (Google Maps sin API key) — solo si hay direccion -->
+    @if (hasDireccion(turno.sede.direccion)) {
+      <iframe
+        [src]="mapaUrl(turno.sede.direccion)"
+        class="ui-turno-detail__map"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        title="Ubicación de la sede"
+        aria-label="Mapa con la ubicación de la sede"></iframe>
+    }
+
+    <!-- Datos de la sede -->
+    <div class="ui-turno-detail__sede">
+      <span class="ui-turno-detail__section-label">SEDE</span>
+      <strong class="ui-turno-detail__sede-nombre">{{ turno.sede.nombre }}</strong>
+      @if (hasDireccion(turno.sede.direccion)) {
+        <span class="ui-turno-detail__sede-dir">{{ turno.sede.direccion }}</span>
+      }
+      @if (turno.sede.telefono || turno.sede.horario) {
+        <span class="ui-turno-detail__sede-meta">
+          @if (turno.sede.telefono) {
+            <span class="ui-turno-detail__sede-meta-item">
+              <i class="pi pi-phone" aria-hidden="true"></i>{{ turno.sede.telefono }}
+            </span>
+          }
+          @if (turno.sede.horario) {
+            <span class="ui-turno-detail__sede-meta-item">
+              <i class="pi pi-clock" aria-hidden="true"></i>{{ turno.sede.horario }}
+            </span>
+          }
+        </span>
+      }
+    </div>
+
+    <hr class="ui-turno-detail__sep" />
+
+    <!-- Estudios -->
+    <div class="ui-turno-detail__estudios">
+      <span class="ui-turno-detail__section-label">ESTUDIOS</span>
+      @if (turno.estudios.length > 0) {
+        <div class="ui-turno-detail__chips">
+          @for (estudio of turno.estudios; track $index) {
+            <span class="ui-turno-detail__chip">{{ estudio }}</span>
+          }
+        </div>
+      } @else {
+        <span class="ui-turno-detail__estudios-empty">Sin estudios asociados</span>
+      }
+    </div>
+
+    @if (turno.preparacion.length > 0) {
+      <hr class="ui-turno-detail__sep" />
+
+      <!-- Preparación -->
+      <ui-prep-warning [instructions]="turno.preparacion" />
+    }
+
+    <hr class="ui-turno-detail__sep" />
+
+    <!-- Acciones -->
+    <div class="ui-turno-detail__actions">
+      <p-button
+        label="Reprogramar"
+        [outlined]="true"
+        severity="secondary"
+        (onClick)="reprogramar.emit(turno)" />
+      <p-button
+        label="Cancelar turno"
+        [text]="true"
+        styleClass="ui-text-danger"
+        (onClick)="cancelar.emit(turno)" />
+    </div>
+
+  </div>
+</div>
