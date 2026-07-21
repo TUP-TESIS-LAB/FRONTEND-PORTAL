@@ -19,8 +19,9 @@ describe('analysisIcon', () => {
       expect(analysisIcon('monitor_heart')).toBe('pi pi-wave-pulse');
     });
 
-    it('mapea biotech', () => {
-      expect(analysisIcon('biotech')).toBe('pi pi-search');
+    it('mapea biotech (no pi-search: colisiona visualmente con el buscador de análisis)', () => {
+      expect(analysisIcon('biotech')).toBe('pi pi-microchip');
+      expect(analysisIcon('biotech')).not.toBe('pi pi-search');
     });
 
     it('mapea water_drop', () => {
@@ -96,6 +97,10 @@ describe('analysisIcon', () => {
       expect(cls).toMatch(/^pi pi-[a-z0-9-]+$/);
       const name = cls.replace(/^pi pi-/, '');
       expect(svgs.has(`${name}.svg`)).toBe(true);
+    });
+
+    it('ningún ícono de tarjeta usa pi-search (reservado para el buscador de análisis)', () => {
+      expect(allValues).not.toContain('pi pi-search');
     });
   });
 });

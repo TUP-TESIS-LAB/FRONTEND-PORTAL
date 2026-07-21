@@ -60,9 +60,14 @@
           Opcional: si no sabés qué análisis te van a pedir, podés continuar sin elegir ninguno.
         </p>
         <ui-analysis-card-grid
-          [tipos]="tiposAnalisis()"
-          [selectedIds]="selectedTipoIds()"
-          (selectionChange)="selectedTipoIds.set($event)" />
+          [items]="analisisResults()"
+          [loading]="analisisSearchPending()"
+          [searchError]="!!analisisSearchError()"
+          [selected]="selectedAnalisis()"
+          [pendingSelectionIds]="analisisPendingIds()"
+          (searchChange)="onAnalisisSearchChange($event)"
+          (analysisSelect)="onSelectAnalisis($event)"
+          (analysisDeselect)="onDeselectAnalisis($event)" />
       }
 
       @case ('sede') {
@@ -86,7 +91,7 @@
       @case ('confirmar') {
         <ui-turno-resumen
           [paraQuien]="paraQuienLabel()"
-          [tipos]="selectedTipos()"
+          [tipos]="selectedAnalisis()"
           [sede]="selectedSede()!"
           [fecha]="selectedFecha()!"
           [hora]="selectedHora()!"

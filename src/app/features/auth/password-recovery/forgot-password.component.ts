@@ -22,6 +22,7 @@ import { selectSubmitting, selectEmailSent } from './store/password-recovery.sel
     PublicTopbarComponent,
   ],
   templateUrl: './forgot-password.component.html',
+  styleUrl: './forgot-password.component.scss',
 })
 export class ForgotPasswordComponent {
   private fb = inject(FormBuilder);

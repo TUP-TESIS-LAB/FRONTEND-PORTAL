@@ -1,28 +1,68 @@
+<span class="ui-analysis-search p-input-icon-left">
+  <i class="pi pi-search" aria-hidden="true"></i>
+  <input
+    pInputText
+    type="text"
+    [ngModel]="search"
+    (ngModelChange)="onSearchInput($event)"
+    placeholder="Buscar análisis por nombre..."
+    class="w-full"
+    aria-label="Buscar análisis" />
+</span>
+
 @if (loading) {
   @for (i of [1,2,3,4]; track i) {
     <p-skeleton height="72px" styleClass="ui-analysis-skeleton" />
   }
+} @else if (searchError) {
+  <ui-empty-state
+    icon="pi-exclamation-triangle"
+    heading="No pudimos buscar análisis"
+    message="Hubo un problema de conexión. Probá de nuevo.">
+    <p-button label="Reintentar" [text]="true" (onClick)="retry()" />
+  </ui-empty-state>
+} @else if (displayItems.length === 0) {
+  <ui-empty-state
+    icon="pi-filter-slash"
+    heading="No encontramos análisis"
+    message="Probá con otro nombre.">
+    @if (search.trim().length > 0) {
+      <p-button label="Limpiar búsqueda" [text]="true" (onClick)="clearSearch()" />
+    }
+  </ui-empty-state>
 } @else {
+  @if (selected.length > 0) {
+    <p class="ui-analysis-selected-hint">
+      {{ selected.length }} {{ selected.length === 1 ? 'análisis seleccionado' : 'análisis seleccionados' }}
+    </p>
+  }
   <div class="ui-analysis-card-grid">
-    @for (tipo of tipos; track tipo.id) {
+    @for (item of displayItems; track item.id) {
       <button
         type="button"
         class="ui-analysis-card"
-        [class.ui-analysis-card--selected]="isSelected(tipo.id)"
-        (click)="toggleTipo(tipo.id)"
-        [attr.aria-pressed]="isSelected(tipo.id)">
+        [class.ui-analysis-card--selected]="isSelected(item.id)"
+        [disabled]="isResolvingSelection(item.id)"
+        (click)="toggle(item.id)"
+        [attr.aria-pressed]="isSelected(item.id)">
 
         <div class="ui-analysis-card__icon">
-          <i [class]="icon(tipo)" aria-hidden="true"></i>
+          <i [class]="icon(item)" aria-hidden="true"></i>
         </div>
 
         <div class="ui-analysis-card__info">
-          <span class="ui-analysis-card__nombre">{{ tipo.nombre }}</span>
-          <span class="ui-analysis-card__desc">{{ tipo.descripcionCorta }}</span>
+          <span class="ui-analysis-card__nombre">{{ item.name }}</span>
+          @if (item.familyName) {
+            <span class="ui-analysis-card__desc">{{ item.familyName }}</span>
+          }
         </div>
 
         <div class="ui-analysis-card__radio" aria-hidden="true">
-          <i [class]="isSelected(tipo.id) ? 'pi pi-circle-fill' : 'pi pi-circle'"></i>
+          @if (isResolvingSelection(item.id)) {
+            <i class="pi pi-spin pi-spinner"></i>
+          } @else {
+            <i [class]="isSelected(item.id) ? 'pi pi-circle-fill' : 'pi pi-circle'"></i>
+          }
         </div>
       </button>
     }

@@ -14,18 +14,23 @@
 export const MATERIAL_TO_PI: Record<string, string> = {
   bloodtype:     'pi pi-heart',
   monitor_heart: 'pi pi-wave-pulse',
-  biotech:       'pi pi-search',
+  biotech:       'pi pi-microchip',
   water_drop:    'pi pi-filter',
   science:       'pi pi-chart-line',
 };
 
 /** Categoría normalizada (lowercase, sin acentos) → clase PrimeIcons completa. */
 export const CATEGORIA_TO_PI: Record<string, string> = {
-  hematologia: 'pi pi-heart',
-  bioquimica:  'pi pi-chart-line',
-  hormonas:    'pi pi-sync',
-  orina:       'pi pi-filter',
-  coagulacion: 'pi pi-shield',
+  hematologia:     'pi pi-heart',
+  bioquimica:      'pi pi-chart-line',
+  hormonas:        'pi pi-sync',
+  orina:           'pi pi-filter',
+  coagulacion:     'pi pi-shield',
+  // family_name del catálogo real de análisis (analysis_catalog) — ver
+  // AnalysisBooking.familyName, distinto del set curado de TipoAnalisis.
+  urologia:        'pi pi-filter',
+  endocrinologia:  'pi pi-sync',
+  serologia:       'pi pi-shield',
 };
 
 /** Ícono genérico cuando no hay match ni por ícono ni por categoría. */

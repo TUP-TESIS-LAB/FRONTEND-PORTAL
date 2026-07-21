@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { TipoAnalisis } from '../../../../core/models/tipo-analisis.model';
+import { AnalysisBookingDetail } from '../../../../core/models/analysis-booking.model';
 import { Sede } from '../../../../core/models/sede.model';
 
 @Component({
@@ -10,7 +10,7 @@ import { Sede } from '../../../../core/models/sede.model';
   styleUrl: './turno-resumen.component.scss',
 })
 export class TurnoResumenComponent {
-  @Input({ required: true }) tipos!: TipoAnalisis[];
+  @Input({ required: true }) tipos!: AnalysisBookingDetail[];
   @Input({ required: true }) sede!: Sede;
   @Input({ required: true }) fecha!: Date;
   @Input({ required: true }) hora!: string;

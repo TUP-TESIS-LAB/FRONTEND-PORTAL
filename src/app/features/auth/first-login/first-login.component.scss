@@ -1,0 +1,22 @@
+.login__header {
+  margin-bottom: var(--space-6);
+
+  h1 { margin-bottom: var(--space-1); }
+  p  { margin: 0; font-size: 14px; }
+}
+
+.login__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.login__submit {
+  margin-top: var(--space-2);
+}
+
+.login__forgot {
+  text-align: center;
+  font-size: 13px;
+  margin-top: calc(-1 * var(--space-2));
+}
