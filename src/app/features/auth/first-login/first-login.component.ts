@@ -34,6 +34,7 @@ import { mapApiError } from '../../../shared/utils/api-error-mapper';
   ],
   providers: [MessageService],
   templateUrl: './first-login.component.html',
+  styleUrl: './first-login.component.scss',
 })
 export class FirstLoginComponent {
   private readonly fb = inject(FormBuilder);
