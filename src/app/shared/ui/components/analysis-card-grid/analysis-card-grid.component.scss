@@ -8,6 +8,25 @@
   margin-bottom: var(--space-2);
 }
 
+.ui-analysis-search {
+  display: block;
+  position: relative;
+  margin-bottom: var(--space-4);
+
+  .pi-search {
+    position: absolute;
+    left: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ds-text-muted);
+    font-size: 14px;
+  }
+
+  input {
+    padding-left: calc(var(--space-3) * 2 + 14px);
+  }
+}
+
 .ui-analysis-card-grid {
   display: flex;
   flex-direction: column;
@@ -85,4 +104,16 @@
     font-size: 18px;
     transition: color 0.15s;
   }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+}
+
+.ui-analysis-selected-count {
+  margin-top: var(--space-4);
+  text-align: center;
+  color: var(--ds-text-muted);
+  font-size: 13px;
 }

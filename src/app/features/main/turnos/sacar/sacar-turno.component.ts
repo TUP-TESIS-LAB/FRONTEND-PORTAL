@@ -1,9 +1,10 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, EMPTY, of, Subject, switchMap } from 'rxjs';
+import { Store } from '@ngrx/store';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DrawerModule } from 'primeng/drawer';
@@ -15,7 +16,6 @@ import { SlotPickerComponent } from '../../../../shared/ui/components/slot-picke
 import { TurnoResumenComponent } from '../../../../shared/ui/components/turno-resumen/turno-resumen.component';
 import { StepParaQuienComponent } from './steps/step-para-quien/step-para-quien.component';
 import { BreakpointService } from '../../../../shared/utils/breakpoint.service';
-import { TipoAnalisisService } from '../services/tipo-analisis.service';
 import { SucursalPublicService } from '../../../../core/sucursales/sucursal-public.service';
 import { AppointmentService } from '../services/appointment.service';
 import { FamilyService } from '../../../../core/family/family.service';
@@ -24,6 +24,15 @@ import { toLocalDateTimeString } from '../../../../shared/utils/local-datetime';
 import { WizardStep } from '../../../../shared/ui/types';
 import { SlotDisponible } from '../../../../core/models/slot-disponible.model';
 import { Familiar } from '../../../../core/models/familiar.model';
+import * as TurnosActions from '../store/turnos.actions';
+import {
+  selectAnalisisResults,
+  selectAnalisisSearchPending,
+  selectAnalisisDetails,
+  selectAnalisisSelectedIds,
+  selectAnalisisPendingIds,
+  selectRequiereAyuno,
+} from '../store/turnos.selectors';
 
 @Component({
   selector: 'app-sacar-turno',
@@ -46,7 +55,7 @@ import { Familiar } from '../../../../core/models/familiar.model';
   styleUrl: './sacar-turno.component.scss',
 })
 export class SacarTurnoComponent implements OnInit, OnDestroy {
-  private readonly tiposSvc       = inject(TipoAnalisisService);
+  private readonly store          = inject(Store);
   private readonly sedeSvc        = inject(SucursalPublicService);
   private readonly appointmentSvc = inject(AppointmentService);
   private readonly familySvc      = inject(FamilyService);
@@ -57,12 +66,21 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
   private readonly destroyRef     = inject(DestroyRef);
   readonly bp                     = inject(BreakpointService);
 
-  // ─── Datos del catálogo (cargados una sola vez) ──────
-  readonly tiposAnalisis = toSignal(this.tiposSvc.getTipos(), { initialValue: [] });
-  readonly sedes         = toSignal(this.sedeSvc.getSedes(),  { initialValue: [] });
+  // ─── Análisis: búsqueda contra el catálogo real (mismo que atención) ──
+  readonly analisisResults        = this.store.selectSignal(selectAnalisisResults);
+  readonly analisisSearchPending  = this.store.selectSignal(selectAnalisisSearchPending);
+  // selectedAnalisis/-Ids salen del store: cada selección exitosa se acumula
+  // ahí (ver turnos.reducer), así que sigue resolviendo determinations aunque
+  // una búsqueda nueva haya reemplazado analisisResults.
+  readonly selectedAnalisis       = this.store.selectSignal(selectAnalisisDetails);
+  readonly selectedAnalisisIds    = this.store.selectSignal(selectAnalisisSelectedIds);
+  readonly analisisPendingIds     = this.store.selectSignal(selectAnalisisPendingIds);
+  readonly requiereAyuno          = this.store.selectSignal(selectRequiereAyuno);
+
+  readonly sedes = toSignal(this.sedeSvc.getSedes(), { initialValue: [] });
   // Si el back falla, la lista queda vacía (el toast lo emite el subscribe de
   // ngOnInit) — sin el catchError, leer el signal relanzaría el error.
-  readonly family        = toSignal(
+  readonly family = toSignal(
     this.familySvc.getFamily().pipe(catchError(() => of([] as Familiar[]))),
     { initialValue: [] },
   );
@@ -74,7 +92,6 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
 
   // ─── Selecciones del usuario ─────────────────────────
   readonly selectedPatientId = signal<number | null>(null);
-  readonly selectedTipoIds   = signal<(number | string)[]>([]);
   readonly selectedSedeId    = signal<string | null>(null);
   readonly selectedFecha     = signal<Date | null>(null);
   readonly selectedHora      = signal<string | null>(null);
@@ -88,16 +105,8 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
   private readonly preselectedFromUrl = signal(false);
 
   // ─── Computed: datos derivados ───────────────────────
-  readonly selectedTipos = computed(() =>
-    this.tiposAnalisis().filter(t => this.selectedTipoIds().includes(t.id)),
-  );
-
   readonly selectedSede = computed(() =>
     this.sedes().find(s => s.id === this.selectedSedeId()) ?? null,
-  );
-
-  readonly requiereAyuno = computed(() =>
-    this.selectedTipos().some(t => t.ayuno),
   );
 
   // Persona elegida en el paso 1, formateada para el resumen del paso final
@@ -179,6 +188,12 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
       this.slots.set(slots);
       this.loadingSlots.set(false);
     });
+
+    // Recalcula "requiere ayuno" cada vez que cambia el conjunto seleccionado.
+    effect(() => {
+      const ids = this.selectedAnalisisIds();
+      this.store.dispatch(TurnosActions.computeAyuno({ analysisCatalogIds: ids }));
+    });
   }
 
   // El wizard se monta como overlay full-sheet en mobile (drawer) y como
@@ -243,6 +258,22 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
 
   // ─── Handlers de selección por paso ──────────────────
 
+  onAnalisisSearchChange(q: string): void {
+    if (q.trim().length === 0) {
+      this.store.dispatch(TurnosActions.clearAnalisisSearch());
+      return;
+    }
+    this.store.dispatch(TurnosActions.searchAnalisis({ q }));
+  }
+
+  onSelectAnalisis(id: number): void {
+    this.store.dispatch(TurnosActions.selectAnalisis({ id }));
+  }
+
+  onDeselectAnalisis(id: number): void {
+    this.store.dispatch(TurnosActions.deselectAnalisis({ id }));
+  }
+
   onSedeChange(sedeId: string): void {
     this.selectedSedeId.set(sedeId);
     this.selectedHora.set(null);
@@ -272,23 +303,20 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
     const sedeId    = this.selectedSedeId();
     const fecha     = this.selectedFecha();
     const hora      = this.selectedHora();
-    const tipoIds   = this.selectedTipoIds();
 
-    // tipoIds puede venir vacío: elegir tipo de análisis es opcional (ver 'tipo' en canProceed).
+    // La selección de análisis puede venir vacía: es opcional (ver 'tipo' en canProceed).
     if (!patientId || !sedeId || !fecha || !hora) return;
 
     const [hh, mm] = hora.split(':').map(Number);
     const scheduledAt = new Date(fecha);
     scheduledAt.setHours(hh, mm, 0, 0);
 
-    // Resolve determinationIds from selected tipos
-    const tiposMap = new Map(this.tiposAnalisis().map(t => [t.id, t]));
+    // Los determinationIds ya están resueltos en el store (selectAnalisis
+    // los trae al seleccionar, ver turnos.effects) — solo hay que unirlos.
     const allDetIds: number[] = [];
-    for (const id of tipoIds) {
-      const tipo = tiposMap.get(id);
-      if (!tipo) continue;
-      for (const d of tipo.determinationIds) {
-        if (!allDetIds.includes(d)) allDetIds.push(d);
+    for (const analisis of this.selectedAnalisis()) {
+      for (const d of analisis.determinations) {
+        if (!allDetIds.includes(d.id)) allDetIds.push(d.id);
       }
     }
     const determinations = allDetIds.map((determinationId, idx) => ({
