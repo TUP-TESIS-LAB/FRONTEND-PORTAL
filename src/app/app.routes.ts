@@ -28,6 +28,13 @@ export const routes: Routes = [
       import('./features/auth/first-login/first-login.component').then(m => m.FirstLoginComponent),
   },
   {
+    path: 'terminos-y-condiciones',
+    loadComponent: () =>
+      import('./features/legal/terminos-y-condiciones/terminos-y-condiciones.component').then(
+        m => m.TerminosYCondicionesComponent,
+      ),
+  },
+  {
     // Legacy /dashboard: redirige al home real para no romper bookmarks.
     path: 'dashboard',
     redirectTo: '',

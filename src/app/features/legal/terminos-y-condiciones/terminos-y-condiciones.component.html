@@ -1,0 +1,39 @@
+<app-public-topbar />
+
+<div class="terms-page">
+  <div class="terms-page__content">
+    <a routerLink="/login" class="ui-text-primary ui-touch-link terms-page__back">
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+      Volver
+    </a>
+
+    <header class="terms-page__header">
+      <h1>{{ content().header.title }}</h1>
+      <p class="ui-text-muted">Última actualización: {{ content().header.lastUpdated }}.</p>
+    </header>
+
+    @for (section of content().sections; track section.title) {
+      <section class="terms-page__section">
+        <h2>{{ section.title }}</h2>
+
+        @for (item of section.content; track $index) {
+          @switch (item.type) {
+            @case ('paragraph') {
+              <p>{{ item.text }}</p>
+            }
+            @case ('subtitle') {
+              <h3>{{ item.text }}</h3>
+            }
+            @case ('list') {
+              <ul>
+                @for (li of item.items; track li) {
+                  <li>{{ li }}</li>
+                }
+              </ul>
+            }
+          }
+        }
+      </section>
+    }
+  </div>
+</div>
