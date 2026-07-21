@@ -28,9 +28,11 @@ import * as TurnosActions from '../store/turnos.actions';
 import {
   selectAnalisisResults,
   selectAnalisisSearchPending,
+  selectAnalisisSearchError,
   selectAnalisisDetails,
   selectAnalisisSelectedIds,
   selectAnalisisPendingIds,
+  selectAnalisisDetailError,
   selectRequiereAyuno,
 } from '../store/turnos.selectors';
 
@@ -69,12 +71,14 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
   // ─── Análisis: búsqueda contra el catálogo real (mismo que atención) ──
   readonly analisisResults        = this.store.selectSignal(selectAnalisisResults);
   readonly analisisSearchPending  = this.store.selectSignal(selectAnalisisSearchPending);
+  readonly analisisSearchError    = this.store.selectSignal(selectAnalisisSearchError);
   // selectedAnalisis/-Ids salen del store: cada selección exitosa se acumula
   // ahí (ver turnos.reducer), así que sigue resolviendo determinations aunque
   // una búsqueda nueva haya reemplazado analisisResults.
   readonly selectedAnalisis       = this.store.selectSignal(selectAnalisisDetails);
   readonly selectedAnalisisIds    = this.store.selectSignal(selectAnalisisSelectedIds);
   readonly analisisPendingIds     = this.store.selectSignal(selectAnalisisPendingIds);
+  readonly analisisDetailError    = this.store.selectSignal(selectAnalisisDetailError);
   readonly requiereAyuno          = this.store.selectSignal(selectRequiereAyuno);
 
   readonly sedes = toSignal(this.sedeSvc.getSedes(), { initialValue: [] });
@@ -194,6 +198,19 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
       const ids = this.selectedAnalisisIds();
       this.store.dispatch(TurnosActions.computeAyuno({ analysisCatalogIds: ids }));
     });
+
+    // La búsqueda fallida ya tiene su propio empty-state en el grid (searchError
+    // input) — acá sólo avisamos el fallo puntual de resolver el detalle de una
+    // selección, que de otro modo libera la card sin explicar por qué.
+    effect(() => {
+      const err = this.analisisDetailError();
+      if (err) {
+        this.messageService.add({
+          severity: 'error', summary: 'Error',
+          detail: mapApiError(err), life: 4000,
+        });
+      }
+    });
   }
 
   // El wizard se monta como overlay full-sheet en mobile (drawer) y como
@@ -202,6 +219,12 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
   // 400 > --z-drawer 300, así que sin ocultar el nav pinta encima del sheet).
   ngOnInit(): void {
     document.body.classList.add('wizard-open');
+
+    // Precarga: sin que el paciente escriba nada, el paso "Tipo de análisis"
+    // ya muestra una muestra acotada del catálogo (el backend la resuelve
+    // para q=''). Se dispara una sola vez acá, no por paso, porque el wizard
+    // completo vive en un solo componente.
+    this.store.dispatch(TurnosActions.searchAnalisis({ q: '' }));
 
     const personaIdParam = this.route.snapshot.queryParamMap.get('personaId');
     if (personaIdParam !== null) {
@@ -259,10 +282,8 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
   // ─── Handlers de selección por paso ──────────────────
 
   onAnalisisSearchChange(q: string): void {
-    if (q.trim().length === 0) {
-      this.store.dispatch(TurnosActions.clearAnalisisSearch());
-      return;
-    }
+    // Un query vacío es una búsqueda válida: el backend devuelve la misma
+    // muestra acotada de la precarga (ver ngOnInit), no hay que "limpiar".
     this.store.dispatch(TurnosActions.searchAnalisis({ q }));
   }
 

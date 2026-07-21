@@ -14,21 +14,30 @@
   @for (i of [1,2,3,4]; track i) {
     <p-skeleton height="72px" styleClass="ui-analysis-skeleton" />
   }
-} @else if (search.trim().length === 0) {
+} @else if (searchError) {
   <ui-empty-state
-    icon="pi-search"
-    heading="Buscá el análisis que necesitás"
-    message="Escribí al menos una palabra del nombre para ver resultados." />
-} @else if (items.length === 0) {
+    icon="pi-exclamation-triangle"
+    heading="No pudimos buscar análisis"
+    message="Hubo un problema de conexión. Probá de nuevo.">
+    <p-button label="Reintentar" [text]="true" (onClick)="retry()" />
+  </ui-empty-state>
+} @else if (displayItems.length === 0) {
   <ui-empty-state
     icon="pi-filter-slash"
     heading="No encontramos análisis"
     message="Probá con otro nombre.">
-    <p-button label="Limpiar búsqueda" [text]="true" (onClick)="clearSearch()" />
+    @if (search.trim().length > 0) {
+      <p-button label="Limpiar búsqueda" [text]="true" (onClick)="clearSearch()" />
+    }
   </ui-empty-state>
 } @else {
+  @if (selected.length > 0) {
+    <p class="ui-analysis-selected-hint">
+      {{ selected.length }} {{ selected.length === 1 ? 'análisis seleccionado' : 'análisis seleccionados' }}
+    </p>
+  }
   <div class="ui-analysis-card-grid">
-    @for (item of items; track item.id) {
+    @for (item of displayItems; track item.id) {
       <button
         type="button"
         class="ui-analysis-card"
@@ -58,10 +67,4 @@
       </button>
     }
   </div>
-}
-
-@if (selectedIds.length > 0) {
-  <p class="ui-analysis-selected-count">
-    {{ selectedIds.length }} {{ selectedIds.length === 1 ? 'análisis seleccionado' : 'análisis seleccionados' }}
-  </p>
 }

@@ -62,7 +62,8 @@
         <ui-analysis-card-grid
           [items]="analisisResults()"
           [loading]="analisisSearchPending()"
-          [selectedIds]="selectedAnalisisIds()"
+          [searchError]="!!analisisSearchError()"
+          [selected]="selectedAnalisis()"
           [pendingSelectionIds]="analisisPendingIds()"
           (searchChange)="onAnalisisSearchChange($event)"
           (analysisSelect)="onSelectAnalisis($event)"

@@ -4,7 +4,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { EmptyStateComponent } from '../empty-state/empty-state.component';
-import { AnalysisBooking } from '../../../../core/models/analysis-booking.model';
+import { AnalysisBooking, AnalysisBookingDetail } from '../../../../core/models/analysis-booking.model';
 import { analysisIcon } from '../../../utils/analysis-icon';
 
 @Component({
@@ -17,9 +17,12 @@ import { analysisIcon } from '../../../utils/analysis-icon';
 export class AnalysisCardGridComponent {
   /** Resultados de la búsqueda en curso (catálogo real, búsqueda contra backend). */
   @Input({ required: true }) items!: AnalysisBooking[];
-  @Input({ required: true }) selectedIds!: number[];
+  /** Análisis ya elegidos, con nombre — permite listarlos aunque hayan salido de items(). */
+  @Input({ required: true }) selected!: AnalysisBookingDetail[];
   /** true mientras se resuelve la búsqueda actual. */
   @Input() loading = false;
+  /** true si la última búsqueda (o precarga) falló contra el backend. */
+  @Input() searchError = false;
   /** ids con el detalle (determinations) todavía resolviéndose tras seleccionarlos. */
   @Input() pendingSelectionIds: number[] = [];
 
@@ -43,6 +46,11 @@ export class AnalysisCardGridComponent {
     this.searchChange.emit('');
   }
 
+  /** Reintentar la última búsqueda (o precarga, si search está vacío) tras un fallo. */
+  retry(): void {
+    this.searchChange.emit(this.search);
+  }
+
   toggle(id: number): void {
     if (this.isSelected(id)) {
       this.analysisDeselect.emit(id);
@@ -51,8 +59,18 @@ export class AnalysisCardGridComponent {
     }
   }
 
+  /**
+   * Una sola lista: lo ya seleccionado va primero (fijo arriba, así no
+   * "desaparece" cuando una búsqueda nueva no lo trae), seguido de los
+   * resultados de la búsqueda actual que todavía no están elegidos.
+   */
+  get displayItems(): AnalysisBooking[] {
+    const selectedIds = new Set(this.selected.map(s => s.id));
+    return [...this.selected, ...this.items.filter(i => !selectedIds.has(i.id))];
+  }
+
   isSelected(id: number): boolean {
-    return this.selectedIds.includes(id);
+    return this.selected.some(s => s.id === id);
   }
 
   isResolvingSelection(id: number): boolean {

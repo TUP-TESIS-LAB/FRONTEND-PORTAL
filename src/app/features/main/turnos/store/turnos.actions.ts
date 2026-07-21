@@ -11,7 +11,6 @@ export const rescheduleHandled = createAction('[Turnos Page] Reschedule Handled'
 export const searchAnalisis = createAction('[Sacar Turno Page] Search Analisis', props<{ q: string }>());
 export const searchAnalisisSuccess = createAction('[Turnos API] Search Analisis Success', props<{ results: AnalysisBooking[] }>());
 export const searchAnalisisFailure = createAction('[Turnos API] Search Analisis Failure', props<{ error: HttpErrorResponse }>());
-export const clearAnalisisSearch = createAction('[Sacar Turno Page] Clear Analisis Search');
 
 // ─── Selección de análisis: resuelve el detalle (determinations) ────
 export const selectAnalisis = createAction('[Sacar Turno Page] Select Analisis', props<{ id: number }>());

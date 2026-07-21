@@ -13,6 +13,7 @@ export const selectAnalisisSearchError = createSelector(selectTurnos, s => s.ana
 export const selectAnalisisDetails = createSelector(selectTurnos, s => s.analisisDetails);
 export const selectAnalisisPendingIds = createSelector(selectTurnos, s => s.analisisPendingIds);
 export const selectAnalisisSelectedIds = createSelector(selectAnalisisDetails, details => details.map(d => d.id));
+export const selectAnalisisDetailError = createSelector(selectTurnos, s => s.analisisDetailError);
 
 export const selectFastingHours = createSelector(selectTurnos, s => s.fastingHours);
 export const selectRequiereAyuno = createSelector(selectFastingHours, hours => hours != null && hours > 0);

@@ -37,12 +37,6 @@ describe('turnosReducer — búsqueda y selección de análisis', () => {
     expect(next.analisisSearchPending).toBe(false);
   });
 
-  it('clearAnalisisSearch vacía los resultados', () => {
-    const seeded = { ...initialTurnosState, analisisResults: [{ id: 1, name: 'x', familyName: null }] };
-    const next = turnosReducer(seeded, A.clearAnalisisSearch());
-    expect(next.analisisResults).toEqual([]);
-  });
-
   it('selectAnalisisSuccess acumula el detalle sin duplicar si ya estaba', () => {
     const detail = { id: 1, name: 'Hemograma', familyName: 'Hematología', determinations: [{ id: 10, name: 'GR' }] };
     const seeded = { ...initialTurnosState, analisisDetails: [detail] };

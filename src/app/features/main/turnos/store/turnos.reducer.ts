@@ -16,7 +16,6 @@ export const turnosReducer = createReducer(
   on(A.searchAnalisisFailure, (s, { error }): TurnosState => ({
     ...s, analisisSearchPending: false, analisisSearchError: error,
   })),
-  on(A.clearAnalisisSearch, (s): TurnosState => ({ ...s, analisisResults: [], analisisSearchError: null })),
 
   on(A.selectAnalisis, (s, { id }): TurnosState => ({
     ...s, analisisPendingIds: [...s.analisisPendingIds, id], analisisDetailError: null,
