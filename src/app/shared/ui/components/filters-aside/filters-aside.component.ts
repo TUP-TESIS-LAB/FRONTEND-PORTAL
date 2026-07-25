@@ -79,8 +79,27 @@ export class FiltersAsideComponent implements OnChanges {
       this.estadosSeleccionados  = [...this.filtros.estados];
       this.fechaDesde = this.filtros.rangoFechas?.desde ?? null;
       this.fechaHasta = this.filtros.rangoFechas?.hasta ?? null;
-      this.rangoActivoMeses = null;
+      this.rangoActivoMeses = this.detectarRangoActivo(this.filtros.rangoFechas);
     }
+  }
+
+  /** Si el rango de fechas recibido coincide con uno de los chips rápidos, lo detecta para resaltarlo. */
+  private detectarRangoActivo(rango: EstudiosFiltros['rangoFechas']): number | null {
+    if (!rango || !this.esMismoDia(rango.hasta, new Date())) return null;
+
+    const coincidencia = this.rangosRapidos.find(opcion => {
+      const desdeEsperado = new Date();
+      desdeEsperado.setMonth(desdeEsperado.getMonth() - opcion.meses);
+      return this.esMismoDia(rango.desde, desdeEsperado);
+    });
+
+    return coincidencia?.meses ?? null;
+  }
+
+  private esMismoDia(a: Date, b: Date): boolean {
+    return a.getFullYear() === b.getFullYear()
+      && a.getMonth() === b.getMonth()
+      && a.getDate() === b.getDate();
   }
 
   getCountTipo(valor: CategoriaEstudio): number {

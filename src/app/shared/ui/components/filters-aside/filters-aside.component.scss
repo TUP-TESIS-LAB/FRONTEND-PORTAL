@@ -75,10 +75,18 @@
     &:hover { border-color: var(--brand-primary); color: var(--brand-primary); }
 
     &--active {
-      background: var(--brand-primary-light);
+      background: var(--brand-primary);
       border-color: var(--brand-primary);
-      color: var(--brand-primary);
+      color: var(--ds-white);
       font-weight: 600;
+      box-shadow: 0 0 0 3px var(--brand-primary-light);
+
+      // Sin esto, el :hover general (color: brand-primary) le gana por especificidad
+      // y el texto queda del mismo color que el fondo (invisible).
+      &:hover {
+        color: var(--ds-white);
+        border-color: var(--brand-primary);
+      }
     }
   }
 

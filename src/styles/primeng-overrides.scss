@@ -1142,3 +1142,12 @@
     }
   }
 }
+
+// Tooltip (p-tooltip / pTooltip): el theme tampoco lo estila — texto sin padding.
+.p-tooltip .p-tooltip-text {
+  padding: var(--space-1) var(--space-2);
+  background: var(--ds-text);
+  color: var(--ds-white);
+  font-size: 12px;
+  border-radius: var(--ds-radius-sm);
+}
