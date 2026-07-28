@@ -118,6 +118,7 @@ export class PatientShellComponent implements OnInit, OnDestroy {
       items: [
         { id: 'perfil',  icon: 'pi-user',  label: 'Mi perfil',  route: '/perfil'  },
         { id: 'familia', icon: 'pi-users', label: 'Mi familia', route: '/familia' },
+        { id: 'ayuda',   icon: 'pi-question-circle', label: 'Ayuda',      route: '/ayuda'   },
       ],
     },
   ];
@@ -126,6 +127,7 @@ export class PatientShellComponent implements OnInit, OnDestroy {
   moreSheetItems: BottomSheetItem[] = [
     { id: 'perfil',  icon: 'pi-user',     label: 'Mi perfil',      route: ['/perfil']  },
     { id: 'familia', icon: 'pi-users',    label: 'Mi familia',     route: ['/familia'] },
+    { id: 'ayuda',   icon: 'pi-question-circle', label: 'Ayuda', route: ['/ayuda'] },
     { id: 'logout',  icon: 'pi-sign-out', label: 'Cerrar sesión',
       action: () => this.logout(), destructive: true },
   ];
