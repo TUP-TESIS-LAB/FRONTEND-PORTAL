@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
+import { publicOnlyMatch } from './core/auth/public-only.match';
 
 export const routes: Routes = [
   {
@@ -33,6 +34,15 @@ export const routes: Routes = [
       import('./features/legal/terminos-y-condiciones/terminos-y-condiciones.component').then(
         m => m.TerminosYCondicionesComponent,
       ),
+  },
+  {
+    // /ayuda sirve dos experiencias con la misma URL. Esta entrada es la pública
+    // (topbar + link Volver). Con sesión, publicOnlyMatch declina y el router cae
+    // en la ruta hija 'ayuda' del shell, más abajo. El orden importa.
+    path: 'ayuda',
+    canMatch: [publicOnlyMatch],
+    loadComponent: () =>
+      import('./features/ayuda/ayuda.component').then(m => m.AyudaComponent),
   },
   {
     // Legacy /dashboard: redirige al home real para no romper bookmarks.
@@ -90,6 +100,11 @@ export const routes: Routes = [
           import('./features/main/estudios/estudios.component').then(
             m => m.EstudiosComponent,
           ),
+      },
+      {
+        path: 'ayuda',
+        loadComponent: () =>
+          import('./features/ayuda/ayuda.component').then(m => m.AyudaComponent),
       },
     ],
   },
