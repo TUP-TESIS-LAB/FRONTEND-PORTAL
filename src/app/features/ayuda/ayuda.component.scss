@@ -60,7 +60,11 @@
     }
   }
 
-  .p-accordioncontent {
+  // .p-accordioncontent es el host de <p-accordion-content> y queda montado
+  // siempre, incluso con el panel cerrado: ponerle padding acá suma alto
+  // muerto a cada fila cerrada. El padding va en .p-accordioncontent-content,
+  // el wrapper interno que sí colapsa a 0 cuando el panel está cerrado.
+  .p-accordioncontent-content {
     padding-bottom: var(--space-4);
   }
 }

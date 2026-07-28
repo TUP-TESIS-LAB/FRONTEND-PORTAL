@@ -109,4 +109,28 @@ describe('PatientShellComponent', () => {
     expect(cmp.notifOpen()).toBe(true);
     expect(store.dispatch).not.toHaveBeenCalledWith(markNotificationsRead({ ids: [] }));
   });
+
+  it('navGroups incluye Ayuda dentro del grupo Cuenta', () => {
+    const cmp = runInInjectionContext(injector, () => new PatientShellComponent());
+    const grupoCuenta = cmp.navGroups.find(g => g.label === 'Cuenta');
+    expect(grupoCuenta?.items).toContainEqual(
+      expect.objectContaining({ id: 'ayuda', route: '/ayuda' }),
+    );
+  });
+
+  it('moreSheetItems ubica Ayuda antes que Cerrar sesión', () => {
+    const cmp = runInInjectionContext(injector, () => new PatientShellComponent());
+    const indexAyuda = cmp.moreSheetItems.findIndex(i => i.id === 'ayuda');
+    const indexLogout = cmp.moreSheetItems.findIndex(i => i.id === 'logout');
+    expect(indexAyuda).toBeGreaterThanOrEqual(0);
+    expect(indexLogout).toBeGreaterThanOrEqual(0);
+    expect(indexAyuda).toBeLessThan(indexLogout);
+  });
+
+  it('mainNavItems devuelve solo los 3 items principales, sin Ayuda', () => {
+    const cmp = runInInjectionContext(injector, () => new PatientShellComponent());
+    expect(cmp.mainNavItems).toHaveLength(3);
+    expect(cmp.mainNavItems.map(i => i.id)).toEqual(['inicio', 'estudios', 'turnos']);
+    expect(cmp.mainNavItems.some(i => i.id === 'ayuda')).toBe(false);
+  });
 });

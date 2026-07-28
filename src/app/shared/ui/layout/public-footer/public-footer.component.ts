@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 /**
@@ -14,4 +14,8 @@ import { RouterLink } from '@angular/router';
   styleUrl: './public-footer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PublicFooterComponent {}
+export class PublicFooterComponent {
+  // En /register hay un formulario a medio llenar detrás: navegar en la misma
+  // pestaña lo destruye sin forma de volver. En /login no hay nada que perder.
+  @Input() newTab = false;
+}
