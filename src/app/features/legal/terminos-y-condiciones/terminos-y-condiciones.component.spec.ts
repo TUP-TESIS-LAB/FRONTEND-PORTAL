@@ -3,14 +3,17 @@ import { TestBed } from '@angular/core/testing';
 import { runInInjectionContext, Injector, signal } from '@angular/core';
 import { TerminosYCondicionesComponent } from './terminos-y-condiciones.component';
 import { TenantService } from '../../../core/tenant/tenant.service';
+import { AuthService } from '../../../core/auth/auth.service';
 
 describe('TerminosYCondicionesComponent', () => {
   let injector: Injector;
 
-  function configure(config: unknown) {
+  function configure(config: unknown, logueado = false) {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         { provide: TenantService, useValue: { config: signal(config) } },
+        { provide: AuthService, useValue: { isAuthenticated: signal(logueado) } },
       ],
     });
     injector = TestBed.inject(Injector);
@@ -40,5 +43,17 @@ describe('TerminosYCondicionesComponent', () => {
     configure(null);
     const cmp = runInInjectionContext(injector, () => new TerminosYCondicionesComponent());
     expect(cmp.content().header.title).toContain('el laboratorio');
+  });
+
+  it('el "Volver" lleva al login cuando no hay sesión', () => {
+    configure({ id: 'lab-demo', shortName: 'LD', fullName: 'Laboratorio Demo', contact: {} }, false);
+    const cmp = runInInjectionContext(injector, () => new TerminosYCondicionesComponent());
+    expect(cmp.backRoute()).toBe('/login');
+  });
+
+  it('el "Volver" lleva al inicio del portal cuando hay sesión', () => {
+    configure({ id: 'lab-demo', shortName: 'LD', fullName: 'Laboratorio Demo', contact: {} }, true);
+    const cmp = runInInjectionContext(injector, () => new TerminosYCondicionesComponent());
+    expect(cmp.backRoute()).toBe('/');
   });
 });

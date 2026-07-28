@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { PublicTopbarComponent } from '../ui/public-topbar/public-topbar.component';
+import { PublicFooterComponent } from '../../../shared/ui/layout/public-footer/public-footer.component';
 import { TenantService } from '../../../core/tenant/tenant.service';
 import { requestReset } from './store/password-recovery.actions';
 import { selectSubmitting, selectEmailSent } from './store/password-recovery.selectors';
@@ -20,6 +21,7 @@ import { selectSubmitting, selectEmailSent } from './store/password-recovery.sel
     InputTextModule,
     FloatLabelModule,
     PublicTopbarComponent,
+    PublicFooterComponent,
   ],
   templateUrl: './forgot-password.component.html',
   styleUrl: './forgot-password.component.scss',

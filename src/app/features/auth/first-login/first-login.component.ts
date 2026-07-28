@@ -9,6 +9,7 @@ import { FloatLabelModule } from 'primeng/floatlabel';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { PublicTopbarComponent } from '../ui/public-topbar/public-topbar.component';
+import { PublicFooterComponent } from '../../../shared/ui/layout/public-footer/public-footer.component';
 import { TenantService } from '../../../core/tenant/tenant.service';
 import { resetFirstLogin, setFirstLoginPassword } from './store/first-login.actions';
 import {
@@ -31,6 +32,7 @@ import { mapApiError } from '../../../shared/utils/api-error-mapper';
     FloatLabelModule,
     ToastModule,
     PublicTopbarComponent,
+    PublicFooterComponent,
   ],
   providers: [MessageService],
   templateUrl: './first-login.component.html',

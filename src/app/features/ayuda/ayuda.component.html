@@ -1,0 +1,80 @@
+@if (!isAuthenticated()) {
+  <app-public-topbar />
+}
+
+<div class="ayuda-page" [class.ayuda-page--publica]="!isAuthenticated()">
+  <div class="ayuda-page__content">
+
+    @if (isAuthenticated()) {
+      <ui-page-header
+        title="Ayuda"
+        subtitle="Preguntas frecuentes sobre el portal." />
+    } @else {
+      <a routerLink="/login" class="ui-text-primary ui-touch-link ayuda-page__back">
+        <i class="pi pi-arrow-left" aria-hidden="true"></i>
+        Volver
+      </a>
+      <header class="ayuda-page__header">
+        <h1>Ayuda</h1>
+        <p class="ui-text-muted">Preguntas frecuentes sobre el portal.</p>
+      </header>
+    }
+
+    @for (categoria of categories(); track categoria.id) {
+      <section class="ayuda-page__categoria">
+        <h2>{{ categoria.title }}</h2>
+
+        <!-- Un acordeón por categoría: abrir una pregunta de Turnos no cierra
+             las de Estudios. Sin [value] inicial → todas arrancan cerradas. -->
+        <p-accordion>
+          @for (item of categoria.items; track item.question) {
+            <p-accordion-panel [value]="$index">
+              <p-accordion-header>{{ item.question }}</p-accordion-header>
+              <p-accordion-content>
+                <p class="ayuda-page__respuesta">{{ item.answer }}</p>
+              </p-accordion-content>
+            </p-accordion-panel>
+          }
+        </p-accordion>
+      </section>
+    }
+
+    <footer class="ayuda-page__footer">
+      <h2>¿No encontraste lo que buscabas?</h2>
+
+      @if (contact().helpPhone || contact().helpEmail) {
+        <p class="ui-text-muted">
+          Escribinos o llamanos y te ayudamos.
+        </p>
+        <ul class="ayuda-page__contacto">
+          @if (contact().helpPhone) {
+            <li>
+              <span class="ui-text-muted">Teléfono</span>
+              <a [href]="'tel:' + contact().helpPhone" class="ui-text-primary ui-touch-link">
+                {{ contact().helpPhone }}
+              </a>
+            </li>
+          }
+          @if (contact().helpEmail) {
+            <li>
+              <span class="ui-text-muted">Email</span>
+              <a [href]="'mailto:' + contact().helpEmail" class="ui-text-primary ui-touch-link">
+                {{ contact().helpEmail }}
+              </a>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="ui-text-muted">
+          Comunicate con el laboratorio y te ayudamos.
+        </p>
+      }
+
+      <a routerLink="/terminos-y-condiciones"
+         class="ui-text-primary ui-touch-link ayuda-page__legal">
+        Términos y condiciones
+      </a>
+    </footer>
+
+  </div>
+</div>
