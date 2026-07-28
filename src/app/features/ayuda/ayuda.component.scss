@@ -39,6 +39,32 @@
   }
 }
 
+// El acordeón de PrimeNG llega sin padding propio en este proyecto (header y
+// contenido en 0px). Sin estos overrides el área clickeable de cada pregunta
+// queda en ~21px de alto, muy por debajo del mínimo táctil del DS, y las 12
+// preguntas se leen como un bloque sin separación. Verificado en runtime.
+// Único consumidor de p-accordion en la app: se estila acá y no en
+// styles/primeng-overrides.scss hasta que haya una segunda pantalla que lo use.
+:host ::ng-deep {
+  .p-accordionheader {
+    min-height: var(--ds-touch-target);
+    padding: var(--space-3) 0;
+    gap: var(--space-3);
+  }
+
+  .p-accordionpanel {
+    border-bottom: 1px solid var(--ds-surface);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  .p-accordioncontent {
+    padding-bottom: var(--space-4);
+  }
+}
+
 .ayuda-page__respuesta {
   color: var(--ds-text);
   line-height: 1.6;
