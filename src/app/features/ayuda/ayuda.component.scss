@@ -1,0 +1,76 @@
+.ayuda-page__content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+// Deslogueado la pantalla se dibuja sola (sin shell): necesita fondo y padding
+// propios, igual que la página de términos y condiciones.
+.ayuda-page--publica {
+  min-height: 100vh;
+  background: var(--ds-bg);
+
+  .ayuda-page__content {
+    padding: var(--space-6) var(--space-4) var(--space-12);
+  }
+}
+
+.ayuda-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.ayuda-page__header {
+  margin-bottom: var(--space-6);
+
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-2);
+  }
+}
+
+.ayuda-page__categoria {
+  margin-bottom: var(--space-8);
+
+  h2 {
+    font-size: 1.125rem;
+    margin-bottom: var(--space-3);
+  }
+}
+
+.ayuda-page__respuesta {
+  color: var(--ds-text);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.ayuda-page__footer {
+  border-top: 1px solid var(--ds-surface);
+  padding-top: var(--space-6);
+
+  h2 {
+    font-size: 1rem;
+    margin-bottom: var(--space-2);
+  }
+}
+
+.ayuda-page__contacto {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-3) 0 0;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--ds-touch-target);
+  }
+}
+
+.ayuda-page__legal {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--ds-touch-target);
+  margin-top: var(--space-4);
+}
