@@ -8,6 +8,7 @@ import { FloatLabelModule } from 'primeng/floatlabel';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { PublicTopbarComponent } from '../ui/public-topbar/public-topbar.component';
+import { PublicFooterComponent } from '../../../shared/ui/layout/public-footer/public-footer.component';
 import { TenantService } from '../../../core/tenant/tenant.service';
 import { validateToken, resetPassword } from './store/password-recovery.actions';
 import {
@@ -27,6 +28,7 @@ import {
     FloatLabelModule,
     ToastModule,
     PublicTopbarComponent,
+    PublicFooterComponent,
   ],
   providers: [MessageService],
   templateUrl: './reset-password.component.html',
