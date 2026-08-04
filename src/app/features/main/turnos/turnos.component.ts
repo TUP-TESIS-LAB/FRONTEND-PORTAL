@@ -77,10 +77,10 @@ export class TurnosComponent implements OnInit, OnDestroy {
   reprogramarHora     = signal<string | null>(null);
   reprogramarSlots    = signal<SlotDisponible[]>([]);
 
-  // El backend exige fecha del turno >= hoy + 2 días (igual que sacar-turno).
+  // El backend exige fecha del turno >= hoy (igual que sacar-turno): se puede
+  // reprogramar para el mismo día, no para una fecha pasada.
   readonly minBookingDate = (() => {
     const d = new Date();
-    d.setDate(d.getDate() + 2);
     d.setHours(0, 0, 0, 0);
     return d;
   })();

@@ -155,13 +155,13 @@ export class SacarTurnoComponent implements OnInit, OnDestroy {
     }
   });
 
-  // El backend (GetAvailableSlotsUseCase + CreateAppointmentUseCase) exige que
-  // la fecha del turno sea >= hoy + 2 días. Si el datepicker permite menos, el
-  // submit del slot pega 400 con InvalidBookingDateException. Reflejarlo en el
-  // minDate evita el viaje al servidor.
+  // El backend (GetAvailableSlotsUseCase + CreateAppointmentUseCase) exige que la
+  // fecha del turno sea >= hoy + app.turnos.booking.min-advance-days, hoy en 0: se
+  // puede sacar turno para el mismo día y solo el pasado queda afuera. Si el
+  // datepicker permitiera menos, el submit del slot pega 400 con
+  // InvalidBookingDateException; reflejarlo en el minDate evita el viaje al servidor.
   readonly minBookingDate = (() => {
     const d = new Date();
-    d.setDate(d.getDate() + 2);
     d.setHours(0, 0, 0, 0);
     return d;
   })();

@@ -14,7 +14,7 @@ describe('mapApiError', () => {
 
   it('maps MinimumAdvanceBookingException', () => {
     expect(mapApiError(build(400, { message: 'MinimumAdvanceBookingException' })))
-      .toBe('Hay que reservar con al menos 2 días de anticipación.');
+      .toBe('No se puede reservar para esa fecha. Elegí una fecha de hoy en adelante.');
   });
 
   it('maps CancellationWindowExpiredException', () => {
