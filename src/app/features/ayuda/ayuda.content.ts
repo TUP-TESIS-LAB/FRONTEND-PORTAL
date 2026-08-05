@@ -69,14 +69,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         answer:
           'Tocá "Sacar turno" y seguí los pasos: para quién es el turno, qué análisis ' +
           'necesitás, en qué sede, y qué día y horario. Al final ves un resumen y confirmás. ' +
-          'Tené en cuenta que la fecha más cercana que podés reservar es de 2 días en adelante.',
+          'Podés reservar desde hoy mismo en adelante, según los horarios que tenga libres la sede.',
       },
       {
         question: '¿Puedo cambiar o cancelar un turno que ya saqué?',
         answer:
           'Sí. Entrá a "Turnos", tocá el turno para abrir su detalle y ahí tenés "Reprogramar" ' +
-          '(elegís nueva fecha y horario) o "Cancelar turno". La nueva fecha también tiene que ' +
-          'ser de 2 días en adelante.',
+          '(elegís nueva fecha y horario) o "Cancelar turno". La nueva fecha también puede ser ' +
+          'de hoy en adelante.',
       },
       {
         question: '¿Cómo sé si tengo que ir en ayunas?',

@@ -10,7 +10,7 @@ interface ApiErrorResponse {
 
 const MESSAGE_MAP: Record<string, string> = {
   SlotUnavailableException: 'Ese horario ya no está disponible. Elegí otro.',
-  MinimumAdvanceBookingException: 'Hay que reservar con al menos 2 días de anticipación.',
+  MinimumAdvanceBookingException: 'No se puede reservar para esa fecha. Elegí una fecha de hoy en adelante.',
   CancellationWindowExpiredException: 'Ya no se puede cancelar (faltan menos de 24h).',
   InvalidBookingDateException: 'Esa fecha no es válida.',
   ModuleDisabledException: 'Esta función no está habilitada para este laboratorio.',
