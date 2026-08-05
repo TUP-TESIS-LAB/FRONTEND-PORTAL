@@ -264,7 +264,7 @@ export class EstudiosComponent {
       });
       return;
     }
-    this.service.descargarReporte(estudio.id).subscribe({
+    this.service.descargarReporte(estudio.reportId!).subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
         window.open(url, '_blank');

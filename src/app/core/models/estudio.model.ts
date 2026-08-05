@@ -29,6 +29,12 @@ export interface AnalyticalResultResponse {
   collectionDate: string; // ISO LocalDateTime
   active: boolean;
   version: number;
+  /** id del informe FINAL firmado; null mientras no exista (KAN-168). */
+  reportId: number | null;
+  /** true cuando hay informe FINAL descargable (KAN-168). */
+  reportAvailable: boolean;
+  analysisName: string | null;
+  familyName: string | null;
 }
 
 /**
@@ -62,6 +68,8 @@ export interface Estudio {
   sucursal?: string;
   estadoFirma?: EstadoFirma;
   reporteDisponible?: boolean;
+  /** id del informe FINAL, para armar la descarga. */
+  reportId?: number | null;
   reporteUrl?: string;
   pdf?: {
     url: string;
