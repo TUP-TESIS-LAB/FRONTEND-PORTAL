@@ -22,7 +22,7 @@ Los issues creados por esta skill van siempre al proyecto `KAN` (formato de IDs:
 Al recibir el pedido, primero **mirá el contexto del chat**. Es muy común que el usuario ya haya descrito el problema, el feature o el bug en mensajes anteriores. Extraé de ahí:
 
 - Un título tentativo (corto, accionable, en infinitivo cuando aplique: "Permitir login con Google", "Corregir error en checkout")
-- Tipo probable (señales: "no funciona / falla / rompe" → Bug; "como usuario quiero / necesitamos que" → Historia; trabajo técnico interno → Tarea; iniciativa grande con sub-trabajo → Épica)
+- Tipo probable (señales: "no funciona / falla / rompe" → Error; "como usuario quiero / necesitamos que" → Historia; trabajo técnico interno → Tarea; iniciativa grande con sub-trabajo → Epic)
 - Contexto para la descripción
 - Criterios de aceptación si están implícitos en lo que el usuario dijo
 
@@ -33,7 +33,7 @@ No le devuelvas al usuario una pila de preguntas si la mitad ya las respondió a
 Lo único que se pide sí o sí cuando no se puede inferir bien:
 
 - **Título** (si ningún resumen razonable se desprende del contexto)
-- **Tipo de issue** (Bug / Historia / Tarea / Épica) si hay ambigüedad real
+- **Tipo de issue** (Error / Historia / Tarea / Epic) si hay ambigüedad real — son los nombres exactos del proyecto KAN; `Bug`, `Épica`, `Story`, `Task` y `Spike` **no existen** y fallan con `Invalid issue type`
 
 Para todo lo demás (prioridad, asignado, labels), usar defaults razonables y mostrarlos en el resumen para que el usuario edite si quiere. **No bombardear con preguntas campo por campo.**
 
